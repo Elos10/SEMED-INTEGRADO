@@ -1,0 +1,158 @@
+# Arquitetura final proposta — SEMED Integrado
+
+## 1. Decisão arquitetural
+
+Adotar uma evolução por estrangulamento, não uma reescrita: um portal central passa a controlar autenticação, navegação e autorização; cada módulo é encaixado e migrado internamente em ondas. O stack inicial permanece HTML/CSS/JavaScript modular, pois é o denominador comum dos cinco sistemas. Uma migração futura para framework só deve ocorrer por benefício comprovado e módulo a módulo.
+
+## 2. Visão de componentes
+
+```text
+Navegador
+  └─ SEMED Integrado (shell comum)
+      ├─ Supabase Auth / sessão única
+      ├─ Hub dinâmico de módulos
+      ├─ Guarda de rota e ações na UI
+      ├─ Layout, menu, breadcrumbs, troca de módulo, logout
+      └─ Adaptadores dos módulos
+          ├─ Avaliações
+          ├─ Inscrições
+          ├─ Votação
+          ├─ OS SEMED
+          └─ Monitor
+
+Supabase central
+  ├─ Auth (`auth.users`)
+  ├─ Core: perfis, módulos, ações, permissões, escopos, unidades
+  ├─ Dados de domínio com namespace por módulo
+  ├─ Storage com buckets/prefixos e policies
+  ├─ RPC/Edge Functions para operações privilegiadas ou atômicas
+  └─ Auditoria append-only
+```
+
+## 3. Organização do código
+
+```text
+semed-integrado/
+  app/
+    index.html
+    bootstrap.js
+    router.js
+  core/
+    auth/
+    authorization/
+    audit/
+    navigation/
+    supabase/
+  components/
+    layout/
+    feedback/
+    forms/
+  modules/
+    avaliacoes/
+    inscricoes/
+    votacao/
+    os-semed/
+    monitor/
+  migrations/
+  tests/
+    characterization/
+    integration/
+    security/
+  docs/
+```
+
+No primeiro encaixe, cada pasta de módulo pode conter os arquivos legados quase intactos e um `adapter.js` para sessão, navegação e dados. Não criar pacote compartilhado para regras específicas de negócio.
+
+## 4. Estratégia PostgreSQL/Supabase
+
+### 4.1 Namespaces
+
+Usar schemas PostgreSQL por domínio (`core`, `avaliacoes`, `inscricoes`, `votacao`, `os_semed`, `monitor`, `audit`) e um schema `api` com views/RPC explicitamente expostas quando necessário. Isso evita colisões como `users`, `units` e `documents`. Caso a configuração de schemas expostos imponha risco operacional na primeira onda, usar temporariamente tabelas `public` prefixadas (`core_*`, `avaliacoes_*`) mantendo a mesma separação lógica; não misturar nomes genéricos em `public`.
+
+### 4.2 Core proposto
+
+- `core.profiles`: perfil configurável, ativo, sem nomes codificados.
+- `core.user_profiles`: vínculo N:N entre `auth.users` e perfis; permite múltiplas responsabilidades futuras.
+- `core.modules`: código, nome, rota, ícone, ordem, ativo.
+- `core.actions`: ações normalizadas (`view`, `create`, `edit`, `delete`, `approve`, `admin`, mais ações específicas).
+- `core.profile_module_actions`: concessão por perfil + módulo + ação.
+- `core.user_module_actions`: exceções individuais opcionais e auditadas; negar deve prevalecer sobre permitir.
+- `core.scopes` e `core.user_scopes`: escopo por unidade/área/registro quando aplicável.
+- `core.units`: identidade canônica mínima da unidade, com tabela de aliases/origens; só consolidar após reconciliação.
+- `core.profiles_public`: nome, e-mail institucional derivado, situação e metadados, sempre 1:1 com `auth.users` quando essa visão simples for necessária.
+
+Perfis iniciais são seeds administráveis, não enums: Administrador Geral, Administrador de Módulo, Gestor, Coordenador, Operador e Consulta.
+
+### 4.3 Domínios
+
+- `avaliacoes`: imports, records, habilidades aplicadas e metadados; retirar usuários/permissões do blob.
+- `inscricoes`: unidades locais/locais, modalidades, atividades, turmas, professores, inscrições, vínculos de turma, frequência e documentos; normalizar o blob preservando IDs legados.
+- `votacao`: eleições/configuração, unidades participantes, chapas/membros, credenciais funcionais de mesário ligadas a Auth, sessões, urnas e votos. Voto deve ser append-only e confirmado por uma única RPC transacional.
+- `os_semed`: ordens, catálogo logístico, responsáveis por área, rotas, veículos, motoristas, mensagens, histórico e anexos.
+- `monitor`: objetos, eventos, atividades, custos, documentos, leituras de notificação e imports.
+- `audit.events`: evento append-only com ator, módulo, ação, entidade, ID, antes/depois, request ID, horário e metadados de cliente permitidos.
+
+## 5. Autenticação e autorização
+
+### Autenticação
+
+- Uma sessão Supabase Auth para todos os módulos.
+- Senhas exclusivamente em `auth.users`; nunca copiar hashes ou senhas legadas para tabelas públicas.
+- Migração de usuários por convite/recuperação segura, não por transporte de senha em texto.
+- Criação/desativação de usuários por Edge Function/RPC servidor com `service_role`, nunca no navegador.
+
+### Autorização em três pontos
+
+1. Hub/menu: consulta permissões e só apresenta módulos com `view`.
+2. Router/ações: guarda central impede URL direta e oculta/desabilita ações.
+3. Banco/API: RLS e RPC repetem a decisão usando `auth.uid()`; esta é a barreira de segurança real.
+
+Uma função estável, por exemplo `core.has_permission(module_code, action_code, scope_type, scope_id)`, centraliza a avaliação. Policies não devem comparar e-mail ou espalhar nomes de perfil.
+
+## 6. RLS e segurança
+
+- RLS ativa em toda tabela exposta; sem policies para `anon` em dados corporativos.
+- `authenticated` recebe apenas operações explicitamente permitidas.
+- Tabelas de autorização só são alteradas por administradores autorizados e toda mudança gera auditoria.
+- Views comuns devem respeitar `security_invoker`; funções `security definer` têm `search_path` fixo, validação interna e privilégio mínimo.
+- Dados sensíveis (CPF, nascimento, telefone, avaliações, votos, OS e custos) têm policies por módulo e escopo.
+- Votos, auditoria e histórico não permitem update/delete pelo cliente.
+- Storage usa bucket/prefixo por módulo, limite de tamanho/MIME e policy ligada ao registro pai.
+- Rate limiting e proteção antiabuso nas operações de login, convite, importação e votação.
+
+## 7. Auditoria
+
+Registrar no banco, preferencialmente por trigger/RPC, e não confiar somente no frontend. Eventos mínimos: login relevante, criação/desativação de usuário, mudança de perfil/permissão/escopo, imports, exclusões lógicas, aprovações, mudança de status de OS, administração eleitoral e confirmação de voto sem armazenar informação que quebre sigilo.
+
+`audit.events` deve ser append-only; leitura limitada a perfis autorizados; retenção e tratamento de IP/user-agent definidos com jurídico/LGPD.
+
+## 8. Reaproveitamento por módulo
+
+| Módulo | Preservar | Substituir primeiro |
+|---|---|---|
+| Avaliações | filtros, cálculos, importação, análises, BNCC, relatórios | auth/token, usuários/perfis no JSON, RLS pública |
+| Inscrições | formulários, conflitos de horário, vagas, frequência, relatórios | auth, blob único, permissões apenas no cliente |
+| Votação | fluxo mesário/urna, tipologia, pesos e transação lógica | contas próprias, regras públicas, documentos agregados |
+| OS SEMED | cascata logística, escopos por perfil, histórico/mensagens | erro de sintaxe, localStorage, anexos locais, credenciais demo |
+| Monitor | UI, modelo de objeto/evento/custo, auditoria e upload | Firebase Auth/dados, papéis fixos/amplos |
+
+## 9. Dados compartilhados
+
+Não promover automaticamente `units`/escolas a `core.units`. Criar staging por origem e uma tabela de correspondência com `source_system`, `source_id`, `canonical_unit_id`, método, confiança e aprovador. Comparar nome normalizado, endereço, código oficial e contexto. Professores, alunos, servidores e setores seguem o mesmo princípio quando existirem em mais de um módulo.
+
+## 10. Operação, migrations e ambientes
+
+- Um repositório de migrations Supabase versionadas, imutáveis após aplicadas.
+- Ambientes separados: desenvolvimento, homologação e produção.
+- Backup/export antes de cada onda; scripts idempotentes; contagem, checksums e relatórios de rejeição.
+- Observabilidade por request ID, logs de erro sem PII e métricas de latência/falha.
+- Feature flags por módulo/usuário para alternar leitura antiga, dupla escrita controlada e nova fonte.
+
+## 11. Critérios de qualidade
+
+- Testes de caracterização congelam comportamento atual antes de extração.
+- Testes de contrato para adaptadores de dados.
+- Testes RLS positivos e negativos por perfil/escopo, inclusive acesso direto por URL/API.
+- Testes concorrentes para matrícula/vagas, importações, mudança de status e voto único.
+- Acessibilidade, responsividade e regressão visual do shell e de cada módulo.
+- Reconciliação de dados com totais, chaves, duplicidades e amostras aprovadas pelos donos de negócio.
