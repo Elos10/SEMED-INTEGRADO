@@ -181,6 +181,27 @@
       target.textContent = text;
     }
 
+    function authErrorMessage(error) {
+      const code = String(error?.code || "").toLowerCase();
+      const detail = String(error?.message || "").toLowerCase();
+      if (code === "invalid_credentials" || detail.includes("invalid login credentials")) {
+        return "O Supabase deste portal não reconheceu esse e-mail e senha. Confirme se o usuário foi criado no mesmo projeto configurado no portal.";
+      }
+      if (code === "email_not_confirmed" || detail.includes("email not confirmed")) {
+        return "O usuário existe, mas o e-mail ainda não foi confirmado no Supabase Auth.";
+      }
+      if (detail.includes("email logins are disabled") || detail.includes("provider is disabled")) {
+        return "O login por e-mail e senha está desativado nas configurações do Supabase Auth.";
+      }
+      if (detail.includes("failed to fetch") || detail.includes("network")) {
+        return "Não foi possível alcançar o Supabase. Verifique a conexão, a URL configurada e o estado do projeto.";
+      }
+      if (code === "over_request_rate_limit" || detail.includes("rate limit")) {
+        return "Houve muitas tentativas de acesso. Aguarde alguns minutos e tente novamente.";
+      }
+      return `O Supabase recusou o acesso (${error?.code || "erro de autenticação"}).`;
+    }
+
     function showLogin() {
       loginView.hidden = false;
       portalView.hidden = true;
@@ -270,7 +291,8 @@
       loginButton.disabled = false;
       loginButton.textContent = "Entrar";
       if (error) {
-        message(el("loginMessage"), "E-mail ou senha inválidos, usuário inativo ou acesso indisponível.", "error");
+        console.error("Falha de autenticação Supabase", { code: error.code, status: error.status, message: error.message });
+        message(el("loginMessage"), authErrorMessage(error), "error");
         return;
       }
       loginForm.reset();
