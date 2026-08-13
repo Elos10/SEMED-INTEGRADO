@@ -1673,24 +1673,23 @@ function renderAppFrame(content) {
 
 function renderLoginScreen() {
   return `
-    <main class="login-page">
-      <header class="login-topbar">
-        <div class="login-mark">L&Nn</div>
+    <main class="login-page semed-entry">
+      <header class="login-topbar entry-top">
+        <div class="entry-brand"><img src="${MUNICIPAL_LOGO_SRC}" alt="Uberaba"><i></i></div>
         <div>
           <strong>Urna Escolar SEMED</strong>
           <span>Eleição de Diretores das Unidades Escolares</span>
         </div>
       </header>
-      <img class="login-watermark" src="${MUNICIPAL_LOGO_SRC}" alt="">
-      <section class="login-panel">
-        <aside class="login-card">
+      <section class="login-panel entry-stage"><aside class="entry-intro"><div class="entry-system-icon"><svg viewBox="0 0 64 64"><path d="M17 25h30l5 30H12zM22 25V13h20v12M20 39h24M20 47h15"/><path d="m29 18 4 4 8-9"/></svg></div><h1>Urna eletrônica</h1><p>Acesse o sistema de votação eletrônica da educação.</p><div class="entry-motto">Educação que transforma,<br>Uberaba que avança.</div></aside>
+        <aside class="login-card entry-panel">
           <div>
             <h2>Acesso ao sistema</h2>
           </div>
           ${uiState.loginError ? `<div class="flash flash-error">${escapeHtml(uiState.loginError)}</div>` : ""}
           <form id="login-form" class="field-grid">
             <div class="field">
-              <label for="email">E-mail</label>
+              <label for="email">Usuário</label>
               <input id="email" name="email" type="email" autocomplete="username" placeholder="mesario@exemplo.com" value="${escapeHtml(
                 uiState.loginEmail,
               )}" required>
@@ -1699,10 +1698,10 @@ function renderLoginScreen() {
               <label for="password">Senha</label>
               <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite a senha" required>
             </div>
-            <button class="btn btn-primary" type="submit">Entrar</button>
+            <a class="entry-forgot" href="#">Esqueceu sua senha?</a><button class="btn btn-primary" type="submit">Entrar</button><span class="entry-or">ou</span><a class="entry-gov" href="#">▦ &nbsp;Entrar com <strong>gov.br</strong></a>
           </form>
         </aside>
-      </section>
+      </section><footer class="entry-footer"><div class="entry-foot-item"><span class="entry-foot-icon">♢</span><div><strong>Sistema seguro</strong>Seus dados protegidos com segurança e privacidade.</div></div><div class="entry-foot-item"><span class="entry-foot-icon">♧</span><div><strong>Suporte</strong>Em caso de dúvidas, entre em contato com a nossa equipe.</div></div></footer>
     </main>
   `;
 }
