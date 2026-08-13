@@ -3,194 +3,55 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f1f5ff">
-  <meta name="description" content="Portal integrado de sistemas da Secretaria Municipal de Educação de Uberaba">
-  <title>SEMED Integrado</title>
+  <meta name="theme-color" content="#032e86">
+  <meta name="description" content="Portal de Sistemas Unificados da Secretaria de Educação de Uberaba">
+  <title>Portal de Sistemas Unificados · SEMED Uberaba</title>
   <style>
-    :root {
-      color-scheme: light;
-      --blue: #003399;
-      --blue-dark: #001f66;
-      --blue-bright: #1455d9;
-      --blue-soft: #e7efff;
-      --ink: #0a2868;
-      --muted: #5a6d99;
-      --line: #d4def3;
-    }
+    :root{--navy:#002164;--royal:#0046c7;--blue:#0868e6;--cyan:#10a8ff;--ink:#062b78;--muted:#425f98;--line:#dbe5f5;--pale:#f4f8ff}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:#fff;font-family:Inter,"Segoe UI",Arial,sans-serif}a{color:inherit}
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: clamp(20px, 5vw, 64px);
-      color: var(--ink);
-      background: linear-gradient(145deg, #f8faff, #eaf1ff);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+    .hero{position:relative;min-height:570px;overflow:hidden;color:#fff;background:radial-gradient(circle at 77% 26%,rgba(26,119,239,.58),transparent 29%),linear-gradient(118deg,#00215f 0%,#003891 47%,#075bd3 100%)}
+    .hero::after{content:"";position:absolute;z-index:1;left:-5%;right:-5%;bottom:-85px;height:155px;border-radius:50% 50% 0 0/55% 55% 0 0;background:#f9fbff;transform:rotate(-1deg)}
+    .building{position:absolute;z-index:0;right:-2%;bottom:20px;width:min(740px,66vw);height:430px;color:#a8caff;opacity:.19;filter:drop-shadow(0 0 18px #001647)}
+    .topbar{position:relative;z-index:3;height:116px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(28px,5vw,76px);background:linear-gradient(100deg,rgba(0,28,83,.88) 0 38%,rgba(0,43,125,.35) 38%);border-bottom:1px solid #ffffff12}
+    .identity{display:flex;align-items:center;gap:22px}.municipal-logo{width:172px;height:72px;object-fit:contain;object-position:center}.identity-divider{width:1px;height:58px;background:#ffffff72}.education-brand span,.education-brand strong{display:block}.education-brand span{font-size:15px}.education-brand strong{margin-top:5px;font-size:27px;letter-spacing:.01em}
+    .help{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border:1px solid #fff;border-radius:20px;color:#fff;text-decoration:none;font-weight:800;background:#ffffff09}.help-mark{width:23px;height:23px;display:grid;place-items:center;border:2px solid currentColor;border-radius:50%;font-size:14px}
+    .hero-content{position:relative;z-index:2;width:min(1180px,calc(100% - 64px));margin:0 auto;padding:44px 0 120px}.welcome{margin:0 0 8px;font-size:27px;font-weight:300}.hero h1{max-width:650px;margin:0;font-size:clamp(48px,6vw,76px);line-height:.98;letter-spacing:-.045em}.hero-copy{max-width:610px;margin:24px 0 0;font-size:18px;line-height:1.65;color:#eef5ff}.hero-accent{width:70px;height:4px;margin-top:32px;border-radius:9px;background:var(--cyan)}
+    .slogan{position:absolute;right:clamp(40px,8vw,130px);bottom:135px;padding:4px 0 4px 48px;border-left:1px solid #ffffff82;font-size:17px;text-transform:uppercase}.slogan span,.slogan strong{display:block}.slogan strong{font-size:24px}.slogan em{color:#71c6ff;font-style:normal}
 
-    .portal-card {
-      position: relative;
-      width: min(1080px, 100%);
-      min-height: min(720px, calc(100vh - 80px));
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      padding: clamp(30px, 5vw, 64px);
-      border: 1px solid var(--line);
-      border-radius: 30px;
-      background: #fff;
-      box-shadow: 0 24px 70px rgba(0, 45, 135, .12);
-    }
+    .systems-section{position:relative;z-index:2;margin-top:-42px;padding:24px 24px 16px;background:#f9fbff;border-radius:80px 80px 0 0;box-shadow:0 -8px 30px #001d5a18}
+    .systems-wrap{width:min(1050px,100%);margin:0 auto}.section-title{text-align:center;margin:0 0 26px;font-size:29px;color:var(--navy)}.section-title::after{content:"";display:block;width:70px;height:4px;margin:13px auto 0;border-radius:6px;background:var(--blue)}
+    .systems-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:24px 28px}.system-card{grid-column:span 2;min-height:300px;display:flex;flex-direction:column;align-items:center;padding:26px 24px 24px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 10px 24px rgba(0,37,105,.11);text-align:center}.system-card:nth-child(4){grid-column:2/span 2}.system-card:nth-child(5){grid-column:4/span 2}
+    .card-icon{width:102px;height:102px;display:grid;place-items:center;border-radius:50%;color:#075bd3;background:linear-gradient(145deg,#e7f0ff,#d9e8ff)}.card-icon svg{width:58px;height:58px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.system-card h2{margin:18px 0 8px;font-size:23px;color:var(--navy)}.system-card p{flex:1;max-width:260px;margin:0;color:var(--muted);font-size:14px;line-height:1.45}.access{width:100%;min-height:43px;display:flex;align-items:center;justify-content:center;margin-top:19px;padding:0 18px;border-radius:9px;color:#fff;background:linear-gradient(90deg,#0052d7,#0872e6);text-decoration:none;font-weight:800;box-shadow:0 7px 15px #0052d72b;transition:transform .18s,filter .18s}.access span{margin-left:auto;font-size:24px;font-weight:300}.access::before{content:"";width:22px}.access:hover,.access:focus-visible{transform:translateY(-2px);filter:brightness(1.08);outline:3px solid #9fc4ff}
+    .news{display:grid;grid-template-columns:auto 1fr 1px minmax(220px,.7fr);align-items:center;gap:25px;margin:28px 0 18px;padding:18px 34px;border:1px solid #ccdaef;border-radius:17px;background:linear-gradient(100deg,#eaf3ff,#f5f9ff)}.bell{width:74px;height:74px;display:grid;place-items:center;border-radius:50%;color:#fff;background:linear-gradient(145deg,#0047c5,#0875e8)}.bell svg{width:37px;height:37px;fill:currentColor}.news h3{margin:0 0 7px;font-size:22px}.news p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}.news-divider{width:1px;height:58px;background:#bccce5}.news-link{justify-self:center;width:min(230px,100%);padding:11px 18px;border:1px solid #1764d6;border-radius:8px;color:#0754c7;text-align:center;text-decoration:none;font-weight:800;background:#fff}
 
-    .portal-card::after {
-      content: "";
-      position: absolute;
-      right: -115px;
-      bottom: -150px;
-      width: 340px;
-      height: 340px;
-      border-radius: 50%;
-      background: #eef3ff;
-    }
+    .footer{color:#fff;background:linear-gradient(100deg,#002365,#003a98);padding:34px 24px}.footer-inner{width:min(1080px,100%);margin:auto;display:grid;grid-template-columns:1fr 1.35fr .75fr;align-items:center;gap:35px}.footer-brand{display:flex;align-items:center;gap:17px}.footer-brand img{width:100px;height:74px;object-fit:contain}.footer-brand span,.footer-brand strong{display:block}.footer-brand strong{font-size:23px}.footer-brand small{display:block;margin-top:8px}.contact{display:grid;gap:10px;padding-left:24px;border-left:1px solid #ffffff37;font-size:14px}.motto{padding-left:35px;border-left:1px solid #ffffff37;font-size:20px;line-height:1.35;text-transform:uppercase}.motto strong{display:block;color:#42b8ff}
 
-    .portal-icon {
-      position: absolute;
-      top: clamp(28px, 5vw, 56px);
-      right: clamp(28px, 5vw, 56px);
-      width: 72px;
-      height: 72px;
-      display: grid;
-      place-items: center;
-      border-radius: 20px;
-      color: var(--blue);
-      background: var(--blue-soft);
-    }
-    .portal-icon svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-
-    .heading { max-width: 700px; padding-right: 110px; }
-    .eyebrow { margin: 0 0 10px; color: var(--blue-bright); font-size: 12px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
-    h1 { margin: 0; color: var(--blue-dark); font-size: clamp(32px, 5vw, 54px); line-height: 1.05; letter-spacing: -.035em; }
-    .description { max-width: 660px; margin: 16px 0 0; color: var(--muted); font-size: 16px; line-height: 1.6; }
-
-    .systems {
-      position: relative;
-      z-index: 1;
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-content: center;
-      gap: 16px;
-      margin-top: 42px;
-    }
-
-    .system-button {
-      min-height: 86px;
-      display: grid;
-      grid-template-columns: 50px minmax(0, 1fr) 38px;
-      align-items: center;
-      gap: 15px;
-      padding: 15px 16px;
-      border: 1px solid #dce5f7;
-      border-radius: 16px;
-      color: var(--ink);
-      background: #f9fbff;
-      text-decoration: none;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
-    }
-    .system-button:last-child { grid-column: 1 / -1; }
-    .system-button:hover, .system-button:focus-visible {
-      transform: translateY(-3px);
-      border-color: #9db7ed;
-      background: #fff;
-      box-shadow: 0 14px 30px rgba(0, 51, 153, .11);
-      outline: none;
-    }
-
-    .system-icon {
-      width: 50px;
-      height: 50px;
-      display: grid;
-      place-items: center;
-      border-radius: 14px;
-      color: var(--blue);
-      background: var(--blue-soft);
-    }
-    .system-icon svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-    .system-copy { min-width: 0; }
-    .system-copy strong { display: block; color: var(--blue-dark); font-size: 16px; }
-    .system-copy span { display: block; overflow: hidden; margin-top: 4px; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-    .arrow { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: var(--blue); background: var(--blue-soft); font-weight: 900; transition: transform .18s ease; }
-    .system-button:hover .arrow { transform: translateX(3px); color: #fff; background: var(--blue); }
-
-    .footer { position: relative; z-index: 1; margin-top: 30px; color: #7180a3; font-size: 12px; }
-
-    @media (max-width: 720px) {
-      body { place-items: start center; padding: 14px; }
-      .portal-card { min-height: calc(100vh - 28px); padding: 26px 20px; border-radius: 22px; }
-      .portal-icon { top: 22px; right: 20px; width: 56px; height: 56px; border-radius: 16px; }
-      .portal-icon svg { width: 29px; height: 29px; }
-      .heading { padding-right: 70px; }
-      .description { font-size: 14px; }
-      .systems { grid-template-columns: 1fr; align-content: start; margin-top: 34px; }
-      .system-button:last-child { grid-column: 1; }
-      .system-copy span { white-space: normal; }
-    }
-
-    @media (max-width: 430px) {
-      .eyebrow { max-width: 200px; }
-      .system-button { grid-template-columns: 44px minmax(0, 1fr) 32px; gap: 11px; padding: 13px 12px; }
-      .system-icon { width: 44px; height: 44px; }
-      .arrow { width: 32px; height: 32px; }
-    }
+    @media(max-width:900px){.hero{min-height:600px}.building{width:90vw;opacity:.1}.slogan{display:none}.systems-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.system-card,.system-card:nth-child(4),.system-card:nth-child(5){grid-column:auto}.system-card:last-child{grid-column:1/-1}.news{grid-template-columns:auto 1fr}.news-divider{display:none}.news-link{grid-column:1/-1;width:100%}.footer-inner{grid-template-columns:1fr 1fr}.motto{grid-column:1/-1;padding:20px 0 0;border-left:0;border-top:1px solid #ffffff37}.topbar{height:auto;min-height:100px}.municipal-logo{width:135px}.education-brand strong{font-size:21px}}
+    @media(max-width:620px){.hero{min-height:570px}.topbar{padding:16px 20px}.identity{gap:10px}.municipal-logo{width:105px;height:58px}.identity-divider{height:45px}.education-brand span{font-size:11px}.education-brand strong{font-size:17px}.help{padding:9px;border-radius:50%}.help>span:last-child{display:none}.hero-content{width:calc(100% - 40px);padding-top:48px}.welcome{font-size:22px}.hero h1{font-size:43px}.hero-copy{font-size:16px}.systems-section{padding:25px 14px 12px;border-radius:42px 42px 0 0}.systems-grid{grid-template-columns:1fr;gap:18px}.system-card,.system-card:last-child{grid-column:1;min-height:280px}.news{grid-template-columns:1fr;text-align:center;padding:22px}.bell{justify-self:center}.footer-inner{grid-template-columns:1fr}.contact,.motto{padding:20px 0 0;border-left:0;border-top:1px solid #ffffff37}.footer-brand img{width:88px}}
   </style>
 </head>
 <body>
-  <main class="portal-card">
-    <div class="portal-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 8h8M8 12h8M8 16h5"/><path d="m5.5 8 .7.7 1.3-1.5m-2 5 .7.7 1.3-1.5m-2 5 .7.7 1.3-1.5"/></svg>
+  <header class="hero">
+    <svg class="building" viewBox="0 0 900 500" aria-hidden="true"><path fill="currentColor" d="M90 470V210h80v-55h75v-45h78v45h74v55h75v260h52V230h60V170h54v-60h64v60h55v60h64v240z"/><path fill="#002d83" d="M120 470V250h325v220zm42-178h52v70h-52zm84 0h52v70h-52zm84 0h52v70h-52zm228-27h42v78h-42zm70 0h42v78h-42zm70 0h42v78h-42z"/><path fill="none" stroke="currentColor" stroke-width="13" d="M70 470h790M132 208h300M545 229h258M221 109h104M623 110h65M245 109V65h55v44M641 110V63"/></svg>
+    <div class="topbar">
+      <div class="identity"><img class="municipal-logo" src="./modules/votacao/assets/logo-municipal.png" alt="Uberaba Governo Municipal"><span class="identity-divider"></span><div class="education-brand"><span>Secretaria de</span><strong>EDUCAÇÃO</strong></div></div>
+      <a class="help" href="#contato"><span class="help-mark">?</span><span>Ajuda</span></a>
     </div>
+    <div class="hero-content"><p class="welcome">Bem-vindo ao</p><h1>Portal de Sistemas<br>Unificados</h1><p class="hero-copy">Acesse de forma integrada os principais sistemas<br>da Secretaria de Educação de Uberaba.</p><div class="hero-accent"></div></div>
+    <div class="slogan"><span>Educação que</span><strong>TRANSFORMA</strong><span>Uberaba que</span><strong>AVANÇA</strong></div>
+  </header>
 
-    <header class="heading">
-      <p class="eyebrow">Secretaria Municipal de Educação de Uberaba</p>
-      <h1>SEMED Integrado</h1>
-      <p class="description">Escolha o aplicativo que deseja utilizar.</p>
-    </header>
+  <main class="systems-section" id="sistemas"><div class="systems-wrap"><h2 class="section-title">Acesse os sistemas</h2><section class="systems-grid" aria-label="Sistemas disponíveis">
+    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><rect x="15" y="12" width="34" height="43" rx="3"/><path d="M25 12V8h14v4M23 25l3 3 6-7m-9 18 3 3 6-7m5-9h7m-7 14h7"/></svg></div><h2>Avaliações</h2><p>Gerencie e acompanhe avaliações, resultados e desempenhos.</p><a class="access" href="./modules/avaliacoes/">Acessar <span>→</span></a></article>
+    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><path d="M16 10h31v44H16zM23 21h17M23 29h17M23 37h10M42 44l9-18 5 2-9 18-7 6z"/></svg></div><h2>Inscrições</h2><p>Realize e acompanhe inscrições para programas e projetos.</p><a class="access" href="./modules/inscricoes/">Acessar <span>→</span></a></article>
+    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><path d="M12 53h43M17 49V36h8v13m7 0V27h8v22m7 0V17h8v32M18 28l12-10 10 5 14-14"/><circle cx="18" cy="28" r="2"/><circle cx="30" cy="18" r="2"/><circle cx="40" cy="23" r="2"/><circle cx="54" cy="9" r="2"/></svg></div><h2>Monitoramento</h2><p>Acompanhe indicadores, metas e resultados em tempo real.</p><a class="access" href="./modules/monitor/">Acessar <span>→</span></a></article>
+    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="19"/><path d="M32 6v8m0 36v8M6 32h8m36 0h8M14 14l6 6m24 24 6 6M50 14l-6 6M20 44l-6 6"/><circle cx="32" cy="32" r="7"/></svg></div><h2>Ordem de Serviço</h2><p>Abra, acompanhe e gerencie ordens de serviço.</p><a class="access" href="./modules/os-semed/">Acessar <span>→</span></a></article>
+    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><path d="M17 25h30l5 30H12zM22 25V13h20v12M20 39h24M20 47h15"/><path d="m29 18 4 4 8-9"/></svg></div><h2>Urna Eletrônica</h2><p>Acesse o sistema de votação eletrônica da educação.</p><a class="access" href="./modules/votacao/">Acessar <span>→</span></a></article>
+  </section>
+  <aside class="news" id="comunicados"><div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M9.5 20h5a3 3 0 0 1-5 0"/></svg></div><div><h3>Fique por dentro!</h3><p>Acompanhe comunicados e novidades<br>da Secretaria de Educação.</p></div><span class="news-divider"></span><a class="news-link" href="#contato">Ver comunicados&nbsp; ↗</a></aside>
+  </div></main>
 
-    <section class="systems" aria-label="Aplicativos disponíveis">
-      <a class="system-button" href="./modules/avaliacoes/">
-        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5h9M9 10h9M9 15h6"/><path d="m4 5 1 1 2-2M4 10l1 1 2-2M4 15l1 1 2-2"/><rect x="2" y="2" width="20" height="20" rx="4"/></svg></span>
-        <span class="system-copy"><strong>Avaliações</strong><span>Diagnósticos, indicadores e relatórios pedagógicos</span></span>
-        <span class="arrow">→</span>
-      </a>
-
-      <a class="system-button" href="./modules/inscricoes/">
-        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg></span>
-        <span class="system-copy"><strong>Inscrições</strong><span>Atividades, oficinas, turmas e frequência</span></span>
-        <span class="arrow">→</span>
-      </a>
-
-      <a class="system-button" href="./modules/votacao/">
-        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 11 2 2 4-5"/><path d="M5 3h14v7H5zM4 14h16l2 7H2z"/><path d="M7 18h10"/></svg></span>
-        <span class="system-copy"><strong>Votação</strong><span>Gestão eleitoral, urna e resultados escolares</span></span>
-        <span class="arrow">→</span>
-      </a>
-
-      <a class="system-button" href="./modules/os-semed/">
-        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18v3h3l6.7-6.7a4 4 0 0 0 5-5l-3 3-3-3z"/><path d="m15 19 2 2 4-4-2-2"/></svg></span>
-        <span class="system-copy"><strong>OS SEMED</strong><span>Ordens de serviço, logística e atendimentos</span></span>
-        <span class="arrow">→</span>
-      </a>
-
-      <a class="system-button" href="./modules/monitor/">
-        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16v-3M12 16V8M17 16v-6"/></svg></span>
-        <span class="system-copy"><strong>Monitor</strong><span>Monitoramento físico, financeiro e operacional</span></span>
-        <span class="arrow">→</span>
-      </a>
-    </section>
-
-    <footer class="footer">Ambiente institucional · SEMED Uberaba</footer>
-  </main>
+  <footer class="footer" id="contato"><div class="footer-inner"><div class="footer-brand"><img src="./modules/votacao/assets/logo-municipal.png" alt="Brasão de Uberaba"><div><span>Secretaria de</span><strong>EDUCAÇÃO</strong><small>UBERABA · MG</small></div></div><div class="contact"><span>⌖ &nbsp;Av. Dom Luiz Maria de Santana, 141<br>&nbsp;&nbsp;&nbsp;&nbsp;Santa Marta · Uberaba/MG · CEP 38061-080</span><span>☎ &nbsp;(34) 3318-2000</span><span>◎ &nbsp;educacao.uberaba.mg.gov.br</span></div><div class="motto">Educação<br>é o futuro.<strong>É agora.</strong></div></div></footer>
 </body>
 </html>
