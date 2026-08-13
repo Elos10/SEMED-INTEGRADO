@@ -77,7 +77,7 @@
     }
     .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #65e6a6; box-shadow: 0 0 0 4px rgba(101,230,166,.15); }
 
-    main { width: min(1240px, calc(100% - 32px)); margin: 0 auto; padding: clamp(42px, 7vw, 82px) 0 58px; }
+    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: clamp(38px, 6vw, 70px) 0 58px; }
     .hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); align-items: end; gap: 36px; margin-bottom: 38px; }
     .eyebrow { margin: 0 0 13px; color: var(--royal-bright); font-size: 12px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
     h1 { max-width: 760px; margin: 0; color: var(--royal-deep); font-size: clamp(36px, 5.2vw, 64px); line-height: 1.03; letter-spacing: -.045em; }
@@ -86,23 +86,22 @@
     .hero-note strong { display: block; margin-bottom: 5px; color: var(--royal); }
     .hero-note span { color: var(--muted); font-size: 13px; line-height: 1.5; }
 
-    .module-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; }
+    .module-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
     .module-card {
       position: relative;
       min-height: 270px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      grid-column: span 2;
       padding: 24px;
-      border: 1px solid rgba(110, 139, 199, .25);
+      border: 1px solid #d4def3;
       border-radius: 22px;
-      background: var(--surface);
+      background: #fff;
       box-shadow: 0 14px 38px rgba(0, 38, 115, .08);
       text-decoration: none;
       transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
     }
-    .module-card:nth-child(4) { grid-column: 2 / span 2; }
+    .module-card:nth-child(4) { grid-column: auto; }
     .module-card:hover, .module-card:focus-visible { transform: translateY(-6px); border-color: rgba(20,85,217,.55); box-shadow: var(--shadow); outline: none; }
     .module-card::after { content: ""; position: absolute; width: 150px; height: 150px; right: -62px; bottom: -72px; border-radius: 50%; background: var(--card-soft); opacity: .8; }
     .icon {
@@ -119,10 +118,11 @@
     }
     .icon svg { width: 29px; height: 29px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
     .module-card h2 { margin: 4px 82px 8px 0; color: var(--royal-deep); font-size: 21px; letter-spacing: -.015em; }
-    .module-card p { flex: 1; margin: 0 0 22px; color: var(--muted); font-size: 14px; line-height: 1.55; }
-    .access { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; color: var(--card-color); font-size: 13px; font-weight: 900; }
+    .module-card p { flex: 1; max-width: 255px; margin: 0 0 28px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .access { position: relative; z-index: 1; width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: space-between; padding-left: 14px; border: 1px solid var(--card-soft); border-radius: 12px; background: #f8faff; color: var(--card-color); font-size: 13px; font-weight: 900; transition: background .2s ease, color .2s ease; }
     .arrow { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--card-soft); transition: transform .2s ease; }
-    .module-card:hover .arrow { transform: translateX(4px); }
+    .module-card:hover .access { color: #fff; background: var(--card-color); }
+    .module-card:hover .arrow { transform: translateX(4px); background: rgba(255,255,255,.18); }
     .avaliacoes { --card-color: #003399; --card-soft: #e4ecff; }
     .inscricoes { --card-color: #1455d9; --card-soft: #e7efff; }
     .votacao { --card-color: #4138a5; --card-soft: #eeecff; }
@@ -135,15 +135,15 @@
       .hero { grid-template-columns: 1fr; align-items: start; }
       .hero-note { max-width: 560px; }
       .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .module-card, .module-card:nth-child(4) { grid-column: span 1; }
-      .module-card:last-child { grid-column: 1 / -1; }
+      .module-card, .module-card:nth-child(4) { grid-column: auto; }
+      .module-card:last-child { grid-column: auto; }
     }
     @media (max-width: 620px) {
       .topbar { align-items: flex-start; }
       .status { display: none; }
       main { padding-top: 40px; }
       .module-grid { grid-template-columns: 1fr; }
-      .module-card, .module-card:nth-child(4), .module-card:last-child { grid-column: 1; min-height: 235px; }
+      .module-card, .module-card:nth-child(4), .module-card:last-child { grid-column: 1; min-height: 250px; }
     }
   </style>
 </head>
