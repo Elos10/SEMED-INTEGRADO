@@ -98,3 +98,5 @@
 .login-page.semed-entry .login-panel{grid-column:auto!important;grid-row:auto!important;min-height:0!important;padding:18px 0!important;background:transparent!important}
 .login-page.semed-entry .login-card::after{display:none!important}
 .login-page.semed-entry .login-card{width:min(500px,100%)!important}
+.os-entry .entry-panel{padding-top:38px!important;padding-bottom:38px!important}
+.os-entry .entry-panel button[type=submit]{margin-top:5px}
