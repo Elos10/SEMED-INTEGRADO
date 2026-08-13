@@ -1,0 +1,79 @@
+/* Padrão institucional das telas de entrada do SEMED Integrado. */
+:root {
+  --entry-blue: #172d7a;
+  --entry-royal: #3155d8;
+  --entry-navy: #061b50;
+  --entry-line: #cbd8f5;
+  --entry-muted: #5c6f9c;
+}
+
+/* Avaliações */
+.login:has(.login-forms) { padding: 0 !important; background: #fff !important; }
+.login:has(.login-forms) .login-card {
+  width: 100% !important; max-width: none !important; min-height: 100vh; padding: 0 !important;
+  display: grid !important; grid-template-columns: minmax(0, 1.1fr) minmax(420px, .9fr);
+  border: 0 !important; border-radius: 0 !important; box-shadow: none !important; overflow: hidden;
+  background: linear-gradient(145deg, var(--entry-blue), var(--entry-royal)) !important;
+}
+.login:has(.login-forms) .login-logo {
+  align-self: start; justify-self: start; width: min(620px, 72%); max-height: 240px !important;
+  margin: clamp(70px, 16vh, 165px) 0 0 clamp(45px, 7vw, 130px); padding: 24px;
+  border: 0 !important; border-radius: 16px; background: #fff; object-fit: contain;
+}
+.login:has(.login-forms) .login-forms {
+  min-height: 100vh; align-content: center; padding: clamp(34px, 7vw, 130px) !important;
+  background: #fff; position: relative;
+}
+.login:has(.login-forms) .login-form-head { position: relative; padding-right: 78px; }
+.login:has(.login-forms) .login-form-head::after { content: "✓"; position: absolute; right: 0; top: 0; width: 58px; height: 58px; display: grid; place-items: center; border-radius: 16px; color: #fff; background: linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size: 28px; font-weight: 900; }
+
+/* Inscrições */
+.login:not(:has(.login-forms)) {
+  grid-template-columns: minmax(0, 1.1fr) minmax(420px, .9fr) !important; place-items: stretch !important;
+  padding: 0 !important; background: linear-gradient(145deg,var(--entry-blue),var(--entry-royal)) !important;
+}
+.login:not(:has(.login-forms))::before {
+  content: "Conexões que transformam oportunidades em participação."; align-self: center;
+  max-width: 760px; padding: clamp(60px, 9vw, 150px); color: #fff; font-size: clamp(42px, 5vw, 76px);
+  font-weight: 900; line-height: 1.02; letter-spacing: -.045em;
+}
+.login:not(:has(.login-forms)) form {
+  width: 100% !important; max-width: none !important; min-height: 100vh; margin: 0 !important;
+  align-content: center; padding: clamp(40px, 7vw, 130px) !important; border-radius: 0 !important;
+  box-shadow: none !important; position: relative;
+}
+.login:not(:has(.login-forms)) form::after { content: "+"; position: absolute; right: clamp(30px,5vw,80px); top: clamp(30px,7vh,80px); width: 58px; height: 58px; display:grid; place-items:center; border-radius:16px; color:#fff; background:linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size:34px; font-weight:700; }
+
+/* OS SEMED */
+.login-shell { grid-template-columns: minmax(0, 1.1fr) minmax(420px, .9fr) !important; background: #fff; }
+.login-shell .brand-panel { background: linear-gradient(145deg,var(--entry-blue),var(--entry-royal)) !important; padding: clamp(45px,7vw,130px) !important; }
+.login-shell .brand-logo { width: min(620px, 82%) !important; border-radius: 16px !important; }
+.login-shell .login-card { width: min(500px, calc(100% - 60px)); justify-self: center; margin: 0 !important; border: 0 !important; box-shadow: none !important; position: relative; }
+.login-shell .login-card::after { content: "⌁"; position:absolute; right:0; top:-70px; width:58px; height:58px; display:grid; place-items:center; border-radius:16px; color:#fff; background:linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size:30px; }
+
+/* Monitor */
+.login .login-hero { background: linear-gradient(145deg,var(--entry-blue),var(--entry-royal)) !important; }
+.login .login-side { position: relative; }
+.login .login-side::after { content: "▥"; position:absolute; right:clamp(30px,5vw,80px); top:clamp(30px,7vh,80px); width:58px; height:58px; display:grid; place-items:center; border-radius:16px; color:#fff; background:linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size:25px; }
+
+/* Votação */
+.login-page { min-height: 100vh !important; display: grid !important; grid-template-columns: minmax(0,1.1fr) minmax(420px,.9fr) !important; grid-template-rows: 1fr !important; background: linear-gradient(145deg,var(--entry-blue),var(--entry-royal)) !important; }
+.login-page .login-topbar { grid-column: 1; align-self: start; margin: clamp(45px,7vw,130px); color:#fff; background:transparent !important; border:0 !important; }
+.login-page .login-topbar strong,.login-page .login-topbar span { color:#fff !important; }
+.login-page .login-watermark { grid-column:1; position:absolute !important; left:clamp(45px,7vw,130px) !important; top:25% !important; width:min(620px,38vw) !important; max-height:240px; padding:24px; border-radius:16px; background:#fff; opacity:1 !important; object-fit:contain; }
+.login-page .login-panel { grid-column:2; grid-row:1; min-height:100vh; display:grid; place-items:center; padding:clamp(36px,7vw,120px) !important; background:#fff !important; }
+.login-page .login-card { width:min(500px,100%) !important; border:0 !important; box-shadow:none !important; position:relative; }
+.login-page .login-card::after { content:"✓"; position:absolute; right:0; top:0; width:58px; height:58px; display:grid; place-items:center; border-radius:16px; color:#fff; background:linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size:28px; font-weight:900; }
+
+@media (max-width: 760px) {
+  .login:has(.login-forms) .login-card, .login:not(:has(.login-forms)), .login-shell, .login-page { grid-template-columns: 1fr !important; }
+  .login:has(.login-forms) .login-logo { width: calc(100% - 48px); max-height: 130px !important; margin: 32px 24px; }
+  .login:has(.login-forms) .login-forms, .login:not(:has(.login-forms)) form, .login-page .login-panel { min-height: auto; padding: 36px 24px !important; }
+  .login:not(:has(.login-forms))::before { padding: 42px 24px; font-size: 37px; }
+  .login-shell .brand-panel { padding: 36px 24px !important; }
+  .login-shell .brand-panel h1 { font-size: 38px !important; }
+  .login-shell .login-card { width: auto; margin: 0 24px 36px !important; }
+  .login-page .login-topbar { margin: 30px 24px 180px; }
+  .login-page .login-watermark { left:24px !important; top:105px !important; width:calc(100% - 48px) !important; max-height:145px; }
+  .login-page .login-panel { grid-column:1; grid-row:2; }
+}
