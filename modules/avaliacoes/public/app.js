@@ -129,10 +129,10 @@ function loadingOverlayHtml() {
 
 function loginView() {
   return `
-    <section class="login semed-entry">
+    <section class="login semed-entry avaliacoes-entry">
       <header class="entry-top"><div class="entry-brand"><img src="${assetPath("logo-semed.png")}" alt="Uberaba"><i></i><div><span>Secretaria de</span><strong>EDUCAÇÃO</strong></div></div><span class="entry-help">ⓘ Ajuda</span></header>
       <div class="entry-stage"><aside class="entry-intro"><div class="entry-system-icon"><svg viewBox="0 0 64 64"><rect x="15" y="12" width="34" height="43" rx="3"/><path d="M25 12V8h14v4M23 25l3 3 6-7m-9 18 3 3 6-7m5-9h7m-7 14h7"/></svg></div><h1>Avaliações</h1><p>Gerencie e acompanhe avaliações, resultados e desempenhos.</p><div class="entry-motto">Educação que transforma,<br>Uberaba que avança.</div></aside>
-        <div class="login-forms entry-panel"><h2>Acesso ao sistema</h2><p class="entry-subtitle">Informe suas credenciais para entrar</p>${alertHtml()}<form id="loginForm"><label>Usuário <input name="email" type="email" required autocomplete="username" placeholder="Digite seu usuário"></label><label>Senha <input name="password" type="password" required autocomplete="current-password" placeholder="Digite sua senha"></label><a class="entry-forgot" href="#">Esqueceu sua senha?</a><button class="primary" type="submit">Entrar</button><span class="entry-or">ou</span><a class="entry-gov" href="#">▦ &nbsp;Entrar com <strong>gov.br</strong></a></form></div>
+        <div class="login-forms entry-panel"><h2>Acesso ao sistema</h2><p class="entry-subtitle">Informe suas credenciais para entrar</p>${alertHtml()}<form id="loginForm"><label>Usuário <input name="email" type="email" required autocomplete="username" placeholder="Digite seu usuário"></label><label>Senha <input name="password" type="password" required autocomplete="current-password" placeholder="Digite sua senha"></label><a class="entry-forgot" href="#">Esqueceu sua senha?</a><button class="primary" type="submit">Entrar</button></form></div>
       </div>
       <footer class="entry-footer"><div class="entry-foot-item"><span class="entry-foot-icon">♢</span><div><strong>Sistema seguro</strong>Seus dados protegidos com segurança e privacidade.</div></div><div class="entry-foot-item"><span class="entry-foot-icon">♧</span><div><strong>Suporte</strong>Em caso de dúvidas, entre em contato com a nossa equipe.</div></div></footer>
     </section>`;
