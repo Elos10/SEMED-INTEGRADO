@@ -3,110 +3,144 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#123f66">
+  <meta name="theme-color" content="#003399">
   <meta name="description" content="Portal integrado de sistemas da Secretaria Municipal de Educação de Uberaba">
   <title>SEMED Integrado</title>
   <style>
     :root {
       color-scheme: light;
-      --navy: #003399;
-      --navy-dark: #001f66;
-      --blue: #1455d9;
-      --sky: #e8f0ff;
-      --green: #198754;
-      --red: #b42318;
+      --royal: #003399;
+      --royal-deep: #001f66;
+      --royal-bright: #1455d9;
+      --royal-pale: #e8f0ff;
       --ink: #0b1f4d;
-      --muted: #52648c;
-      --line: #c9d7f2;
-      --surface: #fff;
-      --shadow: 0 18px 55px rgba(0, 51, 153, .16);
+      --muted: #58698d;
+      --line: #cfdbf3;
+      --surface: rgba(255, 255, 255, .94);
+      --shadow: 0 22px 60px rgba(0, 38, 115, .13);
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--ink);
-      background: linear-gradient(135deg, #f7fbfd 0%, #e9f4f9 48%, #dceef7 100%);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(20, 85, 217, .13), transparent 30%),
+        radial-gradient(circle at 92% 18%, rgba(0, 51, 153, .11), transparent 29%),
+        linear-gradient(145deg, #f9fbff 0%, #edf3ff 58%, #e4edff 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    button, input { font: inherit; }
-    button { cursor: pointer; }
-    [hidden] { display: none !important; }
 
+    a { color: inherit; }
     .page { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
     .topbar {
-      min-height: 76px;
-      padding: 14px clamp(20px, 5vw, 72px);
+      min-height: 78px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 24px;
+      padding: 14px clamp(20px, 5vw, 76px);
       color: #fff;
-      background: linear-gradient(105deg, var(--navy-dark), var(--navy));
-      box-shadow: 0 4px 20px rgba(9, 45, 74, .18);
+      background: linear-gradient(110deg, var(--royal-deep), var(--royal) 60%, var(--royal-bright));
+      box-shadow: 0 8px 26px rgba(0, 31, 102, .2);
     }
     .brand { display: flex; align-items: center; gap: 14px; }
     .brand-mark {
-      width: 48px; height: 48px; display: grid; place-items: center;
-      border: 1px solid rgba(255,255,255,.38); border-radius: 14px;
-      background: rgba(255,255,255,.12); font-weight: 800; font-size: 12px;
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255, 255, 255, .38);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, .13);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .04em;
     }
     .brand strong, .brand span { display: block; }
-    .brand strong { letter-spacing: .04em; }
-    .brand span { margin-top: 2px; color: #cfe7f5; font-size: 13px; }
-    .user-area { display: flex; align-items: center; gap: 12px; }
-    .user-copy { text-align: right; }
-    .user-copy strong, .user-copy span { display: block; }
-    .user-copy span { color: #cfe7f5; font-size: 12px; }
-
-    main { width: min(1180px, calc(100% - 32px)); margin: auto; padding: 48px 0; }
-    .login-grid { display: grid; grid-template-columns: 1.08fr .92fr; overflow: hidden; border-radius: 24px; background: var(--surface); box-shadow: var(--shadow); }
-    .welcome { padding: clamp(38px, 7vw, 78px); color: #fff; background: linear-gradient(145deg, var(--navy-dark), var(--blue)); }
-    .eyebrow { margin: 0 0 16px; font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
-    .welcome h1 { margin: 0; max-width: 560px; font-size: clamp(34px, 5vw, 58px); line-height: 1.03; }
-    .welcome p { max-width: 560px; margin: 22px 0 0; color: #d9eef9; line-height: 1.65; }
-    .login-card { padding: clamp(34px, 6vw, 64px); align-self: center; }
-    .login-card h2, .portal-head h1 { margin: 0 0 8px; color: var(--navy-dark); }
-    .login-card > p, .portal-head p { margin: 0 0 28px; color: var(--muted); line-height: 1.55; }
-    label { display: grid; gap: 8px; margin-bottom: 18px; font-weight: 700; font-size: 14px; }
-    input {
-      width: 100%; min-height: 48px; padding: 11px 13px;
-      border: 1px solid #b8cbd6; border-radius: 10px; color: var(--ink); background: #fff;
+    .brand strong { font-size: 16px; letter-spacing: .035em; }
+    .brand span { margin-top: 3px; color: #dce8ff; font-size: 12px; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      background: rgba(255,255,255,.1);
+      color: #edf3ff;
+      font-size: 12px;
+      font-weight: 700;
     }
-    input:focus { outline: 3px solid rgba(22,119,184,.18); border-color: var(--blue); }
-    .button {
-      min-height: 46px; padding: 11px 18px; border: 0; border-radius: 10px;
-      font-weight: 800; color: #fff; background: var(--blue);
-    }
-    .button:hover { filter: brightness(.94); }
-    .button.secondary { border: 1px solid rgba(255,255,255,.45); color: #fff; background: transparent; }
-    .button.block { width: 100%; }
-    .button:disabled { cursor: wait; opacity: .65; }
-    .message { margin: 0 0 18px; padding: 12px 14px; border-radius: 10px; font-size: 14px; line-height: 1.45; }
-    .message.error { color: #7a271a; background: #fef3f2; border: 1px solid #fecdca; }
-    .message.info { color: #184967; background: var(--sky); border: 1px solid #b9dced; }
+    .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #65e6a6; box-shadow: 0 0 0 4px rgba(101,230,166,.15); }
 
-    .portal-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 24px; }
-    .module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; }
+    main { width: min(1240px, calc(100% - 32px)); margin: 0 auto; padding: clamp(42px, 7vw, 82px) 0 58px; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); align-items: end; gap: 36px; margin-bottom: 38px; }
+    .eyebrow { margin: 0 0 13px; color: var(--royal-bright); font-size: 12px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { max-width: 760px; margin: 0; color: var(--royal-deep); font-size: clamp(36px, 5.2vw, 64px); line-height: 1.03; letter-spacing: -.045em; }
+    .hero-copy { max-width: 700px; margin: 20px 0 0; color: var(--muted); font-size: clamp(16px, 2vw, 19px); line-height: 1.65; }
+    .hero-note { padding: 20px; border: 1px solid rgba(20,85,217,.16); border-radius: 18px; background: rgba(255,255,255,.58); backdrop-filter: blur(12px); }
+    .hero-note strong { display: block; margin-bottom: 5px; color: var(--royal); }
+    .hero-note span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    .module-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; }
     .module-card {
-      min-height: 215px; padding: 24px; display: flex; flex-direction: column;
-      border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 10px 30px rgba(9,45,74,.07);
+      position: relative;
+      min-height: 270px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      grid-column: span 2;
+      padding: 24px;
+      border: 1px solid rgba(110, 139, 199, .25);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 14px 38px rgba(0, 38, 115, .08);
+      text-decoration: none;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
     }
-    .module-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 13px; color: #fff; background: linear-gradient(135deg, var(--navy), var(--blue)); font-size: 21px; }
-    .module-card h2 { margin: 20px 0 8px; color: var(--navy-dark); font-size: 20px; }
-    .module-card p { flex: 1; margin: 0 0 20px; color: var(--muted); line-height: 1.5; font-size: 14px; }
-    .module-card a { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; border-radius: 9px; color: #fff; background: var(--navy); font-weight: 800; text-decoration: none; }
-    .empty { padding: 36px; border: 1px dashed #a9c1ce; border-radius: 16px; text-align: center; color: var(--muted); background: rgba(255,255,255,.7); }
-    footer { padding: 18px 24px; text-align: center; color: #637985; font-size: 12px; }
+    .module-card:nth-child(4) { grid-column: 2 / span 2; }
+    .module-card:hover, .module-card:focus-visible { transform: translateY(-6px); border-color: rgba(20,85,217,.55); box-shadow: var(--shadow); outline: none; }
+    .module-card::after { content: ""; position: absolute; width: 150px; height: 150px; right: -62px; bottom: -72px; border-radius: 50%; background: var(--card-soft); opacity: .8; }
+    .icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 17px;
+      color: var(--card-color);
+      background: var(--card-soft);
+    }
+    .icon svg { width: 29px; height: 29px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .module-card h2 { margin: 22px 0 8px; color: var(--royal-deep); font-size: 21px; letter-spacing: -.015em; }
+    .module-card p { flex: 1; margin: 0 0 22px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .access { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; color: var(--card-color); font-size: 13px; font-weight: 900; }
+    .arrow { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--card-soft); transition: transform .2s ease; }
+    .module-card:hover .arrow { transform: translateX(4px); }
+    .avaliacoes { --card-color: #003399; --card-soft: #e4ecff; }
+    .inscricoes { --card-color: #1455d9; --card-soft: #e7efff; }
+    .votacao { --card-color: #4138a5; --card-soft: #eeecff; }
+    .os-semed { --card-color: #0062a8; --card-soft: #e2f3ff; }
+    .monitor { --card-color: #0054b8; --card-soft: #e2edff; }
 
-    @media (max-width: 760px) {
+    footer { padding: 20px 24px 28px; color: #66779b; text-align: center; font-size: 12px; }
+
+    @media (max-width: 920px) {
+      .hero { grid-template-columns: 1fr; align-items: start; }
+      .hero-note { max-width: 560px; }
+      .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .module-card, .module-card:nth-child(4) { grid-column: span 1; }
+      .module-card:last-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 620px) {
       .topbar { align-items: flex-start; }
-      .login-grid { grid-template-columns: 1fr; }
-      .welcome { padding: 38px 28px; }
-      .login-card { padding: 36px 28px; }
-      .portal-head { align-items: flex-start; flex-direction: column; }
-      .user-copy { display: none; }
+      .status { display: none; }
+      main { padding-top: 40px; }
+      .module-grid { grid-template-columns: 1fr; }
+      .module-card, .module-card:nth-child(4), .module-card:last-child { grid-column: 1; min-height: 235px; }
     }
   </style>
 </head>
@@ -117,202 +151,52 @@
         <div class="brand-mark" aria-hidden="true">SEMED</div>
         <div><strong>SEMED Integrado</strong><span>Secretaria Municipal de Educação de Uberaba</span></div>
       </div>
-      <div id="userArea" class="user-area" hidden>
-        <div class="user-copy"><strong id="userName">Usuário</strong><span id="userProfile">Perfil institucional</span></div>
-        <button id="logoutButton" class="button secondary" type="button">Sair</button>
-      </div>
+      <div class="status">Portal de sistemas</div>
     </header>
 
     <main>
-      <section id="loginView" class="login-grid" aria-labelledby="loginTitle">
-        <div class="welcome">
-          <p class="eyebrow">Plataforma corporativa</p>
-          <h1>Uma entrada para todos os sistemas da SEMED.</h1>
-          <p>Autenticação centralizada, acesso por perfil e módulos disponíveis conforme as permissões institucionais.</p>
+      <section class="hero" aria-labelledby="pageTitle">
+        <div>
+          <p class="eyebrow">Ambiente integrado</p>
+          <h1 id="pageTitle">Qual sistema você deseja utilizar?</h1>
+          <p class="hero-copy">Acesse os serviços digitais da SEMED em um único lugar. Escolha abaixo o módulo adequado à sua atividade.</p>
         </div>
-        <form id="loginForm" class="login-card">
-          <h2 id="loginTitle">Entrar no portal</h2>
-          <p>Use seu e-mail institucional e sua senha.</p>
-          <div id="loginMessage" role="alert" hidden></div>
-          <label for="email">E-mail
-            <input id="email" name="email" type="email" autocomplete="username" value="detic@uberabadigital.com.br" required>
-          </label>
-          <label for="password">Senha
-            <input id="password" name="password" type="password" autocomplete="current-password" value="25@detic2025" required>
-          </label>
-          <button id="loginButton" class="button block" type="submit">Entrar</button>
-        </form>
+        <aside class="hero-note">
+          <strong>Acesso rápido e organizado</strong>
+          <span>Cada sistema preserva seus recursos, dados e controles de acesso próprios.</span>
+        </aside>
       </section>
 
-      <section id="portalView" hidden aria-labelledby="portalTitle">
-        <div class="portal-head">
-          <div><p class="eyebrow">Portal de módulos</p><h1 id="portalTitle">Sistemas disponíveis</h1><p>Selecione o sistema que deseja acessar.</p></div>
-        </div>
-        <div id="portalMessage" role="status" hidden></div>
-        <div id="moduleGrid" class="module-grid"></div>
+      <section class="module-grid" aria-label="Sistemas disponíveis">
+        <a class="module-card avaliacoes" href="./modules/avaliacoes/">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5h9M9 10h9M9 15h6"/><path d="m4 5 1 1 2-2M4 10l1 1 2-2M4 15l1 1 2-2"/><rect x="2" y="2" width="20" height="20" rx="4"/></svg></div>
+          <h2>Avaliações</h2><p>Avaliações diagnósticas, indicadores, análises pedagógicas e relatórios.</p>
+          <span class="access">Acessar sistema <span class="arrow">→</span></span>
+        </a>
+        <a class="module-card inscricoes" href="./modules/inscricoes/">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg></div>
+          <h2>Inscrições</h2><p>Inscrições em atividades, gestão de oficinas, turmas, frequência e relatórios.</p>
+          <span class="access">Acessar sistema <span class="arrow">→</span></span>
+        </a>
+        <a class="module-card votacao" href="./modules/votacao/">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 11 2 2 4-5"/><path d="M5 3h14v7H5zM4 14h16l2 7H2z"/><path d="M7 18h10"/></svg></div>
+          <h2>Votação</h2><p>Gestão de chapas, sessões eleitorais, mesários, urna e resultados escolares.</p>
+          <span class="access">Acessar sistema <span class="arrow">→</span></span>
+        </a>
+        <a class="module-card os-semed" href="./modules/os-semed/">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18v3h3l6.7-6.7a4 4 0 0 0 5-5l-3 3-3-3z"/><path d="m15 19 2 2 4-4-2-2"/></svg></div>
+          <h2>OS SEMED</h2><p>Abertura e acompanhamento de ordens de serviço, logística e atendimentos.</p>
+          <span class="access">Acessar sistema <span class="arrow">→</span></span>
+        </a>
+        <a class="module-card monitor" href="./modules/monitor/">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16v-3M12 16V8M17 16v-6"/></svg></div>
+          <h2>Monitor</h2><p>Monitoramento físico, financeiro e operacional dos objetos estratégicos.</p>
+          <span class="access">Acessar sistema <span class="arrow">→</span></span>
+        </a>
       </section>
     </main>
 
     <footer>SEMED Integrado · Departamento de Educação Tecnológica</footer>
   </div>
-
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-    import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
-
-    const configured = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
-      && !SUPABASE_URL.includes("SEU-PROJETO")
-      && !SUPABASE_PUBLISHABLE_KEY.includes("SUA-CHAVE");
-    const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    }) : null;
-
-    const el = (id) => document.getElementById(id);
-    const loginView = el("loginView");
-    const portalView = el("portalView");
-    const loginForm = el("loginForm");
-    const loginButton = el("loginButton");
-    const userArea = el("userArea");
-    const moduleGrid = el("moduleGrid");
-
-    function message(target, text = "", kind = "info") {
-      target.hidden = !text;
-      target.className = text ? `message ${kind}` : "";
-      target.textContent = text;
-    }
-
-    function authErrorMessage(error) {
-      const code = String(error?.code || "").toLowerCase();
-      const detail = String(error?.message || "").toLowerCase();
-      if (code === "invalid_credentials" || detail.includes("invalid login credentials")) {
-        return "O Supabase deste portal não reconheceu esse e-mail e senha. Confirme se o usuário foi criado no mesmo projeto configurado no portal.";
-      }
-      if (code === "email_not_confirmed" || detail.includes("email not confirmed")) {
-        return "O usuário existe, mas o e-mail ainda não foi confirmado no Supabase Auth.";
-      }
-      if (detail.includes("email logins are disabled") || detail.includes("provider is disabled")) {
-        return "O login por e-mail e senha está desativado nas configurações do Supabase Auth.";
-      }
-      if (detail.includes("failed to fetch") || detail.includes("network")) {
-        return "Não foi possível alcançar o Supabase. Verifique a conexão, a URL configurada e o estado do projeto.";
-      }
-      if (code === "over_request_rate_limit" || detail.includes("rate limit")) {
-        return "Houve muitas tentativas de acesso. Aguarde alguns minutos e tente novamente.";
-      }
-      return `O Supabase recusou o acesso (${error?.code || "erro de autenticação"}).`;
-    }
-
-    function showLogin() {
-      loginView.hidden = false;
-      portalView.hidden = true;
-      userArea.hidden = true;
-      moduleGrid.replaceChildren();
-    }
-
-    function moduleIcon(code) {
-      return ({ avaliacoes: "✓", inscricoes: "✎", votacao: "▣", os_semed: "⚙", monitor: "◫" })[code] || "◆";
-    }
-
-    function safeRoute(route) {
-      try {
-        const url = new URL(route, window.location.href);
-        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
-      } catch {
-        return "";
-      }
-    }
-
-    function renderModules(modules) {
-      moduleGrid.replaceChildren();
-      if (!modules.length) {
-        const empty = document.createElement("div");
-        empty.className = "empty";
-        empty.textContent = "Seu perfil ainda não possui módulos liberados. Procure o administrador da plataforma.";
-        moduleGrid.append(empty);
-        return;
-      }
-      modules.forEach((item) => {
-        const route = safeRoute(item.rota);
-        if (!route) return;
-        const card = document.createElement("article");
-        card.className = "module-card";
-        const icon = document.createElement("div");
-        icon.className = "module-icon";
-        icon.setAttribute("aria-hidden", "true");
-        icon.textContent = item.icone || moduleIcon(item.codigo);
-        const title = document.createElement("h2");
-        title.textContent = item.nome;
-        const description = document.createElement("p");
-        description.textContent = item.descricao || "Acesse o módulo autorizado para o seu perfil.";
-        const link = document.createElement("a");
-        link.href = route;
-        link.textContent = "Acessar";
-        card.append(icon, title, description, link);
-        moduleGrid.append(card);
-      });
-    }
-
-    async function openPortal(user) {
-      loginView.hidden = true;
-      portalView.hidden = false;
-      userArea.hidden = false;
-      el("userName").textContent = user.user_metadata?.nome || user.user_metadata?.full_name || user.email;
-      el("userProfile").textContent = "Acesso autenticado";
-      message(el("portalMessage"), "Carregando suas permissões…");
-
-      // A função deve usar auth.uid() e retornar somente módulos com permissão `view`.
-      const { data, error } = await supabase.rpc("get_my_modules");
-      if (error) {
-        renderModules([]);
-        message(el("portalMessage"), "Autenticação concluída, mas a função segura get_my_modules ainda não está disponível ou não permitiu a consulta.", "error");
-        return;
-      }
-      const modules = (Array.isArray(data) ? data : [])
-        .filter((item) => item?.codigo && item?.nome && item?.rota)
-        .sort((a, b) => Number(a.ordem || 0) - Number(b.ordem || 0));
-      message(el("portalMessage"));
-      renderModules(modules);
-    }
-
-    loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (!supabase) {
-        message(el("loginMessage"), "Configure a URL e a chave pública do Supabase em supabase-config.js antes de publicar.", "error");
-        return;
-      }
-      loginButton.disabled = true;
-      loginButton.textContent = "Entrando…";
-      message(el("loginMessage"));
-      const form = new FormData(loginForm);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: String(form.get("email") || "").trim().toLowerCase(),
-        password: String(form.get("password") || "")
-      });
-      loginButton.disabled = false;
-      loginButton.textContent = "Entrar";
-      if (error) {
-        console.error("Falha de autenticação Supabase", { code: error.code, status: error.status, message: error.message });
-        message(el("loginMessage"), authErrorMessage(error), "error");
-        return;
-      }
-      loginForm.reset();
-      await openPortal(data.user);
-    });
-
-    el("logoutButton").addEventListener("click", async () => {
-      if (supabase) await supabase.auth.signOut();
-      showLogin();
-    });
-
-    if (!configured) {
-      message(el("loginMessage"), "Portal pronto para publicação. Falta informar a configuração pública do projeto Supabase central.");
-    } else {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) await openPortal(session.user);
-      supabase.auth.onAuthStateChange((event, sessionState) => {
-        if (event === "SIGNED_OUT" || !sessionState) showLogin();
-      });
-    }
-  </script>
 </body>
 </html>
