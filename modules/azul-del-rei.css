@@ -1,0 +1,69 @@
+/* Identidade visual compartilhada — SEMED Integrado / Azul Del Rei */
+:root {
+  --semed-royal: #003399;
+  --semed-royal-dark: #001f66;
+  --semed-royal-light: #1455d9;
+  --semed-royal-pale: #e8f0ff;
+  --semed-ink: #0b1f4d;
+  --semed-muted: #52648c;
+  --semed-line: #c9d7f2;
+
+  --brand: var(--semed-royal) !important;
+  --brand-2: var(--semed-royal-light) !important;
+  --brand-strong: var(--semed-royal-dark) !important;
+  --accent: var(--semed-royal-light) !important;
+  --accent-soft: #4777df !important;
+  --primary: var(--semed-royal) !important;
+  --primary-dark: var(--semed-royal-dark) !important;
+  --navy: var(--semed-royal-dark) !important;
+  --blue: var(--semed-royal-light) !important;
+  --info: var(--semed-royal-light) !important;
+  --bg: #f4f7ff !important;
+  --bg-soft: #edf3ff !important;
+  --panel-soft: #edf3ff !important;
+  --panel-strong: #dfeaff !important;
+  --brand-soft: var(--semed-royal-pale) !important;
+  --sky: var(--semed-royal-pale) !important;
+  --ink: var(--semed-ink) !important;
+  --text: var(--semed-ink) !important;
+  --muted: var(--semed-muted) !important;
+  --line: var(--semed-line) !important;
+  --shadow: 0 14px 38px rgba(0, 51, 153, .13) !important;
+}
+
+body {
+  background-color: #f4f7ff;
+}
+
+.sidebar,
+.side,
+.login-hero {
+  background: linear-gradient(160deg, var(--semed-royal-dark), var(--semed-royal), var(--semed-royal-light)) !important;
+}
+
+.primary,
+.btn:not(.secondary),
+button.primary {
+  background: linear-gradient(135deg, var(--semed-royal), var(--semed-royal-light)) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--semed-royal-light) !important;
+  box-shadow: 0 0 0 3px rgba(20, 85, 217, .18) !important;
+}
+
+th,
+.notice,
+.pill.blue,
+.btn.secondary {
+  background-color: var(--semed-royal-pale) !important;
+  color: var(--semed-royal-dark) !important;
+}
+
+a,
+.link,
+.eyebrow {
+  color: var(--semed-royal-light);
+}
