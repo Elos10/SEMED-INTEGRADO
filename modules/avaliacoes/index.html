@@ -1,3 +1,25 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Avaliações · SEMED Integrado</title><link rel="stylesheet" href="../module.css"></head>
-<body><main class="card"><div class="mark">✓</div><p class="eyebrow">SEMED Integrado</p><h1>Avaliações</h1><p>Avaliações diagnósticas, análises e relatórios pedagógicos.</p><div class="notice"><p>A entrada do módulo está disponível. A aplicação legada será incorporada nesta rota preservando suas regras de negócio.</p></div><div class="actions"><a class="button" href="../../">Voltar ao portal</a><a class="button secondary" href="../../docs/ARQUITETURA_ATUAL.md">Ver diagnóstico</a></div></main></body></html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AVD Diagnóstico Escolar</title>
+    <link rel="stylesheet" href="./public/styles.css?v=20260812-comparativo-sem-grafico">
+  </head>
+  <body>
+    <main id="app">
+      <section style="font-family: Arial, sans-serif; padding: 24px; color: #0b2f78;">
+        Carregando AVD Diagnóstico Escolar...
+      </section>
+    </main>
+    <script type="module" src="./supabase-init.js?v=20260812-comparativo-sem-grafico"></script>
+    <script type="module" src="./public/app.js?v=20260812-comparativo-sem-grafico"></script>
+    <script>
+      window.addEventListener("error", function (event) {
+        var app = document.getElementById("app");
+        if (!app || app.dataset.loaded === "true") return;
+        app.innerHTML = '<section style="font-family: Arial, sans-serif; padding: 24px; color: #991b1b;"><h1>Falha ao carregar o sistema</h1><p>Confira se os arquivos foram publicados na raiz do GitHub Pages e se o arquivo public/app.js existe.</p><pre style="white-space: pre-wrap;">' + String(event.message || "Erro desconhecido") + '</pre></section>';
+      });
+    </script>
+  </body>
+</html>
