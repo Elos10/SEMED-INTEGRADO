@@ -3,203 +3,194 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#003399">
+  <meta name="theme-color" content="#f1f5ff">
   <meta name="description" content="Portal integrado de sistemas da Secretaria Municipal de Educação de Uberaba">
   <title>SEMED Integrado</title>
   <style>
     :root {
       color-scheme: light;
-      --royal: #003399;
-      --royal-deep: #001f66;
-      --royal-bright: #1455d9;
-      --royal-pale: #e8f0ff;
-      --ink: #0b1f4d;
-      --muted: #58698d;
-      --line: #cfdbf3;
-      --surface: rgba(255, 255, 255, .94);
-      --shadow: 0 22px 60px rgba(0, 38, 115, .13);
+      --blue: #003399;
+      --blue-dark: #001f66;
+      --blue-bright: #1455d9;
+      --blue-soft: #e7efff;
+      --ink: #0a2868;
+      --muted: #5a6d99;
+      --line: #d4def3;
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: clamp(20px, 5vw, 64px);
       color: var(--ink);
-      background:
-        radial-gradient(circle at 10% 10%, rgba(20, 85, 217, .13), transparent 30%),
-        radial-gradient(circle at 92% 18%, rgba(0, 51, 153, .11), transparent 29%),
-        linear-gradient(145deg, #f9fbff 0%, #edf3ff 58%, #e4edff 100%);
+      background: linear-gradient(145deg, #f8faff, #eaf1ff);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    a { color: inherit; }
-    .page { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
-    .topbar {
-      min-height: 78px;
+    .portal-card {
+      position: relative;
+      width: min(1080px, 100%);
+      min-height: min(720px, calc(100vh - 80px));
+      overflow: hidden;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      padding: 14px clamp(20px, 5vw, 76px);
-      color: #fff;
-      background: linear-gradient(110deg, var(--royal-deep), var(--royal) 60%, var(--royal-bright));
-      box-shadow: 0 8px 26px rgba(0, 31, 102, .2);
+      flex-direction: column;
+      padding: clamp(30px, 5vw, 64px);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(0, 45, 135, .12);
     }
-    .brand { display: flex; align-items: center; gap: 14px; }
-    .brand-mark {
+
+    .portal-card::after {
+      content: "";
+      position: absolute;
+      right: -115px;
+      bottom: -150px;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: #eef3ff;
+    }
+
+    .portal-icon {
+      position: absolute;
+      top: clamp(28px, 5vw, 56px);
+      right: clamp(28px, 5vw, 56px);
+      width: 72px;
+      height: 72px;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+    .portal-icon svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .heading { max-width: 700px; padding-right: 110px; }
+    .eyebrow { margin: 0 0 10px; color: var(--blue-bright); font-size: 12px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0; color: var(--blue-dark); font-size: clamp(32px, 5vw, 54px); line-height: 1.05; letter-spacing: -.035em; }
+    .description { max-width: 660px; margin: 16px 0 0; color: var(--muted); font-size: 16px; line-height: 1.6; }
+
+    .systems {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: center;
+      gap: 16px;
+      margin-top: 42px;
+    }
+
+    .system-button {
+      min-height: 86px;
+      display: grid;
+      grid-template-columns: 50px minmax(0, 1fr) 38px;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 16px;
+      border: 1px solid #dce5f7;
+      border-radius: 16px;
+      color: var(--ink);
+      background: #f9fbff;
+      text-decoration: none;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .system-button:last-child { grid-column: 1 / -1; }
+    .system-button:hover, .system-button:focus-visible {
+      transform: translateY(-3px);
+      border-color: #9db7ed;
+      background: #fff;
+      box-shadow: 0 14px 30px rgba(0, 51, 153, .11);
+      outline: none;
+    }
+
+    .system-icon {
       width: 50px;
       height: 50px;
       display: grid;
       place-items: center;
-      flex: 0 0 auto;
-      border: 1px solid rgba(255, 255, 255, .38);
-      border-radius: 15px;
-      background: rgba(255, 255, 255, .13);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .04em;
+      border-radius: 14px;
+      color: var(--blue);
+      background: var(--blue-soft);
     }
-    .brand strong, .brand span { display: block; }
-    .brand strong { font-size: 16px; letter-spacing: .035em; }
-    .brand span { margin-top: 3px; color: #dce8ff; font-size: 12px; }
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 999px;
-      background: rgba(255,255,255,.1);
-      color: #edf3ff;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #65e6a6; box-shadow: 0 0 0 4px rgba(101,230,166,.15); }
+    .system-icon svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .system-copy { min-width: 0; }
+    .system-copy strong { display: block; color: var(--blue-dark); font-size: 16px; }
+    .system-copy span { display: block; overflow: hidden; margin-top: 4px; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .arrow { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: var(--blue); background: var(--blue-soft); font-weight: 900; transition: transform .18s ease; }
+    .system-button:hover .arrow { transform: translateX(3px); color: #fff; background: var(--blue); }
 
-    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: clamp(38px, 6vw, 70px) 0 58px; }
-    .hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); align-items: end; gap: 36px; margin-bottom: 38px; }
-    .eyebrow { margin: 0 0 13px; color: var(--royal-bright); font-size: 12px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
-    h1 { max-width: 760px; margin: 0; color: var(--royal-deep); font-size: clamp(36px, 5.2vw, 64px); line-height: 1.03; letter-spacing: -.045em; }
-    .hero-copy { max-width: 700px; margin: 20px 0 0; color: var(--muted); font-size: clamp(16px, 2vw, 19px); line-height: 1.65; }
-    .hero-note { padding: 20px; border: 1px solid rgba(20,85,217,.16); border-radius: 18px; background: rgba(255,255,255,.58); backdrop-filter: blur(12px); }
-    .hero-note strong { display: block; margin-bottom: 5px; color: var(--royal); }
-    .hero-note span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .footer { position: relative; z-index: 1; margin-top: 30px; color: #7180a3; font-size: 12px; }
 
-    .module-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-    .module-card {
-      position: relative;
-      min-height: 270px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      padding: 24px;
-      border: 1px solid #d4def3;
-      border-radius: 22px;
-      background: #fff;
-      box-shadow: 0 14px 38px rgba(0, 38, 115, .08);
-      text-decoration: none;
-      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    @media (max-width: 720px) {
+      body { place-items: start center; padding: 14px; }
+      .portal-card { min-height: calc(100vh - 28px); padding: 26px 20px; border-radius: 22px; }
+      .portal-icon { top: 22px; right: 20px; width: 56px; height: 56px; border-radius: 16px; }
+      .portal-icon svg { width: 29px; height: 29px; }
+      .heading { padding-right: 70px; }
+      .description { font-size: 14px; }
+      .systems { grid-template-columns: 1fr; align-content: start; margin-top: 34px; }
+      .system-button:last-child { grid-column: 1; }
+      .system-copy span { white-space: normal; }
     }
-    .module-card:nth-child(4) { grid-column: auto; }
-    .module-card:hover, .module-card:focus-visible { transform: translateY(-6px); border-color: rgba(20,85,217,.55); box-shadow: var(--shadow); outline: none; }
-    .module-card::after { content: ""; position: absolute; width: 150px; height: 150px; right: -62px; bottom: -72px; border-radius: 50%; background: var(--card-soft); opacity: .8; }
-    .icon {
-      width: 58px;
-      height: 58px;
-      display: grid;
-      place-items: center;
-      border-radius: 17px;
-      color: var(--card-color);
-      background: var(--card-soft);
-      position: absolute;
-      top: 24px;
-      right: 24px;
-    }
-    .icon svg { width: 29px; height: 29px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-    .module-card h2 { margin: 4px 82px 8px 0; color: var(--royal-deep); font-size: 21px; letter-spacing: -.015em; }
-    .module-card p { flex: 1; max-width: 255px; margin: 0 0 28px; color: var(--muted); font-size: 14px; line-height: 1.55; }
-    .access { position: relative; z-index: 1; width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: space-between; padding-left: 14px; border: 1px solid var(--card-soft); border-radius: 12px; background: #f8faff; color: var(--card-color); font-size: 13px; font-weight: 900; transition: background .2s ease, color .2s ease; }
-    .arrow { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--card-soft); transition: transform .2s ease; }
-    .module-card:hover .access { color: #fff; background: var(--card-color); }
-    .module-card:hover .arrow { transform: translateX(4px); background: rgba(255,255,255,.18); }
-    .avaliacoes { --card-color: #003399; --card-soft: #e4ecff; }
-    .inscricoes { --card-color: #1455d9; --card-soft: #e7efff; }
-    .votacao { --card-color: #4138a5; --card-soft: #eeecff; }
-    .os-semed { --card-color: #0062a8; --card-soft: #e2f3ff; }
-    .monitor { --card-color: #0054b8; --card-soft: #e2edff; }
 
-    footer { padding: 20px 24px 28px; color: #66779b; text-align: center; font-size: 12px; }
-
-    @media (max-width: 920px) {
-      .hero { grid-template-columns: 1fr; align-items: start; }
-      .hero-note { max-width: 560px; }
-      .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .module-card, .module-card:nth-child(4) { grid-column: auto; }
-      .module-card:last-child { grid-column: auto; }
-    }
-    @media (max-width: 620px) {
-      .topbar { align-items: flex-start; }
-      .status { display: none; }
-      main { padding-top: 40px; }
-      .module-grid { grid-template-columns: 1fr; }
-      .module-card, .module-card:nth-child(4), .module-card:last-child { grid-column: 1; min-height: 250px; }
+    @media (max-width: 430px) {
+      .eyebrow { max-width: 200px; }
+      .system-button { grid-template-columns: 44px minmax(0, 1fr) 32px; gap: 11px; padding: 13px 12px; }
+      .system-icon { width: 44px; height: 44px; }
+      .arrow { width: 32px; height: 32px; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">SEMED</div>
-        <div><strong>SEMED Integrado</strong><span>Secretaria Municipal de Educação de Uberaba</span></div>
-      </div>
-      <div class="status">Portal de sistemas</div>
+  <main class="portal-card">
+    <div class="portal-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 8h8M8 12h8M8 16h5"/><path d="m5.5 8 .7.7 1.3-1.5m-2 5 .7.7 1.3-1.5m-2 5 .7.7 1.3-1.5"/></svg>
+    </div>
+
+    <header class="heading">
+      <p class="eyebrow">Secretaria Municipal de Educação de Uberaba</p>
+      <h1>SEMED Integrado</h1>
+      <p class="description">Escolha o aplicativo que deseja utilizar.</p>
     </header>
 
-    <main>
-      <section class="hero" aria-labelledby="pageTitle">
-        <div>
-          <p class="eyebrow">Ambiente integrado</p>
-          <h1 id="pageTitle">Qual sistema você deseja utilizar?</h1>
-          <p class="hero-copy">Acesse os serviços digitais da SEMED em um único lugar. Escolha abaixo o módulo adequado à sua atividade.</p>
-        </div>
-        <aside class="hero-note">
-          <strong>Acesso rápido e organizado</strong>
-          <span>Cada sistema preserva seus recursos, dados e controles de acesso próprios.</span>
-        </aside>
-      </section>
+    <section class="systems" aria-label="Aplicativos disponíveis">
+      <a class="system-button" href="./modules/avaliacoes/">
+        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5h9M9 10h9M9 15h6"/><path d="m4 5 1 1 2-2M4 10l1 1 2-2M4 15l1 1 2-2"/><rect x="2" y="2" width="20" height="20" rx="4"/></svg></span>
+        <span class="system-copy"><strong>Avaliações</strong><span>Diagnósticos, indicadores e relatórios pedagógicos</span></span>
+        <span class="arrow">→</span>
+      </a>
 
-      <section class="module-grid" aria-label="Sistemas disponíveis">
-        <a class="module-card avaliacoes" href="./modules/avaliacoes/">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5h9M9 10h9M9 15h6"/><path d="m4 5 1 1 2-2M4 10l1 1 2-2M4 15l1 1 2-2"/><rect x="2" y="2" width="20" height="20" rx="4"/></svg></div>
-          <h2>Avaliações</h2><p>Avaliações diagnósticas, indicadores, análises pedagógicas e relatórios.</p>
-          <span class="access">Acessar sistema <span class="arrow">→</span></span>
-        </a>
-        <a class="module-card inscricoes" href="./modules/inscricoes/">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg></div>
-          <h2>Inscrições</h2><p>Inscrições em atividades, gestão de oficinas, turmas, frequência e relatórios.</p>
-          <span class="access">Acessar sistema <span class="arrow">→</span></span>
-        </a>
-        <a class="module-card votacao" href="./modules/votacao/">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 11 2 2 4-5"/><path d="M5 3h14v7H5zM4 14h16l2 7H2z"/><path d="M7 18h10"/></svg></div>
-          <h2>Votação</h2><p>Gestão de chapas, sessões eleitorais, mesários, urna e resultados escolares.</p>
-          <span class="access">Acessar sistema <span class="arrow">→</span></span>
-        </a>
-        <a class="module-card os-semed" href="./modules/os-semed/">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18v3h3l6.7-6.7a4 4 0 0 0 5-5l-3 3-3-3z"/><path d="m15 19 2 2 4-4-2-2"/></svg></div>
-          <h2>OS SEMED</h2><p>Abertura e acompanhamento de ordens de serviço, logística e atendimentos.</p>
-          <span class="access">Acessar sistema <span class="arrow">→</span></span>
-        </a>
-        <a class="module-card monitor" href="./modules/monitor/">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16v-3M12 16V8M17 16v-6"/></svg></div>
-          <h2>Monitor</h2><p>Monitoramento físico, financeiro e operacional dos objetos estratégicos.</p>
-          <span class="access">Acessar sistema <span class="arrow">→</span></span>
-        </a>
-      </section>
-    </main>
+      <a class="system-button" href="./modules/inscricoes/">
+        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg></span>
+        <span class="system-copy"><strong>Inscrições</strong><span>Atividades, oficinas, turmas e frequência</span></span>
+        <span class="arrow">→</span>
+      </a>
 
-    <footer>SEMED Integrado · Departamento de Educação Tecnológica</footer>
-  </div>
+      <a class="system-button" href="./modules/votacao/">
+        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 11 2 2 4-5"/><path d="M5 3h14v7H5zM4 14h16l2 7H2z"/><path d="M7 18h10"/></svg></span>
+        <span class="system-copy"><strong>Votação</strong><span>Gestão eleitoral, urna e resultados escolares</span></span>
+        <span class="arrow">→</span>
+      </a>
+
+      <a class="system-button" href="./modules/os-semed/">
+        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18v3h3l6.7-6.7a4 4 0 0 0 5-5l-3 3-3-3z"/><path d="m15 19 2 2 4-4-2-2"/></svg></span>
+        <span class="system-copy"><strong>OS SEMED</strong><span>Ordens de serviço, logística e atendimentos</span></span>
+        <span class="arrow">→</span>
+      </a>
+
+      <a class="system-button" href="./modules/monitor/">
+        <span class="system-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16v-3M12 16V8M17 16v-6"/></svg></span>
+        <span class="system-copy"><strong>Monitor</strong><span>Monitoramento físico, financeiro e operacional</span></span>
+        <span class="arrow">→</span>
+      </a>
+    </section>
+
+    <footer class="footer">Ambiente institucional · SEMED Uberaba</footer>
+  </main>
 </body>
 </html>
