@@ -32,7 +32,7 @@ window.supabaseReady = (async () => {
   const withUid = (user) => user ? { ...user, uid: user.id } : null;
   const auth = { currentUser: null, authStateReady: async () => { const { data } = await client.auth.getUser(); auth.currentUser = withUid(data.user); } };
   const authSdk = {
-    signInWithEmailAndPassword: async (_auth, email, password) => { const { data, error } = await client.auth.signInWithPassword({ email, password }); if (error) throw error; auth.currentUser = withUid(data.user); return { user: auth.currentUser }; },
+    signInWithEmailAndPassword: async (_auth, email, password) => { const { data, error } = await client.auth.signInWithPassword({ email, password }); if (error) { if (error.code === 'invalid_credentials') error.code = 'invalid-credential'; throw error; } auth.currentUser = withUid(data.user); return { user: auth.currentUser }; },
     signOut: async () => { await client.auth.signOut(); auth.currentUser = null; },
   };
   const functionsSdk = { httpsCallable: (_functions, name) => async (payload) => { const functionName = name === 'manageUser' ? 'manage-semed-user' : name; const { data, error } = await client.functions.invoke(functionName, { body: payload }); if (error) throw error; if (data?.error) throw new Error(data.error); return { data }; } };
