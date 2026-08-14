@@ -1673,7 +1673,7 @@ function renderAppFrame(content) {
 
 function renderLoginScreen() {
   return `
-    <main class="login-page semed-entry">
+    <main class="login-page semed-entry urna-entry">
       <header class="login-topbar entry-top">
         <div class="entry-brand"><img src="${MUNICIPAL_LOGO_SRC}" alt="Uberaba"><i></i></div>
         <div>
@@ -1690,15 +1690,15 @@ function renderLoginScreen() {
           <form id="login-form" class="field-grid">
             <div class="field">
               <label for="email">Usuário</label>
-              <input id="email" name="email" type="email" autocomplete="username" placeholder="mesario@exemplo.com" value="${escapeHtml(
+              <input id="email" name="email" type="email" autocomplete="username" placeholder="Digite seu usuário" value="${escapeHtml(
                 uiState.loginEmail,
               )}" required>
             </div>
             <div class="field">
               <label for="password">Senha</label>
-              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite a senha" required>
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
             </div>
-            <a class="entry-forgot" href="#">Esqueceu sua senha?</a><button class="btn btn-primary" type="submit">Entrar</button><span class="entry-or">ou</span><a class="entry-gov" href="#">▦ &nbsp;Entrar com <strong>gov.br</strong></a>
+            <a class="entry-forgot" href="#">Esqueceu sua senha?</a><button class="btn btn-primary" type="submit">Entrar</button>
           </form>
         </aside>
       </section><footer class="entry-footer"><div class="entry-foot-item"><span class="entry-foot-icon">♢</span><div><strong>Sistema seguro</strong>Seus dados protegidos com segurança e privacidade.</div></div><div class="entry-foot-item"><span class="entry-foot-icon">♧</span><div><strong>Suporte</strong>Em caso de dúvidas, entre em contato com a nossa equipe.</div></div></footer>
