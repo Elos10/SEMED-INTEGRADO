@@ -1,0 +1,93 @@
+{
+  "users": [
+    {
+      "id": "Zo9JrVu83rXfGOItprlyDZUFJGI3",
+      "role": "administrador",
+      "updatedAt": "2026-08-05T16:19:35.426Z",
+      "fullName": "ADMINISTRADOR DETIC",
+      "active": true,
+      "updatedBy": "github-actions-bootstrap",
+      "email": "detic@uberabadigital.com.br"
+    }
+  ],
+  "objects": [
+    {
+      "id": "PaYWbCQw69AtJDUmhlHZ",
+      "updatedAt": "2026-08-14T13:48:11.482Z",
+      "progress": 0,
+      "description": "PARCERIA COM IFTM. NO VALOR DE 3 MILHÕES. O RECURSO VEM DIRETO PARA O IFTM E A EXECUÇÃO DO SERVIÇO SERÁ POR ELES TAMBÉM SEM NENHUM VALOR DE CONTRAPARTIDA DO MUNICÍPIO. NÃO HAVERÁ PLANILHA DE CUSTOS. ",
+      "primaryArea": "Diretoria de Ensino",
+      "duration": 197,
+      "area": "Diretoria de Ensino",
+      "active": true,
+      "ownerName": "GUSTAVO VAZ SILVA",
+      "code": "OBJ-2026-001",
+      "interventionType": "Modernização",
+      "secondaryArea": "DETIC",
+      "plannedStart": "2026-06-01",
+      "status": "À iniciar",
+      "observation": "PARCERIA COM IFTM. NO VALOR DE 3 MILHÕES. O RECURSO VEM DIRETO PARA O IFTM E A EXECUÇÃO DO SERVIÇO SERÁ POR ELES TAMBÉM SEM NENHUM VALOR DE CONTRAPARTIDA DO MUNICÍPIO. NÃO HAVERÁ PLANILHA DE CUSTOS. ",
+      "priority": "Média",
+      "spent": 0,
+      "createdAt": "2026-08-14T13:48:11.482Z",
+      "product": " PGP SIMPLIFICADO 2026 EDUCAÇÃO FINAL  100% D8  PROJETO DE MODERNIZAÇÃO DO PARQUE TECNOLÓGICO DAS UNIDADES DE ENSINO E IMPLANTAR CURSOS DE ROBÓTICA E DE INTELIGÊNCIA ARTIFICIAL. PARCERIA JUNTO AO IFTM. DIAGNÓSTICO DAS SALAS DISPONÍVEIS NAS UNIDADES DE ENSINO. ESCOLHA DOS MATERIAIS A SEREM ADQUIRIDOS POR CADA UNIDADE. SELEÇÃO PELO IFTM DOS PROFESSORES PONTO FOCAL PARA EXECUÇÃO DO PROJETO. AQUISIÇÃO, FUNCIONAMENTO E ENTREGA DOS LABORATÓRIOS.      \t   ATIVAR A COMPATIBILIDADE COM O LEITOR DE TELA  PARA ATIVAR O SUPORTE PARA LEITOR DE TELA, PRESSIONE CTRL+ALT+Z PARA SABER MAIS SOBRE ATALHOS DE TECLADO, PRESSIONE CTRL+BARRABANNER OCULTO.",
+      "budget": 3000000,
+      "plannedEnd": "2026-12-15",
+      "createdBy": "Zo9JrVu83rXfGOItprlyDZUFJGI3",
+      "objectType": "Programa",
+      "title": "PROGRAMA MAIS CIÊNCIAS - LABORATÓRIOS MAKERS"
+    }
+  ],
+  "events": [
+    {
+      "id": "ChqganichRgCASjLF1dS",
+      "eventType": "Criação",
+      "createdBy": "Zo9JrVu83rXfGOItprlyDZUFJGI3",
+      "createdByName": "ADMINISTRADOR DETIC",
+      "eventAt": "2026-08-14T13:48:11.482Z",
+      "description": "Objeto cadastrado no sistema",
+      "objectId": "PaYWbCQw69AtJDUmhlHZ",
+      "objectCode": "OBJ-2026-001"
+    }
+  ],
+  "activities": [],
+  "costs": [],
+  "documents": [],
+  "audit": [
+    {
+      "id": "6y91uK11zlMQuXnNKGIO",
+      "createdAt": "2026-08-14T13:48:11.482Z",
+      "recordId": "PaYWbCQw69AtJDUmhlHZ",
+      "newData": {
+        "budget": 3000000,
+        "spent": 0,
+        "interventionType": "Modernização",
+        "secondaryArea": "DETIC",
+        "createdAt": "2026-08-14T13:48:11.482Z",
+        "plannedStart": "2026-06-01",
+        "product": " PGP SIMPLIFICADO 2026 EDUCAÇÃO FINAL  100% D8  PROJETO DE MODERNIZAÇÃO DO PARQUE TECNOLÓGICO DAS UNIDADES DE ENSINO E IMPLANTAR CURSOS DE ROBÓTICA E DE INTELIGÊNCIA ARTIFICIAL. PARCERIA JUNTO AO IFTM. DIAGNÓSTICO DAS SALAS DISPONÍVEIS NAS UNIDADES DE ENSINO. ESCOLHA DOS MATERIAIS A SEREM ADQUIRIDOS POR CADA UNIDADE. SELEÇÃO PELO IFTM DOS PROFESSORES PONTO FOCAL PARA EXECUÇÃO DO PROJETO. AQUISIÇÃO, FUNCIONAMENTO E ENTREGA DOS LABORATÓRIOS.      \t   ATIVAR A COMPATIBILIDADE COM O LEITOR DE TELA  PARA ATIVAR O SUPORTE PARA LEITOR DE TELA, PRESSIONE CTRL+ALT+Z PARA SABER MAIS SOBRE ATALHOS DE TECLADO, PRESSIONE CTRL+BARRABANNER OCULTO.",
+        "priority": "Média",
+        "createdBy": "Zo9JrVu83rXfGOItprlyDZUFJGI3",
+        "status": "À iniciar",
+        "active": true,
+        "progress": 0,
+        "objectType": "Programa",
+        "code": "OBJ-2026-001",
+        "plannedEnd": "2026-12-15",
+        "updatedAt": "2026-08-14T13:48:11.482Z",
+        "area": "Diretoria de Ensino",
+        "ownerName": "GUSTAVO VAZ SILVA",
+        "primaryArea": "Diretoria de Ensino",
+        "title": "PROGRAMA MAIS CIÊNCIAS - LABORATÓRIOS MAKERS",
+        "description": "PARCERIA COM IFTM. NO VALOR DE 3 MILHÕES. O RECURSO VEM DIRETO PARA O IFTM E A EXECUÇÃO DO SERVIÇO SERÁ POR ELES TAMBÉM SEM NENHUM VALOR DE CONTRAPARTIDA DO MUNICÍPIO. NÃO HAVERÁ PLANILHA DE CUSTOS. ",
+        "duration": 197,
+        "observation": "PARCERIA COM IFTM. NO VALOR DE 3 MILHÕES. O RECURSO VEM DIRETO PARA O IFTM E A EXECUÇÃO DO SERVIÇO SERÁ POR ELES TAMBÉM SEM NENHUM VALOR DE CONTRAPARTIDA DO MUNICÍPIO. NÃO HAVERÁ PLANILHA DE CUSTOS. "
+      },
+      "userId": "Zo9JrVu83rXfGOItprlyDZUFJGI3",
+      "action": "CREATE",
+      "entity": "objects",
+      "userName": "ADMINISTRADOR DETIC"
+    }
+  ],
+  "notificationReads": []
+}

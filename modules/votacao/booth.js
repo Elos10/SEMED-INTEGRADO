@@ -2,7 +2,7 @@ import {
   createEmptyElectionState,
   runElectionStateTransaction,
   subscribeToElectionState,
-} from "./firebase-store.js";
+} from "./supabase-store.js";
 
 const BOOTH_UNIT_KEY = "urna-escolar-booth-unit";
 const FINISH_DELAY_MS = 2600;
@@ -43,7 +43,7 @@ function startStateSync() {
       renderApp();
     },
     onError(error) {
-      stateSyncError = "Nao foi possivel sincronizar a urna com o Firestore.";
+      stateSyncError = "Nao foi possivel sincronizar a urna com o Supabase.";
       console.error(error);
       renderApp();
     },
@@ -324,7 +324,7 @@ async function confirmVote() {
       renderApp();
     }, FINISH_DELAY_MS);
   } catch (error) {
-    uiState.ballotAlert = "Nao foi possivel registrar o voto no Firestore.";
+    uiState.ballotAlert = "Nao foi possivel registrar o voto no Supabase.";
     console.error(error);
     renderApp();
   }
@@ -402,7 +402,7 @@ function renderApp() {
 
   if (!isStateReady || !isSeedCheckComplete) {
     appRoot.innerHTML = renderAppFrame(
-      renderStatusScreen("Conectando ao Firestore", "A urna esta carregando os dados em tempo real."),
+      renderStatusScreen("Conectando ao Supabase", "A urna esta carregando os dados em tempo real."),
     );
     return;
   }
