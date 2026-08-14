@@ -2,7 +2,7 @@ import {
   createEmptyElectionState,
   runElectionStateTransaction,
   subscribeToElectionState,
-} from "./supabase-store.js";
+} from "./supabase-store.js?v=20260814-2";
 
 const BOOTH_UNIT_KEY = "urna-escolar-booth-unit";
 const FINISH_DELAY_MS = 2600;

@@ -29,6 +29,23 @@ function split(state) {
   };
 }
 
+async function commitState(rows, parts) {
+  const registryVersion = rows.find((row) => row.key === "registry")?.version;
+  const votingVersion = rows.find((row) => row.key === "voting")?.version;
+  if (!Number.isInteger(Number(registryVersion)) || !Number.isInteger(Number(votingVersion))) {
+    throw new Error("A base eleitoral não possui versões válidas para sincronização.");
+  }
+  const { error } = await supabase.rpc("commit_votacao_state", {
+    p_payload: {
+      registryVersion: Number(registryVersion),
+      votingVersion: Number(votingVersion),
+      registry: parts.registry,
+      voting: parts.voting,
+    },
+  });
+  if (error) throw error;
+}
+
 export async function signInElection(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
@@ -51,11 +68,8 @@ export function subscribeToElectionState({ onChange, onReady, onError }) {
 
 export async function replaceElectionState(nextState) {
   const rows = await loadRows();
-  const registryVersion = rows.find((row) => row.key === "registry")?.version;
-  const votingVersion = rows.find((row) => row.key === "voting")?.version;
   const parts = split(nextState);
-  const { error } = await supabase.rpc("update_votacao_states", { p_registry_version: registryVersion, p_voting_version: votingVersion, p_registry: parts.registry, p_voting: parts.voting });
-  if (error) throw error;
+  await commitState(rows, parts);
 }
 
 export async function runElectionStateTransaction(mutator) {
@@ -65,13 +79,11 @@ export async function runElectionStateTransaction(mutator) {
     const draft = clone(current);
     const result = await mutator(draft, current);
     const parts = split(draft);
-    const { error } = await supabase.rpc("update_votacao_states", {
-      p_registry_version: rows.find((row) => row.key === "registry")?.version,
-      p_voting_version: rows.find((row) => row.key === "voting")?.version,
-      p_registry: parts.registry,
-      p_voting: parts.voting,
-    });
-    if (!error) return result;
-    if (!String(error.message).includes("version conflict") || attempt === 2) throw error;
+    try {
+      await commitState(rows, parts);
+      return result;
+    } catch (error) {
+      if (!String(error.message).includes("version conflict") || attempt === 2) throw error;
+    }
   }
 }

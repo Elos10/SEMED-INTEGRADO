@@ -6,7 +6,7 @@ import {
   signInElection,
   signOutElection,
   subscribeToElectionState,
-} from "./supabase-store.js";
+} from "./supabase-store.js?v=20260814-2";
 const FINISH_DELAY_MS = 2600;
 const UNIT_TYPOLOGIES = [
   { value: "1", label: "Tipo 1", roles: ["Diretor(a)"] },
