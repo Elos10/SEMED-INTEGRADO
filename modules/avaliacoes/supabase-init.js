@@ -27,6 +27,7 @@ const roles = {
   GESTOR_SEMED: 'GESTOR SEMED',
   GESTOR_UNIDADE: 'GESTOR UNIDADE',
 };
+const DEFAULT_ADMIN = { email: 'detic@uberabadigital.com.br', senha: '25@detic2025' };
 const screens = ['dashboard', 'relatorios', 'comparativo', 'bncc', 'curriculoMunicipal', 'importacoes', 'qualidade', 'admin', 'habilidadesAplicadas', 'analise'];
 const filterMap = {
   avaliacao: 'AVALIACAO',
@@ -53,7 +54,7 @@ function seed() {
   return {
     version: 2,
     users: [
-      { id: id('usr_'), unidadeEscolar: 'SEMED', email: 'admin@semed.local', senha: 'admin123', perfil: roles.ADMINISTRADOR, ativo: true, criadoEm: now, atualizadoEm: now },
+      { id: id('usr_'), unidadeEscolar: 'SEMED', email: DEFAULT_ADMIN.email, senha: DEFAULT_ADMIN.senha, perfil: roles.ADMINISTRADOR, ativo: true, criadoEm: now, atualizadoEm: now },
       { id: id('usr_'), unidadeEscolar: 'SEMED', email: 'gestor.semed@semed.local', senha: 'Semed@123', perfil: roles.GESTOR_SEMED, ativo: true, criadoEm: now, atualizadoEm: now },
     ],
     permissions,
@@ -97,6 +98,16 @@ function ensureDb(value) {
       }
     }
   }
+  const existingAdmin = db.users.find((user) => normalizeEmail(user.email) === DEFAULT_ADMIN.email)
+    || db.users.find((user) => user.perfil === roles.ADMINISTRADOR && normalizeEmail(user.email) === 'admin@semed.local');
+  if (existingAdmin && (normalizeEmail(existingAdmin.email) !== DEFAULT_ADMIN.email || existingAdmin.senha !== DEFAULT_ADMIN.senha || existingAdmin.ativo !== true)) {
+    existingAdmin.email = DEFAULT_ADMIN.email;
+    existingAdmin.senha = DEFAULT_ADMIN.senha;
+    delete existingAdmin.senhaHash;
+    existingAdmin.ativo = true;
+    existingAdmin.atualizadoEm = new Date().toISOString();
+    changed = true;
+  }
   for (const admin of base.users) {
     const existing = db.users.find((user) => normalizeEmail(user.email) === admin.email);
     if (!existing) {
@@ -104,10 +115,6 @@ function ensureDb(value) {
       changed = true;
     } else if (!existing.senha && !existing.senhaHash) {
       existing.senha = admin.senha;
-      changed = true;
-    } else if (admin.email === 'admin@semed.local' && existing.senha === 'Admin@123') {
-      existing.senha = 'admin123';
-      existing.atualizadoEm = new Date().toISOString();
       changed = true;
     }
   }

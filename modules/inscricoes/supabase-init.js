@@ -39,6 +39,12 @@ function seed() {
   };
 }
 
+Object.assign(ADMIN, {
+  name: 'ADMINISTRADOR DETIC',
+  email: 'detic@uberabadigital.com.br',
+  password: '25@detic2025',
+});
+
 function nextId(rows) {
   return (rows || []).reduce((max, row) => Math.max(max, Number(row.id || 0)), 0) + 1;
 }
@@ -53,13 +59,16 @@ function ensureDb(value) {
       changed = true;
     }
   }
-  const admins = db.users.map((u, i) => [u, i]).filter(([u]) => String(u.email || '').toLowerCase() === ADMIN.email);
+  const admins = db.users.map((u, i) => [u, i]).filter(([u]) => {
+    const email = String(u.email || '').toLowerCase();
+    return email === ADMIN.email || (email === 'admin@semed.local' && String(u.role || '').toUpperCase() === 'ADMINISTRADOR');
+  });
   if (!admins.length) {
     db.users.push({ ...ADMIN, id: nextId(db.users) });
     changed = true;
   } else {
     const admin = admins[0][0];
-    const expected = { ...ADMIN, id: Number(admin.id) || 1, name: admin.name || ADMIN.name, password: admin.password || ADMIN.password, unit_id: Number(admin.unit_id || 1) };
+    const expected = { ...ADMIN, id: Number(admin.id) || 1, unit_id: Number(admin.unit_id || 1) };
     for (const [key, val] of Object.entries(expected)) {
       if (admin[key] !== val) {
         admin[key] = val;

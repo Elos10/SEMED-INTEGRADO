@@ -138,6 +138,14 @@ export async function ensureElectionSeed(seedState) {
     const registrySnapshot = await transaction.get(registryStateRef);
     const votingSnapshot = await transaction.get(votingStateRef);
     if (registrySnapshot.exists() && votingSnapshot.exists()) {
+      const registry = normalizeElectionState(registrySnapshot.data());
+      const seededAdmin = normalizeElectionState(seedState).accessAccounts.find((account) => account.accessKind === "ADMINISTRADOR");
+      const storedAdmin = registry.accessAccounts.find((account) => account.accessKind === "ADMINISTRADOR");
+      if (seededAdmin && (!storedAdmin || storedAdmin.email !== seededAdmin.email || storedAdmin.password !== seededAdmin.password || storedAdmin.active !== true)) {
+        if (storedAdmin) Object.assign(storedAdmin, { email: seededAdmin.email, password: seededAdmin.password, active: true });
+        else registry.accessAccounts.unshift(seededAdmin);
+        transaction.set(registryStateRef, stampRegistryState(registry), { merge: true });
+      }
       return;
     }
 
