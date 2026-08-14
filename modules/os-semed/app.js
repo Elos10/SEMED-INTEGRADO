@@ -88,6 +88,7 @@ function loadState() {
     session: null,
     users: demoUsers,
     areaResponsibles: { ...defaultAreaResponsibles },
+    notificationReads: {},
     units: (seed.UNIDADES || []).map((row) => ({
       id: row["Row ID"],
       type: row.TIPO || "Não informado",
@@ -170,6 +171,7 @@ function normalizeState(next) {
     next.dataVersion = DATA_VERSION;
   }
   next.areaResponsibles = { ...defaultAreaResponsibles, ...(next.areaResponsibles || {}) };
+  next.notificationReads = next.notificationReads && typeof next.notificationReads === "object" ? next.notificationReads : {};
   next.users = (next.users || demoUsers).filter((user) => user.role !== "Logística").map((user) => ({
     ...user,
     role: normalizeRole(user.role),
@@ -366,6 +368,38 @@ function visibleOrders() {
   return state.orders.filter(canViewOrder);
 }
 
+function isPendingOrder(order) {
+  return order?.active && !["Concluída", "Cancelada"].includes(order.status);
+}
+
+function isOrderAddressedToCurrentUser(order) {
+  const user = currentUser();
+  if (!user || !isPendingOrder(order)) return false;
+  const assignedEmail = state.areaResponsibles?.[order.area] || "";
+  return order.responsible === user.name || order.responsible === user.email || assignedEmail === user.email;
+}
+
+function unreadAssignedOrders() {
+  const user = currentUser();
+  if (!user) return [];
+  const readIds = new Set(state.notificationReads?.[user.id] || []);
+  return state.orders
+    .filter((order) => isOrderAddressedToCurrentUser(order) && !readIds.has(order.id))
+    .sort((left, right) => new Date(right.openedAt) - new Date(left.openedAt));
+}
+
+function markOrderAsRead(orderId) {
+  const user = currentUser();
+  const order = state.orders.find((item) => item.id === orderId);
+  if (!user || !isOrderAddressedToCurrentUser(order)) return false;
+  const reads = new Set(state.notificationReads?.[user.id] || []);
+  if (reads.has(orderId)) return false;
+  reads.add(orderId);
+  state.notificationReads[user.id] = [...reads];
+  saveState();
+  return true;
+}
+
 function normalizeAttachments(value) {
   return (value || []).map((item) => typeof item === "string" ? { id: makeId("ATT"), name: item, source: "importado" } : item);
 }
@@ -556,7 +590,7 @@ function recentOrdersHtml(orders) {
 
 function ordersHtml() {
   return `
-    ${headerHtml("Ordens de serviço", "Acompanhe as ordens permitidas para o seu perfil.", canOpenOrders() ? `<button data-go-new>Nova OS</button>` : "")}
+    ${headerHtml("Ordens de serviço", "Acompanhe as ordens permitidas para o seu perfil.", `<div class="order-notification-host">${orderNotificationHtml()}</div>${canOpenOrders() ? `<button data-go-new>Nova OS</button>` : ""}`)}
     <section class="toolbar">
       <input class="wide" id="filter-search" placeholder="Buscar por ID, unidade, descrição ou responsável" />
       ${selectHtml("filter-status", ["", ...statuses], "Todos os status")}
@@ -566,6 +600,41 @@ function ordersHtml() {
     </section>
     <div id="orders-table"></div>
   `;
+}
+
+function orderNotificationHtml() {
+  const unread = unreadAssignedOrders();
+  return `
+    <div class="order-notifications">
+      <button type="button" class="notification-trigger${unread.length ? " has-unread" : ""}" data-toggle-order-notifications aria-expanded="false">
+        <span aria-hidden="true">●</span><span>OS não lidas</span><b data-notification-count>${unread.length}</b>
+      </button>
+      <div class="notification-popover" data-order-notification-popover hidden>
+        <div class="notification-popover-head"><strong>Ordens recebidas</strong><span>${unread.length} não ${unread.length === 1 ? "lida" : "lidas"}</span></div>
+        <div class="notification-list">
+          ${unread.map((order) => `<button type="button" class="notification-item" data-notification-order="${order.id}"><strong>OS ${escapeHtml(order.id)}</strong><span>${escapeHtml(order.area)} · ${escapeHtml(order.unit)}</span><small>${formatDate(order.openedAt)}</small></button>`).join("") || `<p class="notification-empty">Nenhuma OS nova para você.</p>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bindOrderNotificationEvents() {
+  const trigger = document.querySelector("[data-toggle-order-notifications]");
+  const popover = document.querySelector("[data-order-notification-popover]");
+  trigger?.addEventListener("click", () => {
+    const willOpen = popover.hasAttribute("hidden");
+    popover.toggleAttribute("hidden", !willOpen);
+    trigger.setAttribute("aria-expanded", String(willOpen));
+  });
+  document.querySelectorAll("[data-notification-order]").forEach((button) => button.addEventListener("click", () => openOrder(button.dataset.notificationOrder)));
+}
+
+function refreshOrderNotificationIndicator() {
+  const host = document.querySelector(".order-notification-host");
+  if (!host) return;
+  host.innerHTML = orderNotificationHtml();
+  bindOrderNotificationEvents();
 }
 
 function renderOrdersTable() {
@@ -646,6 +715,7 @@ function deleteOrder(id) {
   state.orders = state.orders.filter((item) => item.id !== id);
   saveState();
   renderOrdersTable();
+  refreshOrderNotificationIndicator();
 }
 
 function statusPill(status) {
@@ -848,6 +918,7 @@ function bindViewEvents() {
     currentView = "new-order";
     renderShell();
   });
+  bindOrderNotificationEvents();
   document.querySelector("#order-form")?.addEventListener("submit", saveOrder);
   document.querySelector("#order-form") && bindCascadeFields();
   document.querySelector("[data-cancel-form]")?.addEventListener("click", () => {
@@ -983,6 +1054,7 @@ function openOrder(id) {
     alert("Seu perfil não tem permissão para visualizar esta OS.");
     return;
   }
+  if (markOrderAsRead(order.id)) refreshOrderNotificationIndicator();
   const route = state.routes.find((item) => item.name === order.route);
   const canChat = canUseOrderChat(order);
   const canPostMessage = canPostOrderMessage(order);

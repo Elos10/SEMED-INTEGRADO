@@ -272,6 +272,134 @@ label {
   color: var(--muted);
 }
 
+.order-notification-host {
+  position: relative;
+}
+
+.order-notifications {
+  position: relative;
+}
+
+.notification-trigger {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #cbd8ee;
+  background: #fff;
+  color: #173f9f;
+}
+
+.notification-trigger:hover,
+.notification-trigger[aria-expanded="true"] {
+  background: #edf3ff;
+}
+
+.notification-trigger > span:first-child {
+  color: #91a3c2;
+  font-size: 0.72rem;
+}
+
+.notification-trigger.has-unread > span:first-child {
+  color: #f0a11a;
+  filter: drop-shadow(0 0 4px rgba(240, 161, 26, 0.35));
+}
+
+.notification-trigger b {
+  min-width: 23px;
+  height: 23px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: #e5ecf8;
+  color: #173f9f;
+  font-size: 0.76rem;
+}
+
+.notification-trigger.has-unread b {
+  background: #d43d2f;
+  color: #fff;
+}
+
+.notification-popover {
+  position: absolute;
+  z-index: 15;
+  top: calc(100% + 9px);
+  right: 0;
+  width: min(390px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 1px solid #cbd8ee;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(11, 43, 91, 0.2);
+}
+
+.notification-popover[hidden] {
+  display: none;
+}
+
+.notification-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 15px;
+  border-bottom: 1px solid #dce5f2;
+  background: #f3f6fc;
+  color: #082b65;
+}
+
+.notification-popover-head span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.notification-list {
+  max-height: 340px;
+  overflow: auto;
+  padding: 7px;
+}
+
+.notification-item {
+  width: 100%;
+  min-height: 0;
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  background: transparent;
+  color: #102d61;
+  text-align: left;
+}
+
+.notification-item:hover {
+  background: #edf3ff;
+}
+
+.notification-item span,
+.notification-item small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-item span {
+  color: #344c73;
+  font-weight: 600;
+}
+
+.notification-item small {
+  color: var(--muted);
+}
+
+.notification-empty {
+  margin: 0;
+  padding: 24px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
 .grid {
   display: grid;
   gap: 16px;
@@ -931,6 +1059,26 @@ tr:hover td {
 
   .topbar {
     flex-direction: column;
+  }
+
+  .topbar > .actions {
+    width: 100%;
+  }
+
+  .order-notification-host,
+  .order-notifications,
+  .notification-trigger {
+    flex: 1;
+  }
+
+  .notification-trigger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .notification-popover {
+    right: auto;
+    left: 0;
   }
 
   .area-responsibility-list,
