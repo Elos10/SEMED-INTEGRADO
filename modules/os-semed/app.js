@@ -76,6 +76,7 @@ let activeCrud = "units";
 let editingCatalogId = null;
 let editingUserId = null;
 const crudSorts = {};
+let ordersSort = { key: "openedAt", direction: "desc" };
 
 function loadState() {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -583,15 +584,21 @@ function renderOrdersTable() {
       && (!filters.area || order.area === filters.area)
       && (!filters.unit || order.unit === filters.unit)
       && (!filters.route || order.route === filters.route);
-  });
+  }).slice().sort((left, right) => compareOrderValues(left, right));
+  const sortableHeader = (key, label) => {
+    const active = ordersSort.key === key;
+    const arrow = active ? (ordersSort.direction === "asc" ? "↑" : "↓") : "↕";
+    return `<th aria-sort="${active ? (ordersSort.direction === "asc" ? "ascending" : "descending") : "none"}"><button type="button" class="sort-header${active ? " active" : ""}" data-order-sort="${key}" title="Ordenar por ${escapeHtml(label)}"><span>${escapeHtml(label)}</span><i aria-hidden="true">${arrow}</i></button></th>`;
+  };
   document.querySelector("#orders-table").innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>ID</th><th>Status</th><th>Unidade</th><th>Classificação</th><th>Responsável</th><th>Logística</th><th>Ações</th></tr></thead>
+    <div class="table-wrap orders-table-wrap">
+      <table class="orders-table">
+        <thead><tr>${sortableHeader("id", "ID")}${sortableHeader("openedAt", "Abertura")}${sortableHeader("status", "Status")}${sortableHeader("unit", "Unidade")}${sortableHeader("classification", "Classificação")}${sortableHeader("responsible", "Responsável")}${sortableHeader("logistics", "Logística")}<th class="actions-heading">Ações</th></tr></thead>
         <tbody>
           ${orders.map((order) => `
             <tr>
-              <td><strong>${escapeHtml(order.id)}</strong><br><span class="muted">${formatDate(order.openedAt)}</span></td>
+              <td><strong>${escapeHtml(order.id)}</strong></td>
+              <td>${formatDate(order.openedAt)}</td>
               <td>${statusPill(order.status)}</td>
               <td>${escapeHtml(order.unit)}</td>
               <td>${escapeHtml(order.area)}<br><span class="muted">${escapeHtml(order.nature)} / ${escapeHtml(order.activityType)}</span></td>
@@ -600,15 +607,45 @@ function renderOrdersTable() {
               <td class="actions">
                 <button class="secondary" data-open-order="${order.id}">Ver</button>
                 ${canEditOrder(order) ? `<button class="secondary" data-edit-order="${order.id}">${isAdmin() ? "Editar" : "Status"}</button>` : ""}
+                ${isAdmin() ? `<button class="danger" data-delete-order="${order.id}">Excluir</button>` : ""}
               </td>
             </tr>
-          `).join("") || `<tr><td colspan="7" class="empty">Nenhuma ordem encontrada.</td></tr>`}
+          `).join("") || `<tr><td colspan="8" class="empty">Nenhuma ordem encontrada.</td></tr>`}
         </tbody>
       </table>
     </div>
   `;
+  document.querySelectorAll("[data-order-sort]").forEach((button) => button.addEventListener("click", () => {
+    const key = button.dataset.orderSort;
+    ordersSort = { key, direction: ordersSort.key === key && ordersSort.direction === "asc" ? "desc" : "asc" };
+    renderOrdersTable();
+  }));
   document.querySelectorAll("[data-open-order]").forEach((button) => button.addEventListener("click", () => openOrder(button.dataset.openOrder)));
   document.querySelectorAll("[data-edit-order]").forEach((button) => button.addEventListener("click", () => editOrder(button.dataset.editOrder)));
+  document.querySelectorAll("[data-delete-order]").forEach((button) => button.addEventListener("click", () => deleteOrder(button.dataset.deleteOrder)));
+}
+
+function orderSortValue(order, key) {
+  if (key === "classification") return [order.area, order.nature, order.activityType].filter(Boolean).join(" ");
+  if (key === "logistics") return [order.driver, order.vehicle, order.route].filter(Boolean).join(" ");
+  return order[key] || "";
+}
+
+function compareOrderValues(left, right) {
+  if (ordersSort.key === "openedAt") {
+    const difference = new Date(left.openedAt).getTime() - new Date(right.openedAt).getTime();
+    return difference * (ordersSort.direction === "desc" ? -1 : 1);
+  }
+  return compareCatalogValues(orderSortValue(left, ordersSort.key), orderSortValue(right, ordersSort.key), ordersSort.direction);
+}
+
+function deleteOrder(id) {
+  if (!isAdmin()) return;
+  const order = state.orders.find((item) => item.id === id);
+  if (!order || !confirm(`Excluir definitivamente a ordem de serviço ${order.id}? Esta ação não poderá ser desfeita.`)) return;
+  state.orders = state.orders.filter((item) => item.id !== id);
+  saveState();
+  renderOrdersTable();
 }
 
 function statusPill(status) {

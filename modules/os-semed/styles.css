@@ -402,6 +402,50 @@ tr:hover td {
   box-shadow: 0 8px 24px rgba(11, 43, 91, 0.05);
 }
 
+.orders-table-wrap {
+  max-height: calc(100vh - 250px);
+  border-color: #c9d7ec;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(11, 43, 91, 0.05);
+}
+
+.orders-table {
+  min-width: 1180px;
+}
+
+.orders-table th {
+  z-index: 2;
+  height: 48px;
+  padding: 0;
+  background: #eaf0fb;
+  color: #082b65;
+  white-space: nowrap;
+}
+
+.orders-table td {
+  padding: 14px 12px;
+  vertical-align: middle;
+  line-height: 1.45;
+}
+
+.orders-table tbody tr:nth-child(even) td {
+  background: #fbfcff;
+}
+
+.orders-table tbody tr:hover td {
+  background: #f1f5fc;
+}
+
+.orders-table .actions {
+  min-width: 230px;
+  flex-wrap: nowrap;
+}
+
+.orders-table .actions button {
+  min-height: 34px;
+  padding-inline: 11px;
+}
+
 .catalog-table {
   min-width: 980px;
 }
@@ -720,12 +764,22 @@ tr:hover td {
     max-height: calc(100vh - 250px);
   }
 
+  .orders-table-wrap {
+    max-height: calc(100vh - 280px);
+  }
+
   .catalog-table {
     min-width: 860px;
   }
 
+  .orders-table {
+    min-width: 1080px;
+  }
+
   .catalog-table th,
-  .catalog-table td {
+  .catalog-table td,
+  .orders-table th,
+  .orders-table td {
     font-size: 0.82rem;
   }
 }
