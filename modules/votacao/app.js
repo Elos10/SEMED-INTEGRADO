@@ -250,7 +250,6 @@ function startStateSync() {
 async function initializeSeedState() {
   try {
     await ensureElectionSeed(createSeedState());
-    await applyUnitTypologiesFromReference();
   } catch (error) {
     stateSyncError = buildSupabaseErrorMessage(
       "Nao foi possivel preparar a base inicial no Supabase.",
