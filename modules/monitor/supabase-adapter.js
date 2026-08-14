@@ -29,9 +29,10 @@ window.supabaseReady = (async () => {
   }
   async function updateDoc(target, changes) { const current = await getDoc(target); await setDoc(target, { ...(current.data() || {}), ...changes }); }
   function writeBatch() { const tasks = []; return { set: (target, data) => tasks.push(() => setDoc(target, data)), update: (target, data) => tasks.push(() => updateDoc(target, data)), commit: async () => { for (const task of tasks) await task(); } }; }
-  const auth = { currentUser: null, authStateReady: async () => { const { data } = await client.auth.getUser(); auth.currentUser = data.user; } };
+  const withUid = (user) => user ? { ...user, uid: user.id } : null;
+  const auth = { currentUser: null, authStateReady: async () => { const { data } = await client.auth.getUser(); auth.currentUser = withUid(data.user); } };
   const authSdk = {
-    signInWithEmailAndPassword: async (_auth, email, password) => { const { data, error } = await client.auth.signInWithPassword({ email, password }); if (error) throw error; auth.currentUser = data.user; return { user: data.user }; },
+    signInWithEmailAndPassword: async (_auth, email, password) => { const { data, error } = await client.auth.signInWithPassword({ email, password }); if (error) throw error; auth.currentUser = withUid(data.user); return { user: auth.currentUser }; },
     signOut: async () => { await client.auth.signOut(); auth.currentUser = null; },
   };
   const functionsSdk = { httpsCallable: (_functions, name) => async (payload) => { const functionName = name === 'manageUser' ? 'manage-semed-user' : name; const { data, error } = await client.functions.invoke(functionName, { body: payload }); if (error) throw error; if (data?.error) throw new Error(data.error); return { data }; } };
