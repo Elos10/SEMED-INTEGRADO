@@ -1223,43 +1223,44 @@ function usersHtml() {
   }
   return `
     ${headerHtml("Usuários", "Adicione, exclua e modifique usuários em página própria.", `<button data-new-user>Novo usuário</button>`)}
-    <section class="grid two-col">
-      <div class="card section">
-        <h3>Responsável por área de solicitação</h3>
-        <div class="grid">
+    <section class="users-overview">
+      <div class="card section users-panel">
+        <div class="users-panel-head"><div><h3>Responsável por área</h3><p>Defina quem receberá as solicitações de cada setor.</p></div><span class="count-badge">${areas.length} áreas</span></div>
+        <div class="area-responsibility-list">
           ${areas.map((area) => `
-            <label>${escapeHtml(area)}
+            <label class="area-responsibility">${escapeHtml(area)}
               ${selectField(`area-responsible-${areaKey(area)}`, responsibleOptions(), state.areaResponsibles?.[area] || "", "Selecione o responsável")}
             </label>
           `).join("")}
         </div>
       </div>
-      <div class="card section">
-        <h3>Perfis de usuário</h3>
-        <div class="grid">
+      <div class="card section users-panel">
+        <div class="users-panel-head"><div><h3>Perfis de usuário</h3><p>Resumo das permissões disponíveis no sistema.</p></div><span class="count-badge">${roles.length} perfis</span></div>
+        <div class="profile-grid">
           ${roles.map((role) => `
-            <article class="attachment-item">
-              <strong>${escapeHtml(profileRules[role].label)}</strong>
-              <span class="muted">${escapeHtml(profileRules[role].description)}</span>
+            <article class="profile-rule-card">
+              <span class="profile-rule-icon">${escapeHtml(profileRules[role].label.charAt(0))}</span>
+              <div><strong>${escapeHtml(profileRules[role].label)}</strong>
+              <span>${escapeHtml(profileRules[role].description)}</span></div>
             </article>
           `).join("")}
         </div>
       </div>
     </section>
-    <section class="card section" style="margin-top:16px">
-      <h3>Usuários cadastrados</h3>
-        <div class="table-wrap">
-          <table>
+    <section class="card section user-list-card">
+      <div class="users-panel-head"><div><h3>Usuários cadastrados</h3><p>Consulte e gerencie os acessos ao sistema.</p></div><span class="count-badge">${state.users.filter((user) => user.active !== false).length} ativos</span></div>
+        <div class="table-wrap user-table-wrap">
+          <table class="user-table">
             <thead><tr><th>Foto</th><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Estabelecimento</th><th>Situação</th><th>Ações</th></tr></thead>
             <tbody>
               ${state.users.map((user) => `
                 <tr>
-                  <td>${avatarHtml(user)}</td>
-                  <td>${escapeHtml(user.name)}</td>
-                  <td>${escapeHtml(user.email)}</td>
-                  <td>${escapeHtml(user.role)}</td>
-                  <td>${escapeHtml(user.unit || "Sem estabelecimento")}</td>
-                  <td>${user.active !== false ? `<span class="pill">Ativo</span>` : `<span class="pill danger">Inativo</span>`}</td>
+                   <td data-label="Foto">${avatarHtml(user)}</td>
+                   <td data-label="Nome"><strong>${escapeHtml(user.name)}</strong></td>
+                   <td data-label="E-mail"><a class="user-email" href="mailto:${escapeHtml(user.email)}">${escapeHtml(user.email)}</a></td>
+                   <td data-label="Perfil">${escapeHtml(user.role)}</td>
+                   <td data-label="Estabelecimento">${escapeHtml(user.unit || "Sem estabelecimento")}</td>
+                   <td data-label="Situação">${user.active !== false ? `<span class="pill">Ativo</span>` : `<span class="pill danger">Inativo</span>`}</td>
                   <td class="actions">
                     <button class="secondary" data-edit-user="${user.id}">Editar</button>
                     <button class="${user.active !== false ? "danger" : "secondary"}" data-toggle-user="${user.id}">${user.active !== false ? "Excluir" : "Reativar"}</button>
