@@ -352,6 +352,14 @@ label {
   grid-column: span 2;
 }
 
+#crud-search {
+  max-width: 640px;
+  min-height: 44px;
+  padding-inline: 14px;
+  border-color: #cbd8e8;
+  box-shadow: 0 3px 12px rgba(11, 43, 91, 0.04);
+}
+
 .table-wrap {
   overflow: auto;
   border: 1px solid var(--line);
@@ -385,6 +393,94 @@ th {
 
 tr:hover td {
   background: #fafcfb;
+}
+
+.catalog-table-wrap {
+  max-height: calc(100vh - 230px);
+  border-color: #c9d7ec;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(11, 43, 91, 0.05);
+}
+
+.catalog-table {
+  min-width: 980px;
+}
+
+.catalog-table th {
+  z-index: 2;
+  height: 48px;
+  padding: 0;
+  background: #eaf0fb;
+  color: #082b65;
+  white-space: nowrap;
+}
+
+.catalog-table td {
+  padding: 14px 12px;
+  vertical-align: middle;
+  line-height: 1.45;
+}
+
+.catalog-table tbody tr:nth-child(even) td {
+  background: #fbfcff;
+}
+
+.catalog-table tbody tr:hover td {
+  background: #f1f5fc;
+}
+
+.catalog-table .actions {
+  min-width: 170px;
+  flex-wrap: nowrap;
+}
+
+.catalog-table .actions button {
+  min-height: 34px;
+  padding-inline: 12px;
+}
+
+.actions-heading {
+  min-width: 170px;
+  padding: 0 12px !important;
+}
+
+.sort-header {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+}
+
+.sort-header:hover,
+.sort-header:focus-visible {
+  background: #dce7fa;
+  color: #061f4d;
+  outline: 2px solid transparent;
+}
+
+.sort-header.active {
+  background: #dce7fa;
+  color: #123da1;
+}
+
+.sort-header i {
+  font-style: normal;
+  font-size: 1rem;
+  opacity: 0.55;
+}
+
+.sort-header.active i {
+  opacity: 1;
 }
 
 .pill {
@@ -618,5 +714,18 @@ tr:hover td {
 
   .topbar {
     flex-direction: column;
+  }
+
+  .catalog-table-wrap {
+    max-height: calc(100vh - 250px);
+  }
+
+  .catalog-table {
+    min-width: 860px;
+  }
+
+  .catalog-table th,
+  .catalog-table td {
+    font-size: 0.82rem;
   }
 }

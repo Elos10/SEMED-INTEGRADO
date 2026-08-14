@@ -75,6 +75,7 @@ let drawerOrderId = null;
 let activeCrud = "units";
 let editingCatalogId = null;
 let editingUserId = null;
+const crudSorts = {};
 
 function loadState() {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -1067,23 +1068,41 @@ function bindCrudEvents() {
 function renderCrudTable() {
   const fields = catalogConfigs()[activeCrud].fields;
   const search = document.querySelector("#crud-search")?.value.toLowerCase() || "";
-  const rows = state[activeCrud].filter((item) => JSON.stringify(item).toLowerCase().includes(search));
+  const defaultSortKey = activeCrud === "units" ? "name" : fields[0][0];
+  const sort = crudSorts[activeCrud] || { key: defaultSortKey, direction: "asc" };
+  crudSorts[activeCrud] = sort;
+  const rows = state[activeCrud]
+    .filter((item) => JSON.stringify(item).toLowerCase().includes(search))
+    .slice()
+    .sort((left, right) => compareCatalogValues(sort.key === "active" ? left.active : left[sort.key], sort.key === "active" ? right.active : right[sort.key], sort.direction));
+  const sortableHeader = (key, label) => {
+    const active = sort.key === key;
+    const arrow = active ? (sort.direction === "asc" ? "↑" : "↓") : "↕";
+    return `<th aria-sort="${active ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}"><button type="button" class="sort-header${active ? " active" : ""}" data-crud-sort="${key}" title="Ordenar por ${escapeHtml(label)}"><span>${escapeHtml(label)}</span><i aria-hidden="true">${arrow}</i></button></th>`;
+  };
   document.querySelector("#crud-table").innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead><tr>${fields.map(([, label]) => `<th>${label}</th>`).join("")}<th>Situação</th><th>Ações</th></tr></thead>
+    <div class="table-wrap catalog-table-wrap">
+      <table class="catalog-table">
+        <thead><tr>${fields.map(([key, label]) => sortableHeader(key, label)).join("")}${sortableHeader("active", "Situação")}<th class="actions-heading">Ações</th></tr></thead>
         <tbody>
           ${rows.map((item) => `
             <tr>
-              ${fields.map(([key]) => `<td>${key === "link" && item[key] ? `<a href="${escapeHtml(item[key])}" target="_blank" rel="noreferrer">Abrir link</a>` : escapeHtml(item[key] || "")}</td>`).join("")}
-              <td>${item.active ? `<span class="pill">Ativo</span>` : `<span class="pill danger">Inativo</span>`}</td>
+              ${fields.map(([key, label]) => `<td data-label="${escapeHtml(label)}">${key === "link" && item[key] ? `<a href="${escapeHtml(item[key])}" target="_blank" rel="noreferrer">Abrir link</a>` : escapeHtml(item[key] || "")}</td>`).join("")}
+              <td data-label="Situação">${item.active ? `<span class="pill">Ativo</span>` : `<span class="pill danger">Inativo</span>`}</td>
               <td class="actions">${canEditCatalogs() ? `<button class="secondary" data-edit-catalog="${item.id}">Editar</button><button class="secondary" data-toggle-active="${item.id}">${item.active ? "Inativar" : "Ativar"}</button>` : "Consulta"}</td>
             </tr>
-          `).join("")}
+          `).join("") || `<tr><td class="empty" colspan="${fields.length + 2}">Nenhum registro encontrado.</td></tr>`}
         </tbody>
       </table>
     </div>
   `;
+  document.querySelectorAll("[data-crud-sort]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.crudSort;
+      crudSorts[activeCrud] = { key, direction: sort.key === key && sort.direction === "asc" ? "desc" : "asc" };
+      renderCrudTable();
+    });
+  });
   document.querySelectorAll("[data-edit-catalog]").forEach((button) => {
     button.addEventListener("click", () => {
       editingCatalogId = button.dataset.editCatalog;
@@ -1099,6 +1118,18 @@ function renderCrudTable() {
       renderCrudTable();
     });
   });
+}
+
+function compareCatalogValues(left, right, direction) {
+  const multiplier = direction === "desc" ? -1 : 1;
+  if (left === right) return 0;
+  if (left == null || left === "") return 1;
+  if (right == null || right === "") return -1;
+  if (typeof left === "boolean" || typeof right === "boolean") return (Number(left) - Number(right)) * multiplier;
+  const leftNumber = Number(left);
+  const rightNumber = Number(right);
+  if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) return (leftNumber - rightNumber) * multiplier;
+  return String(left).localeCompare(String(right), "pt-BR", { numeric: true, sensitivity: "base" }) * multiplier;
 }
 
 function catalogFormHtml() {
