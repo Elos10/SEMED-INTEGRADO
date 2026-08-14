@@ -148,3 +148,30 @@
   .login.semed-entry.avaliacoes-entry>.entry-stage{width:calc(100% - 32px)!important}
   .login.semed-entry.avaliacoes-entry .login-forms.entry-panel{justify-self:center!important;padding:26px 22px!important}
 }
+.app-inscricoes .login.semed-entry.inscricoes-entry{
+  width:100%!important;min-width:100%!important;height:100vh!important;min-height:100vh!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:72px minmax(0,1fr) 72px!important;
+  place-items:stretch!important;align-items:stretch!important;justify-items:stretch!important;padding:0!important;
+  background:linear-gradient(145deg,#1258e5 0%,#2c79f4 58%,#0b42bd 100%)!important;overflow:hidden!important;
+}
+.app-inscricoes .login.semed-entry.inscricoes-entry::before{content:none!important;display:none!important}
+.app-inscricoes .login.semed-entry.inscricoes-entry>.entry-top,
+.app-inscricoes .login.semed-entry.inscricoes-entry>.entry-footer{width:100%!important;max-width:none!important}
+.app-inscricoes .login.semed-entry.inscricoes-entry>.entry-stage{width:min(1050px,calc(100% - 40px))!important;max-width:1050px!important;margin:0 auto!important}
+.app-inscricoes .login.semed-entry.inscricoes-entry form.entry-panel{
+  width:min(500px,100%)!important;max-width:500px!important;height:auto!important;min-height:0!important;
+  align-self:center!important;justify-self:end!important;align-content:center!important;margin:0!important;padding:38px!important;
+  border:0!important;border-radius:20px!important;background:#fff!important;box-shadow:0 24px 55px rgba(0,19,66,.34)!important;
+}
+.app-inscricoes .login.semed-entry.inscricoes-entry form.entry-panel::after{content:none!important;display:none!important}
+.inscricoes-entry .entry-brand img{filter:brightness(0) invert(1);mix-blend-mode:normal!important;opacity:.96}
+.inscricoes-entry .entry-intro h1,.inscricoes-entry .entry-intro p{display:block!important;visibility:visible!important;opacity:1!important;color:#fff!important}
+.inscricoes-entry .entry-motto{visibility:visible!important;opacity:1!important;color:#d9e8ff!important}
+.inscricoes-entry .entry-panel input#email{padding-left:36px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d6598' stroke-width='1.8'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:12px center!important}
+.inscricoes-entry .entry-panel input#pass{padding-left:36px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d6598' stroke-width='1.8'%3E%3Crect x='5' y='10' width='14' height='11' rx='2'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:12px center!important}
+.inscricoes-entry .entry-panel button[type=submit]{margin-top:5px}
+@media(max-width:760px){
+  .app-inscricoes .login.semed-entry.inscricoes-entry{height:auto!important;min-height:100vh!important;grid-template-rows:auto auto auto!important;overflow:auto!important}
+  .app-inscricoes .login.semed-entry.inscricoes-entry>.entry-stage{width:calc(100% - 32px)!important}
+  .app-inscricoes .login.semed-entry.inscricoes-entry form.entry-panel{justify-self:center!important;padding:26px 22px!important}
+}
