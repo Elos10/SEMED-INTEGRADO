@@ -102,3 +102,8 @@
 .os-entry .entry-panel button[type=submit]{margin-top:5px}
 .avaliacoes-entry .entry-panel{padding-top:38px!important;padding-bottom:38px!important}
 .avaliacoes-entry .entry-panel button[type=submit]{margin-top:5px}
+.avaliacoes-entry .entry-stage{position:relative}
+.avaliacoes-entry .entry-intro::after{content:"";position:absolute;z-index:-1;width:210px;height:210px;left:72px;top:30px;opacity:.09;background:linear-gradient(135deg,transparent 35%,#8dbbff 35% 39%,transparent 39% 48%,#8dbbff 48% 52%,transparent 52%);border:3px solid #8dbbff;border-radius:28px;transform:rotate(-7deg)}
+.avaliacoes-entry .entry-brand img{object-fit:contain;mix-blend-mode:screen}
+.avaliacoes-entry .entry-panel input[name="email"]{padding-left:36px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d6598' stroke-width='1.8'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:12px center!important}
+.avaliacoes-entry .entry-panel input[name="password"]{padding-left:36px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d6598' stroke-width='1.8'%3E%3Crect x='5' y='10' width='14' height='11' rx='2'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:12px center!important}
