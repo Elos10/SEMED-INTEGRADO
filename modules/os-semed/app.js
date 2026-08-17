@@ -119,44 +119,7 @@ function loadState() {
       name: row["NOME DO MOTORISTA"] || "",
       active: true,
     })),
-    orders: (seed.ABERTURA_OS || []).map((row, index) => ({
-      id: row.ID || makeId("OS"),
-      rowId: row["Row ID"] || makeId("ROW"),
-      openedBy: row["QUEM ABRE"] || "importado@appsheet",
-      unit: row.ESTABELECIMENTO || "",
-      openedAt: excelDate(row["DATA DE ABERTURA"]) || new Date().toISOString(),
-      area: row["ÁREA DE SOLICITAÇÃO"] || "",
-      nature: row["NATUREZA DA ATIVIDADE"] || "",
-      activityType: row["TIPO DE ATIVIDADE"] || "",
-      description: row["DESCRIÇÃO DA ATIVIDADE"] || "",
-      detail: row["DETALHAMENTO DA ATIVIDADE"] || "",
-      hasMaterial: row["POSSUI MATERIAL"] || "Não informado",
-      observation: row["OBSERVAÇÃO"] || "",
-      attachments: normalizeAttachments(compact([row.ANEXOS, row.FOTO, row.DOCUMENTOS])),
-      policeReport: row["B.O - REDS"] || "",
-      occurredAt: excelDate(row["DATA DO OCORRIDO"]) || "",
-      responsible: row.RESPONSAVEL || "",
-      driver: row.MOTORISTAS || "",
-      vehicle: row.PLACA || "",
-      vehicleModel: row["MODELO VEICULO"] || "",
-      route: row.ROTA || "",
-      status: statuses[index % 5],
-      active: true,
-      messages: compact([row.MENSAGENS_OS]).map((text) => ({
-        id: makeId("MSG"),
-        user: row["QUEM ABRE"] || "importado@appsheet",
-        createdAt: new Date().toISOString(),
-        text,
-      })),
-      history: [
-        {
-          id: makeId("HIS"),
-          user: "Importação AppSheet",
-          createdAt: new Date().toISOString(),
-          text: "Ordem importada da tabela ABERTURA_OS.",
-        },
-      ],
-    })),
+    orders: [],
   };
 
   assignDefaultUserUnits(initial);
@@ -171,7 +134,7 @@ function normalizeState(next) {
     next.dataVersion = DATA_VERSION;
   }
   next.areaResponsibles = { ...defaultAreaResponsibles, ...(next.areaResponsibles || {}) };
-  next.notificationReads = next.notificationReads && typeof next.notificationReads === "object" ? next.notificationReads : {};
+  next.notificationReads = {};
   next.users = (next.users || demoUsers).filter((user) => user.role !== "Logística").map((user) => ({
     ...user,
     role: normalizeRole(user.role),
@@ -193,10 +156,7 @@ function normalizeState(next) {
     ...item,
     description: item.description || "",
   }));
-  next.orders = (next.orders || []).map((order) => ({
-    ...order,
-    attachments: normalizeAttachments(order.attachments),
-  }));
+  next.orders = [];
   if (next.session) {
     const sessionUser = next.users.find((user) => user.id === next.session.id && user.active !== false);
     next.session = sessionUser
@@ -240,7 +200,7 @@ function assignDefaultUserUnits(next) {
 }
 
 function saveState(next = state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...next, orders: [], notificationReads: {}, session: null }));
 }
 
 function makeId(prefix = "ID") {
@@ -388,7 +348,7 @@ function unreadAssignedOrders() {
     .sort((left, right) => new Date(right.openedAt) - new Date(left.openedAt));
 }
 
-function markOrderAsRead(orderId) {
+async function markOrderAsRead(orderId) {
   const user = currentUser();
   const order = state.orders.find((item) => item.id === orderId);
   if (!user || !isOrderAddressedToCurrentUser(order)) return false;
@@ -396,7 +356,7 @@ function markOrderAsRead(orderId) {
   if (reads.has(orderId)) return false;
   reads.add(orderId);
   state.notificationReads[user.id] = [...reads];
-  saveState();
+  try { await window.OS_SUPABASE.markRead(orderId); } catch (error) { console.error(error); return false; }
   return true;
 }
 
@@ -426,17 +386,18 @@ function render() {
 
 function renderLogin() {
   app.innerHTML = document.querySelector("#login-template").innerHTML;
-  document.querySelector("#login-form").addEventListener("submit", (event) => {
+  document.querySelector("#login-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get("email").toString().trim().toLowerCase();
     const password = data.get("password").toString();
-    const user = state.users.find((item) => item.email === email && item.password === password && item.active !== false);
-    if (!user) return alert("E-mail ou senha inválidos.");
-    state.session = { id: user.id, name: user.name, email: user.email, role: user.role, unit: user.unit, photo: user.photo || "" };
-    saveState();
-    currentView = "dashboard";
-    render();
+    try {
+      const { authUser, profile } = await window.OS_SUPABASE.login(email, password);
+      await applySupabaseSession(authUser, profile);
+    } catch (error) {
+      console.error(error);
+      alert("Não foi possível entrar. Confirme as credenciais e o perfil de acesso no Supabase.");
+    }
   });
 }
 
@@ -469,7 +430,8 @@ function renderShell() {
       renderShell();
     });
   });
-  document.querySelector("#logout").addEventListener("click", () => {
+  document.querySelector("#logout").addEventListener("click", async () => {
+    await window.OS_SUPABASE.logout().catch(console.error);
     state.session = null;
     saveState();
     render();
@@ -708,12 +670,12 @@ function compareOrderValues(left, right) {
   return compareCatalogValues(orderSortValue(left, ordersSort.key), orderSortValue(right, ordersSort.key), ordersSort.direction);
 }
 
-function deleteOrder(id) {
+async function deleteOrder(id) {
   if (!isAdmin()) return;
   const order = state.orders.find((item) => item.id === id);
   if (!order || !confirm(`Excluir definitivamente a ordem de serviço ${order.id}? Esta ação não poderá ser desfeita.`)) return;
+  try { await window.OS_SUPABASE.deleteOrder(id); } catch (error) { console.error(error); alert("Não foi possível excluir a OS no Supabase."); return; }
   state.orders = state.orders.filter((item) => item.id !== id);
-  saveState();
   renderOrdersTable();
   refreshOrderNotificationIndicator();
 }
@@ -1014,6 +976,7 @@ async function saveOrder(event) {
     policeReport: data.policeReport,
     occurredAt: data.occurredAt ? new Date(data.occurredAt).toISOString() : "",
     responsible: responsibleNameForArea(data.area) || data.responsible,
+    assignedToEmail: state.areaResponsibles?.[data.area] || "",
     driver: data.driver,
     vehicle: data.vehicle,
     vehicleModel: vehicle?.model || "",
@@ -1022,6 +985,7 @@ async function saveOrder(event) {
     attachments: [...normalizeAttachments(previous?.attachments), ...(await filesToAttachments(formData.getAll("attachments")))],
   };
 
+  let savedOrder;
   if (previous) {
     Object.assign(previous, payload);
     previous.history.unshift({
@@ -1030,8 +994,9 @@ async function saveOrder(event) {
       createdAt: new Date().toISOString(),
       text: "Ordem atualizada.",
     });
+    savedOrder = previous;
   } else {
-    state.orders.unshift({
+    savedOrder = {
       id: makeId("OS"),
       rowId: makeId("ROW"),
       openedBy: state.session.email,
@@ -1040,9 +1005,10 @@ async function saveOrder(event) {
       messages: [],
       history: [{ id: makeId("HIS"), user: state.session.email, createdAt: new Date().toISOString(), text: "Ordem aberta." }],
       ...payload,
-    });
+    };
+    state.orders.unshift(savedOrder);
   }
-  saveState();
+  try { await window.OS_SUPABASE.saveOrder(savedOrder); } catch (error) { console.error(error); alert("Não foi possível salvar a OS no Supabase."); if (!previous) state.orders = state.orders.filter((item) => item !== savedOrder); return; }
   currentView = "orders";
   renderShell();
 }
@@ -1054,7 +1020,7 @@ function openOrder(id) {
     alert("Seu perfil não tem permissão para visualizar esta OS.");
     return;
   }
-  if (markOrderAsRead(order.id)) refreshOrderNotificationIndicator();
+  markOrderAsRead(order.id).then((changed) => { if (changed) refreshOrderNotificationIndicator(); });
   const route = state.routes.find((item) => item.name === order.route);
   const canChat = canUseOrderChat(order);
   const canPostMessage = canPostOrderMessage(order);
@@ -1110,13 +1076,13 @@ function openOrder(id) {
   `;
   drawer.classList.add("open");
   drawer.querySelectorAll("[data-close-drawer]").forEach((item) => item.addEventListener("click", closeDrawer));
-  drawer.querySelector("#message-form")?.addEventListener("submit", (event) => {
+  drawer.querySelector("#message-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const text = new FormData(event.currentTarget).get("message").toString().trim();
     if (!text) return;
     order.messages.unshift({ id: makeId("MSG"), user: state.session.email, createdAt: new Date().toISOString(), text });
     order.history.unshift({ id: makeId("HIS"), user: state.session.email, createdAt: new Date().toISOString(), text: "Mensagem adicionada." });
-    saveState();
+    try { await window.OS_SUPABASE.saveOrder(order); } catch (error) { console.error(error); alert("Não foi possível salvar a mensagem no Supabase."); return; }
     openOrder(order.id);
   });
 }
@@ -1481,7 +1447,7 @@ function docsHtml() {
     ${headerHtml("Documentação", "Resumo técnico produzido a partir da estrutura AppSheet importada.")}
     <article class="card section doc">
       <h3>Análise das tabelas</h3>
-      <p><code>ABERTURA_OS</code> é a tabela transacional principal. <code>LOGISTICA</code>, <code>UNIDADES</code>, <code>ROTAS</code>, <code>VEICULOS</code> e <code>MOTORISTAS</code> funcionam como cadastros de apoio e listas dependentes para abertura e acompanhamento das ordens.</p>
+      <p><code>os_orders</code>, no Supabase, é a tabela transacional principal. <code>LOGISTICA</code>, <code>UNIDADES</code>, <code>ROTAS</code>, <code>VEICULOS</code> e <code>MOTORISTAS</code> permanecem como cadastros de apoio e listas dependentes.</p>
       <h3>Modelo entidade-relacionamento</h3>
       <p><code>users</code> possui <code>roles</code>. <code>work_orders</code> referencia <code>users</code>, <code>units</code>, <code>logistics_categories</code>, <code>routes</code>, <code>vehicles</code> e <code>drivers</code>. Cada OS possui muitos <code>work_order_messages</code>, <code>work_order_history</code> e <code>attachments</code>.</p>
       <h3>Requisitos funcionais</h3>
@@ -1489,11 +1455,37 @@ function docsHtml() {
       <h3>Requisitos não funcionais</h3>
       <p>Interface responsiva, validação de formulários, separação entre dados e tela, trilha de auditoria, exclusão lógica, labels em português e estrutura preparada para migração futura para API REST com PostgreSQL.</p>
       <h3>Arquitetura recomendada para produção</h3>
-      <p>Frontend React ou Next.js, backend Node.js com NestJS ou Express, autenticação JWT, PostgreSQL, Prisma, armazenamento seguro para anexos e migrations versionadas.</p>
+      <p>Frontend integrado ao Supabase Auth e PostgreSQL, com RLS por perfil, migrations versionadas e armazenamento seguro para anexos.</p>
       <h3>Estrutura deste protótipo</h3>
-      <p><code>index.html</code> carrega a aplicação, <code>styles.css</code> define a interface, <code>app.js</code> controla regras e telas, <code>assets/seed-data.js</code> contém os dados importados das planilhas e <code>source-data</code> mantém os arquivos originais extraídos.</p>
+      <p><code>index.html</code> carrega a aplicação, <code>styles.css</code> define a interface, <code>app.js</code> controla regras e telas, <code>supabase-adapter.js</code> persiste as OS e leituras no Supabase e <code>assets/seed-data.js</code> mantém somente os cadastros auxiliares.</p>
     </article>
   `;
 }
 
+async function applySupabaseSession(authUser, profile) {
+  const local = state.users.find((user) => user.email.toLowerCase() === profile.email.toLowerCase());
+  const user = {
+    ...(local || {}), id: authUser.id, name: profile.full_name || local?.name || profile.email,
+    email: profile.email, role: profile.role, unit: profile.unit_name || local?.unit || "", active: profile.active,
+  };
+  if (local) Object.assign(local, user); else state.users.push(user);
+  state.session = { id: user.id, name: user.name, email: user.email, role: user.role, unit: user.unit, photo: user.photo || "" };
+  state.orders = await window.OS_SUPABASE.loadOrders();
+  state.notificationReads[user.id] = await window.OS_SUPABASE.loadReads();
+  currentView = "dashboard";
+  render();
+}
+
+async function initializeSupabase() {
+  if (!window.OS_SUPABASE) return;
+  try {
+    const restored = await window.OS_SUPABASE.restoreSession();
+    if (restored) return applySupabaseSession(restored.authUser, restored.profile);
+  } catch (error) { console.error(error); }
+  state.session = null;
+  render();
+}
+
 render();
+if (window.OS_SUPABASE) initializeSupabase();
+else window.addEventListener("os-supabase-ready", initializeSupabase, { once: true });
