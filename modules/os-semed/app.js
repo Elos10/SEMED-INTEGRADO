@@ -12,10 +12,10 @@ const statuses = [
 ];
 
 const demoUsers = [
-  { id: "u-admin", name: "Administrador DETIC", email: "detic@uberabadigital.com.br", password: "25@detic2025", role: "Administrador", unit: "" },
-  { id: "u-solicitante", name: "Solicitante", email: "solicitante@dirlogistica.local", password: "admin123", role: "Solicitante", unit: "" },
-  { id: "u-tecnico", name: "Responsável Técnico", email: "tecnico@dirlogistica.local", password: "admin123", role: "Responsável", unit: "" },
-  { id: "u-gestor", name: "Gestor Consulta", email: "gestor@dirlogistica.local", password: "admin123", role: "Gestor/Consulta", unit: "" },
+  { id: "u-admin", name: "Administrador DETIC", email: "detic@uberabadigital.com.br", role: "Administrador", unit: "" },
+  { id: "u-solicitante", name: "Solicitante", email: "solicitante@dirlogistica.local", role: "Solicitante", unit: "" },
+  { id: "u-tecnico", name: "Responsável Técnico", email: "tecnico@dirlogistica.local", role: "Responsável", unit: "" },
+  { id: "u-gestor", name: "Gestor Consulta", email: "gestor@dirlogistica.local", role: "Gestor/Consulta", unit: "" },
 ];
 
 const defaultAreaResponsibles = {
@@ -1380,7 +1380,7 @@ function userFormHtml() {
         <button type="submit">${editingUser ? "Salvar alterações" : "Adicionar usuário"}</button>
         <button type="button" class="secondary" id="cancel-user-edit">Cancelar</button>
       </div>
-      <p class="span-3 muted">Novos usuários recebem a senha inicial <strong>admin123</strong>.</p>
+      <p class="span-3 muted">A senha é criada ou redefinida exclusivamente no Supabase Auth.</p>
     </form>
   `;
 }
@@ -1417,7 +1417,6 @@ async function saveUser(event) {
     role: formData.get("role").toString(),
     unit: formData.get("unit").toString(),
     photo,
-    password: existing?.password || "admin123",
     active: existing?.active !== false,
   };
 

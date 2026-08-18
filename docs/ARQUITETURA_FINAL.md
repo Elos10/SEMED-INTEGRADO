@@ -169,3 +169,26 @@ autorização central como segunda barreira.
 
 Fluxo: autenticação Supabase -> sessão central -> `get_my_modules()` -> portal
 filtrado -> guarda da rota -> RLS do módulo.
+
+## Identidade corporativa única
+
+`auth.users` é a fonte exclusiva de credenciais. A tabela `semed_people`
+mantém somente dados corporativos não secretos e usa o mesmo UUID do Supabase
+Auth. Perfis e permissões continuam nas tabelas corporativas, enquanto tabelas
+específicas dos módulos guardam apenas atributos funcionais, nunca senhas.
+
+O portal e as guardas consultam `get_my_access_context()`, que entrega usuário
+ativo, perfis corporativos, módulos e permissões de operação. A interface pode
+ocultar ações por essa resposta, mas a decisão de segurança permanece nas
+políticas RLS por operação.
+
+`semed_audit` recebe eventos corporativos comuns. Logs de domínio podem
+continuar nos módulos, associados ao mesmo `auth.uid()`.
+
+## Desagregação dos documentos JSON
+
+A migração para tabelas relacionais será feita por agregado funcional, sem
+substituição destrutiva. Até a desagregação, todo documento agregado deve usar
+versão esperada na gravação para detectar concorrência. A migration
+`0003_json_state_concurrency.sql` prepara esse controle para Avaliações e
+Inscrições e está marcada como pendente de aplicação remota.

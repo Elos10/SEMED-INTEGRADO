@@ -23,8 +23,9 @@ async function loadRows() {
 export async function loadElectionState() { return mergeRows(await loadRows()); }
 
 function split(state) {
+  const accessAccounts = (state.accessAccounts || []).map(({ password, senha, ...account }) => account);
   return {
-    registry: { settings: state.settings, units: state.units, accessAccounts: state.accessAccounts, candidates: state.candidates },
+    registry: { settings: state.settings, units: state.units, accessAccounts, candidates: state.candidates },
     voting: { boothAssignments: state.boothAssignments, votingSessions: state.votingSessions, votes: state.votes },
   };
 }

@@ -1159,7 +1159,6 @@ function importView() {
 function adminView() {
   const editingUser = state.users.find((user) => user.id === state.editingUserId);
   const submitLabel = editingUser ? "Salvar alteracoes" : "Cadastrar usuario";
-  const passwordAttrs = editingUser ? 'placeholder="Preencha apenas se desejar alterar"' : "required";
   const unitOptions = adminUnitOptions(editingUser?.unidadeEscolar);
   return `
     <section class="admin-stack">
@@ -1174,7 +1173,7 @@ function adminView() {
             : `<input name="unidadeEscolar" required value="${esc(editingUser?.unidadeEscolar || "")}" placeholder="Digite a unidade escolar">`}
           </label>
           <label>E-mail <input name="email" type="email" required value="${esc(editingUser?.email || "")}"></label>
-          <label>Senha <input name="senha" type="password" ${passwordAttrs}></label>
+          <div class="notice">A senha deste usuário é administrada exclusivamente no Supabase Auth.</div>
           <label>Perfil <select name="perfil">
             ${["ADMINISTRADOR", "GESTOR SEMED", "GESTOR UNIDADE"].map((perfil) => `<option ${editingUser?.perfil === perfil ? "selected" : ""}>${perfil}</option>`).join("")}
           </select></label>
@@ -2004,7 +2003,6 @@ async function saveUser(event) {
   event.preventDefault();
   const body = Object.fromEntries(new FormData(event.target));
   body.ativo = body.ativo === "true";
-  if (!body.senha) delete body.senha;
   if (state.editingUserId) {
     await api(`/admin/users/${state.editingUserId}`, { method: "PUT", body });
     state.message = "Usuario atualizado.";

@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase-config.js';
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('PREENCHA')) {
@@ -7,7 +7,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('PREENCHA')) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const DB_ID = 'db';
-const ADMIN = { id: 1, name: 'ADMINISTRADOR SEMED', email: 'admin@semed.local', password: 'adm123', role: 'Administrador', unit_id: 1, teacher_id: null, status: 'Ativo', permissions: ["INSCRICOES:Visualizar","INSCRICOES:Inscricao Alunos da Rede","INSCRICOES:Inscricao Comunidade","INSCRICOES:Cadastrar","INSCRICOES:Editar","INSCRICOES:Excluir","INSCRICOES:Imprimir","GESTAO:Visualizar","GESTAO:Unidades","GESTAO:Locais de Realizacao","GESTAO:Modalidades","GESTAO:Professores","GESTAO:Atividades/Oficinas","GESTAO:Turmas/Oficinas","GESTAO:Cadastrar","GESTAO:Editar","GESTAO:Excluir","FREQUENCIA:Visualizar","FREQUENCIA:Gerar Folha","FREQUENCIA:Salvar","FREQUENCIA:Editar","FREQUENCIA:Imprimir","RELATORIOS:Gerencial","RELATORIOS:Agenda","RELATORIOS:Logs","RELATORIOS:Limpar Logs","RELATORIOS:Exportar","ACESSO:Visualizar","ACESSO:Cadastrar","ACESSO:Editar","ACESSO:Excluir"] };
+const ADMIN = { id: 1, name: 'ADMINISTRADOR SEMED', email: 'admin@semed.local', role: 'Administrador', unit_id: 1, teacher_id: null, status: 'Ativo', permissions: ["INSCRICOES:Visualizar","INSCRICOES:Inscricao Alunos da Rede","INSCRICOES:Inscricao Comunidade","INSCRICOES:Cadastrar","INSCRICOES:Editar","INSCRICOES:Excluir","INSCRICOES:Imprimir","GESTAO:Visualizar","GESTAO:Unidades","GESTAO:Locais de Realizacao","GESTAO:Modalidades","GESTAO:Professores","GESTAO:Atividades/Oficinas","GESTAO:Turmas/Oficinas","GESTAO:Cadastrar","GESTAO:Editar","GESTAO:Excluir","FREQUENCIA:Visualizar","FREQUENCIA:Gerar Folha","FREQUENCIA:Salvar","FREQUENCIA:Editar","FREQUENCIA:Imprimir","RELATORIOS:Gerencial","RELATORIOS:Agenda","RELATORIOS:Logs","RELATORIOS:Limpar Logs","RELATORIOS:Exportar","ACESSO:Visualizar","ACESSO:Cadastrar","ACESSO:Editar","ACESSO:Excluir"] };
 
 function seed() {
   const activities = ['FUTEBOL', 'RECREACAO/PSICOMOTRICIDADE', 'GINASTICA ORIENTADA/FUNCIONAL', 'REFORCO ESCOLAR', 'JUDO', 'BALLET', 'ARTES', 'FUTSAL', 'FUTSAL FEMININO', 'JIU-JITSU', 'VOLEI'];
@@ -58,6 +58,10 @@ function ensureDb(value) {
       db[key] = base[key];
       changed = true;
     }
+  }
+  for (const account of db.users) {
+    if ('password' in account) { delete account.password; changed = true; }
+    if ('senha' in account) { delete account.senha; changed = true; }
   }
   const admins = db.users.map((u, i) => [u, i]).filter(([u]) => {
     const email = String(u.email || '').toLowerCase();

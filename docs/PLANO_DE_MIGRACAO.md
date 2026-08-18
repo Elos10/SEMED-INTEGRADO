@@ -166,3 +166,13 @@ Cada migration terá `up` idempotente quando possível, rollback lógico documen
 - **Problemas:** auth/RLS públicas/inseguras em três módulos; erro sintático em OS; duplicações de código; credenciais/documentação sensível; divergência README/código.
 - **Testes:** inventário estático e validação sintática; todos os JS selecionados passaram exceto OS SEMED. Sem E2E ou testes remotos.
 - **Próxima etapa:** inventário remoto, contenção de credenciais/regras e testes de caracterização, sem iniciar migração destrutiva.
+# Prioridades de saneamento arquitetural
+
+1. Concluir a identidade corporativa única e remover credenciais funcionais.
+2. Aplicar e validar `0003_json_state_concurrency.sql`.
+3. Migrar usuários internos para vínculos por `auth.users.id`.
+4. Desagregar Avaliações por importação, registro, avaliação e permissão.
+5. Desagregar Inscrições por atividade, turma, inscrição e frequência.
+6. Desagregar Urna por eleição, unidade, chapa, sessão e voto.
+7. Extrair shell, navegação e componentes compartilhados sem alterar regras.
+8. Implantar homologação, testes de contrato/RLS e promoção controlada.

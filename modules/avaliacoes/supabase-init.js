@@ -58,7 +58,7 @@ function seed() {
     version: 2,
     users: [
       { id: id('usr_'), unidadeEscolar: 'SEMED', email: DEFAULT_ADMIN.email, perfil: roles.ADMINISTRADOR, ativo: true, criadoEm: now, atualizadoEm: now },
-      { id: id('usr_'), unidadeEscolar: 'SEMED', email: 'gestor.semed@semed.local', senha: 'Semed@123', perfil: roles.GESTOR_SEMED, ativo: true, criadoEm: now, atualizadoEm: now },
+      { id: id('usr_'), unidadeEscolar: 'SEMED', email: 'gestor.semed@semed.local', perfil: roles.GESTOR_SEMED, ativo: true, criadoEm: now, atualizadoEm: now },
     ],
     permissions,
     records: [],
@@ -117,6 +117,11 @@ function ensureDb(value) {
     if (!existing) {
       db.users.push(admin);
       changed = true;
+    }
+  }
+  for (const account of db.users) {
+    for (const field of ['senha', 'password', 'senhaHash']) {
+      if (field in account) { delete account[field]; changed = true; }
     }
   }
   return { db, changed };
@@ -969,7 +974,6 @@ async function request(method, path, data = undefined, options = {}) {
   if (method === 'POST' && route === 'auth/change-password') {
     const { error } = await supabase.auth.updateUser({ password: data?.newPassword });
     if (error) throw { status: 400, error: 'Não foi possível alterar a senha.', detail: error.message };
-    user.senha = data?.newPassword;
     log(db, user, 'ALTEROU_SENHA');
     await writeDb(db);
     return { ok: true };
@@ -1021,7 +1025,7 @@ async function request(method, path, data = undefined, options = {}) {
   }
   if (method === 'GET' && route === 'admin/users') return db.users.map(publicUser);
   if (method === 'POST' && route === 'admin/users') {
-    const item = { id: id('usr_'), unidadeEscolar: data.unidadeEscolar, email: normalizeEmail(data.email), senha: data.senha, perfil: data.perfil, ativo: data.ativo !== false, criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString() };
+    const item = { id: id('usr_'), unidadeEscolar: data.unidadeEscolar, email: normalizeEmail(data.email), perfil: data.perfil, ativo: data.ativo !== false, criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString() };
     db.users.push(item);
     log(db, user, 'CADASTROU_USUARIO', { email: item.email });
     await writeDb(db);
@@ -1032,7 +1036,6 @@ async function request(method, path, data = undefined, options = {}) {
     if (!item) throw { status: 404, error: 'Usuário não encontrado.' };
     Object.assign(item, data || {});
     if (data?.email) item.email = normalizeEmail(data.email);
-    if (data?.senha) item.senha = data.senha;
     item.atualizadoEm = new Date().toISOString();
     await writeDb(db);
     return publicUser(item);

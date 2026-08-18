@@ -507,7 +507,6 @@ function createSeedState() {
       accessKind: "ADMINISTRADOR",
       name: "Administrador Geral",
       email: "detic@uberabadigital.com.br",
-      password: "25@detic2025",
       unitId: "",
       active: true,
     },
@@ -516,7 +515,6 @@ function createSeedState() {
       accessKind: "MESARIO",
       name: `Mesário ${String(index + 1).padStart(2, "0")}`,
       email: `mesario${String(index + 1).padStart(2, "0")}@urna.local`,
-      password: "123456",
       unitId: unit.id,
       active: true,
     })),
@@ -985,14 +983,13 @@ async function submitAccessForm(formData) {
   const payload = {
     name: String(formData.get("name") || "").trim(),
     email: String(formData.get("email") || "").trim().toLowerCase(),
-    password: String(formData.get("password") || "").trim(),
     accessKind,
     unitId: String(formData.get("unitId") || ""),
     active: formData.get("active") === "on",
   };
 
-  if (!payload.name || !payload.email || !payload.password) {
-    uiState.accessNotice = "Preencha nome, e-mail e senha.";
+  if (!payload.name || !payload.email) {
+    uiState.accessNotice = "Preencha nome e e-mail. A credencial é administrada pelo Supabase Auth.";
     renderApp();
     return;
   }
@@ -1033,7 +1030,6 @@ async function submitAccessForm(formData) {
       if (latestEditing) {
         latestEditing.name = payload.name;
         latestEditing.email = payload.email;
-        latestEditing.password = payload.password;
         latestEditing.accessKind = payload.accessKind;
         latestEditing.unitId = payload.accessKind === "MESARIO" ? payload.unitId : "";
         latestEditing.active = payload.active;
@@ -1045,7 +1041,6 @@ async function submitAccessForm(formData) {
         createdAt: new Date().toISOString(),
         name: payload.name,
         email: payload.email,
-        password: payload.password,
         accessKind: payload.accessKind,
         unitId: payload.accessKind === "MESARIO" ? payload.unitId : "",
         active: payload.active,
@@ -2108,10 +2103,7 @@ function renderAccessTab() {
             <label for="access-email">E-mail</label>
             <input id="access-email" name="email" type="email" value="${escapeHtml(editing ? editing.email : "")}" required>
           </div>
-          <div class="field field-light">
-            <label for="access-password">Senha</label>
-            <input id="access-password" name="password" value="${escapeHtml(editing ? editing.password : "")}" required>
-          </div>
+          <div class="field field-light"><label>Credencial</label><p class="subtle">Senha administrada exclusivamente no Supabase Auth.</p></div>
           <div class="split-fields">
             <div class="field field-light">
               <label for="access-kind">Tipo de acesso</label>
@@ -2214,10 +2206,7 @@ function renderAccessEditorPage(editing) {
             <label for="access-email">E-mail</label>
             <input id="access-email" name="email" type="email" value="${escapeHtml(editing ? editing.email : "")}" required>
           </div>
-          <div class="field field-light">
-            <label for="access-password">Senha</label>
-            <input id="access-password" name="password" value="${escapeHtml(editing ? editing.password : "")}" required>
-          </div>
+          <div class="field field-light"><label>Credencial</label><p class="subtle">Senha administrada exclusivamente no Supabase Auth.</p></div>
           <div class="split-fields">
             <div class="field field-light">
               <label for="access-kind">Tipo de acesso</label>

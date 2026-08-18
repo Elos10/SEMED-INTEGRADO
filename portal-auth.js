@@ -28,10 +28,11 @@ overlay.className = "portal-auth";
 overlay.innerHTML = `<form class="portal-login"><h2>Entrar no Portal SEMED</h2><p>Use seu e-mail institucional e sua senha.</p><label>E-mail<input name="email" type="email" autocomplete="username" value="detic@uberabadigital.com.br" required></label><label>Senha<input name="password" type="password" autocomplete="current-password" required></label><div class="auth-error" role="alert"></div><button type="submit">Entrar</button></form>`;
 document.body.append(overlay);
 
-async function allowedModules() {
-  const { data, error } = await supabase.rpc("get_my_modules");
+async function accessContext() {
+  const { data, error } = await supabase.rpc("get_my_access_context");
   if (error) throw error;
-  return data || [];
+  if (!data?.user?.active) throw new Error("Usuário corporativo inativo.");
+  return data;
 }
 
 function renderUser(session) {
@@ -44,8 +45,8 @@ function renderUser(session) {
 }
 
 async function revealPortal(session) {
-  const modules = await allowedModules();
-  const codes = new Set(modules.map((item) => item.codigo));
+  const context = await accessContext();
+  const codes = new Set((context.modules || []).filter((item) => item.permissions?.view).map((item) => item.code));
   document.querySelectorAll(".system-card").forEach((card) => {
     const href = card.querySelector(".access")?.getAttribute("href");
     card.hidden = !codes.has(moduleByHref[href]);
@@ -53,6 +54,7 @@ async function revealPortal(session) {
   document.querySelector(".systems-grid")?.classList.add("filtered");
   if (!codes.size) throw new Error("Seu perfil não possui módulos autorizados.");
   renderUser(session);
+  window.SEMED_ACCESS_CONTEXT = context;
   overlay.hidden = true;
   document.body.classList.remove("portal-auth-pending");
 
