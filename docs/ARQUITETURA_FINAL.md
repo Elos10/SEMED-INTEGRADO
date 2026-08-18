@@ -156,3 +156,16 @@ Não promover automaticamente `units`/escolas a `core.units`. Criar staging por 
 - Testes concorrentes para matrícula/vagas, importações, mudança de status e voto único.
 - Acessibilidade, responsividade e regressão visual do shell e de cada módulo.
 - Reconciliação de dados com totais, chaves, duplicidades e amostras aprovadas pelos donos de negócio.
+# Autenticação central do portal
+
+O Portal SEMED usa uma única sessão do Supabase Auth. Antes de apresentar os
+módulos, o portal chama `get_my_modules()` e exibe somente os sistemas liberados
+para os perfis ativos do usuário.
+
+Cada rota de módulo também executa a mesma verificação. Assim, ocultar um cartão
+não é tratado como mecanismo de segurança: acessos diretos por URL sem sessão ou
+sem permissão retornam ao portal. As políticas RLS dos bancos dos módulos usam a
+autorização central como segunda barreira.
+
+Fluxo: autenticação Supabase -> sessão central -> `get_my_modules()` -> portal
+filtrado -> guarda da rota -> RLS do módulo.

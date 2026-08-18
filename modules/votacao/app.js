@@ -3,10 +3,11 @@ import {
   ensureElectionSeed,
   loadElectionState,
   runElectionStateTransaction,
+  restoreElectionSession,
   signInElection,
   signOutElection,
   subscribeToElectionState,
-} from "./supabase-store.js?v=20260814-2";
+} from "./supabase-store.js?v=20260818-sso-1";
 const FINISH_DELAY_MS = 2600;
 const UNIT_TYPOLOGIES = [
   { value: "1", label: "Tipo 1", roles: ["Diretor(a)"] },
@@ -223,6 +224,25 @@ appRoot.addEventListener("change", handleChange);
 
 renderApp();
 startStateSync();
+restoreCentralElectionSession();
+
+async function restoreCentralElectionSession() {
+  try {
+    const restored = await restoreElectionSession();
+    if (!restored) return;
+    appState = await loadElectionState();
+    const email = String(restored.user.email || "").toLowerCase();
+    const account = appState.accessAccounts.find((item) => item.email.toLowerCase() === email && item.active);
+    if (!account) return;
+    uiState.currentAccessId = account.id;
+    uiState.screen = account.accessKind === "ADMINISTRADOR" ? "admin" : "mesario";
+    uiState.loginEmail = email;
+    uiState.loginError = "";
+    renderApp();
+  } catch (error) {
+    console.error("Falha ao restaurar a sessão central da votação", error);
+  }
+}
 
 function startStateSync() {
   subscribeToElectionState({

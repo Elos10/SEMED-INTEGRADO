@@ -334,6 +334,14 @@ async function request(method, path, data = undefined) {
     await writeDb(db);
     return { token: authData.session.access_token, user: publicUser(user) };
   }
+  if (method === 'GET' && route === 'auth/session') {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) throw { status: 401, error: 'Sessão central não encontrada.' };
+    const db = await readDb();
+    const user = db.users.find((item) => String(item.email || '').toLowerCase() === String(session.user.email || '').toLowerCase() && String(item.status).toUpperCase() === 'ATIVO');
+    if (!user) throw { status: 403, error: 'Perfil sem acesso ao módulo Inscrições.' };
+    return { token: session.access_token, user: publicUser(user) };
+  }
   const db = await readDb();
   const user = currentUser(db);
   if (!user) throw { status: 401, error: 'Nao autenticado.' };

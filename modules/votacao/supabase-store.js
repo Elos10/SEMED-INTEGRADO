@@ -54,6 +54,14 @@ export async function signInElection(email, password) {
   return { user: data.user, access };
 }
 
+export async function restoreElectionSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return null;
+  const { data: access, error } = await supabase.from("votacao_accounts").select("access_kind,unit_id,active").eq("user_id", session.user.id).maybeSingle();
+  if (error || !access?.active) return null;
+  return { user: session.user, access };
+}
+
 export async function signOutElection() { await supabase.auth.signOut(); }
 
 export async function ensureElectionSeed() { return loadRows(); }

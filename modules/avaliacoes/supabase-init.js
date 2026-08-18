@@ -953,6 +953,14 @@ async function request(method, path, data = undefined, options = {}) {
     await writeDb(db);
     return { token: `avd:${user.id}:${Date.now()}`, refreshToken: `refresh:${user.id}:${Date.now()}`, user: publicUser(user), permissions: db.permissions[user.perfil] };
   }
+  if (method === 'GET' && route === 'auth/session') {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) throw { status: 401, error: 'Sessão central não encontrada.' };
+    const db = await readDb();
+    const user = db.users.find((item) => normalizeEmail(item.email) === normalizeEmail(session.user.email) && item.ativo);
+    if (!user) throw { status: 403, error: 'Perfil sem acesso ao módulo Avaliações.' };
+    return { token: `avd:${user.id}:${Date.now()}`, refreshToken: '', user: publicUser(user), permissions: db.permissions[user.perfil] };
+  }
   const db = await readDb();
   const user = currentUser(db, options.token);
   if (!user) throw { status: 401, error: 'Sessão inválida ou expirada.' };

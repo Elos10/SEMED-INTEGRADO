@@ -92,6 +92,15 @@ const chartRegistry = new Map();
 boot();
 
 async function boot() {
+  if (!state.token) {
+    try {
+      const central = await api("/auth/session", { auth: false });
+      state.token = central.token;
+      state.refreshToken = central.refreshToken || "";
+      localStorage.setItem("token", state.token);
+      if (state.refreshToken) localStorage.setItem("refreshToken", state.refreshToken);
+    } catch {}
+  }
   state.loading = Boolean(state.token);
   render();
   if (state.token) {
