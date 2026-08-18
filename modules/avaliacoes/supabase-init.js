@@ -1,5 +1,7 @@
 ﻿import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase-config.js';
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('PREENCHA')) {
   throw new Error('Configuração do Supabase ausente.');
 }
@@ -8,6 +10,7 @@ const TABLE = 'avd_app_state';
 const RECORDS_TABLE = 'avd_records';
 const DB_ID = 'db';
 const REST_URL = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1`;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const importPreviewCache = new Map();
 const DB_CACHE_MS = 15000;
 let dbCache = null;
@@ -27,7 +30,7 @@ const roles = {
   GESTOR_SEMED: 'GESTOR SEMED',
   GESTOR_UNIDADE: 'GESTOR UNIDADE',
 };
-const DEFAULT_ADMIN = { email: 'detic@uberabadigital.com.br', senha: '25@detic2025' };
+const DEFAULT_ADMIN = { email: 'detic@uberabadigital.com.br' };
 const screens = ['dashboard', 'relatorios', 'comparativo', 'bncc', 'curriculoMunicipal', 'importacoes', 'qualidade', 'admin', 'habilidadesAplicadas', 'analise'];
 const filterMap = {
   avaliacao: 'AVALIACAO',
@@ -54,7 +57,7 @@ function seed() {
   return {
     version: 2,
     users: [
-      { id: id('usr_'), unidadeEscolar: 'SEMED', email: DEFAULT_ADMIN.email, senha: DEFAULT_ADMIN.senha, perfil: roles.ADMINISTRADOR, ativo: true, criadoEm: now, atualizadoEm: now },
+      { id: id('usr_'), unidadeEscolar: 'SEMED', email: DEFAULT_ADMIN.email, perfil: roles.ADMINISTRADOR, ativo: true, criadoEm: now, atualizadoEm: now },
       { id: id('usr_'), unidadeEscolar: 'SEMED', email: 'gestor.semed@semed.local', senha: 'Semed@123', perfil: roles.GESTOR_SEMED, ativo: true, criadoEm: now, atualizadoEm: now },
     ],
     permissions,
@@ -100,9 +103,10 @@ function ensureDb(value) {
   }
   const existingAdmin = db.users.find((user) => normalizeEmail(user.email) === DEFAULT_ADMIN.email)
     || db.users.find((user) => user.perfil === roles.ADMINISTRADOR && normalizeEmail(user.email) === 'admin@semed.local');
-  if (existingAdmin && (normalizeEmail(existingAdmin.email) !== DEFAULT_ADMIN.email || existingAdmin.senha !== DEFAULT_ADMIN.senha || existingAdmin.ativo !== true)) {
+  if (existingAdmin && (normalizeEmail(existingAdmin.email) !== DEFAULT_ADMIN.email || existingAdmin.ativo !== true || existingAdmin.senha || existingAdmin.password)) {
     existingAdmin.email = DEFAULT_ADMIN.email;
-    existingAdmin.senha = DEFAULT_ADMIN.senha;
+    delete existingAdmin.senha;
+    delete existingAdmin.password;
     delete existingAdmin.senhaHash;
     existingAdmin.ativo = true;
     existingAdmin.atualizadoEm = new Date().toISOString();
@@ -112,9 +116,6 @@ function ensureDb(value) {
     const existing = db.users.find((user) => normalizeEmail(user.email) === admin.email);
     if (!existing) {
       db.users.push(admin);
-      changed = true;
-    } else if (!existing.senha && !existing.senhaHash) {
-      existing.senha = admin.senha;
       changed = true;
     }
   }
@@ -132,11 +133,12 @@ function supabaseError(error) {
 async function supabaseRequest(path, options = {}) {
   let response;
   try {
+    const { data: { session } } = await supabase.auth.getSession();
     response = await fetch(`${REST_URL}${path}`, {
       ...options,
       headers: {
         apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Authorization: `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
         Accept: 'application/json',
         ...(options.body ? { 'Content-Type': 'application/json' } : {}),
         ...(options.headers || {}),
@@ -936,24 +938,29 @@ function filtersFrom(path) {
 }
 
 async function request(method, path, data = undefined, options = {}) {
-  const db = await readDb();
   const p = routeParts(path);
   const route = p.join('/');
   if (method === 'GET' && route === 'health') return { ok: true, database: 'Supabase' };
   if (method === 'POST' && route === 'auth/login') {
     const email = normalizeEmail(data?.email);
     const password = String(data?.password || '');
-    const user = db.users.find((item) => normalizeEmail(item.email) === email && item.ativo && String(item.senha || item.password || '') === password);
-    if (!user) throw { status: 401, error: 'E-mail ou senha inválidos.' };
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError || !authData.user) throw { status: 401, error: 'E-mail ou senha inválidos.' };
+    const db = await readDb();
+    const user = db.users.find((item) => normalizeEmail(item.email) === email && item.ativo);
+    if (!user) { await supabase.auth.signOut(); throw { status: 403, error: 'Perfil sem acesso ao módulo Avaliações.' }; }
     log(db, user, 'LOGIN');
     await writeDb(db);
     return { token: `avd:${user.id}:${Date.now()}`, refreshToken: `refresh:${user.id}:${Date.now()}`, user: publicUser(user), permissions: db.permissions[user.perfil] };
   }
+  const db = await readDb();
   const user = currentUser(db, options.token);
   if (!user) throw { status: 401, error: 'Sessão inválida ou expirada.' };
   if (method === 'GET' && route === 'me') return { user: publicUser(user), permissions: db.permissions[user.perfil] };
-  if (method === 'POST' && route === 'auth/logout') return { ok: true };
+  if (method === 'POST' && route === 'auth/logout') { await supabase.auth.signOut(); return { ok: true }; }
   if (method === 'POST' && route === 'auth/change-password') {
+    const { error } = await supabase.auth.updateUser({ password: data?.newPassword });
+    if (error) throw { status: 400, error: 'Não foi possível alterar a senha.', detail: error.message };
     user.senha = data?.newPassword;
     log(db, user, 'ALTEROU_SENHA');
     await writeDb(db);

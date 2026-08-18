@@ -42,8 +42,8 @@ function seed() {
 Object.assign(ADMIN, {
   name: 'ADMINISTRADOR DETIC',
   email: 'detic@uberabadigital.com.br',
-  password: '25@detic2025',
 });
+delete ADMIN.password;
 
 function nextId(rows) {
   return (rows || []).reduce((max, row) => Math.max(max, Number(row.id || 0)), 0) + 1;
@@ -319,19 +319,22 @@ function parts(path) {
 }
 
 async function request(method, path, data = undefined) {
-  const db = await readDb();
   const p = parts(path);
   const route = p.join('/');
   if (method === 'GET' && (route === 'health' || route === '')) return { ok: true, database: 'Supabase' };
   if (method === 'POST' && route === 'auth/login') {
     const email = String(data?.email || '').trim().toLowerCase();
     const password = String(data?.password || '').trim();
-    const user = db.users.find((u) => String(u.email || '').toLowerCase() === email && String(u.password || '') === password && String(u.status).toUpperCase() === 'ATIVO');
-    if (!user) throw { status: 401, error: 'Credenciais invalidas.' };
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError || !authData.user) throw { status: 401, error: 'Credenciais invalidas.' };
+    const db = await readDb();
+    const user = db.users.find((u) => String(u.email || '').toLowerCase() === email && String(u.status).toUpperCase() === 'ATIVO');
+    if (!user) { await supabase.auth.signOut(); throw { status: 403, error: 'Perfil sem acesso ao módulo Inscrições.' }; }
     log(db, user, 'LOGIN', 'users', user.id);
     await writeDb(db);
-    return { token: `supabase-${user.id}-${Date.now()}`, user: publicUser(user) };
+    return { token: authData.session.access_token, user: publicUser(user) };
   }
+  const db = await readDb();
   const user = currentUser(db);
   if (!user) throw { status: 401, error: 'Nao autenticado.' };
   if (method === 'GET' && route === 'auth/me') return publicUser(user);
@@ -512,3 +515,4 @@ async function request(method, path, data = undefined) {
 
 window.SEMED_DB_REQUEST = request;
 window.SEMED_SUPABASE_CLIENT = supabase;
+window.SEMED_AUTH_SIGN_OUT = () => supabase.auth.signOut();
