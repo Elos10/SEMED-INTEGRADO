@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 const headers = { ...corsHeaders, "Content-Type": "application/json" };
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers });
-const strongPassword = (value: string) => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/.test(value);
+const strongPassword = (value: string) => /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/.test(value);
 const DETIC_EMAIL = "detic@uberabadigital.com.br";
 
 Deno.serve(async (req) => {
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     const requestedRoles = input.moduleRoles && typeof input.moduleRoles === "object" ? input.moduleRoles : {};
 
     if (!email || !fullName || !requestedProfiles.length) throw new Error("Nome, e-mail e ao menos um perfil são obrigatórios.");
-    if (!uid && !strongPassword(temporaryPassword)) throw new Error("A senha temporária deve ter 12 caracteres, maiúscula, minúscula, número e símbolo.");
+    if (!uid && !strongPassword(temporaryPassword)) throw new Error("A senha temporária deve ter 12 caracteres, letra, número e símbolo.");
     if (uid && temporaryPassword && !strongPassword(temporaryPassword)) throw new Error("A nova senha temporária não atende aos requisitos de segurança.");
     if (email !== DETIC_EMAIL && requestedProfiles.includes("ADMIN_GERAL")) throw new Error("O perfil Administrador Geral é exclusivo do usuário DETIC.");
     if (uid === user.id && (!active || email !== DETIC_EMAIL || !requestedProfiles.includes("ADMIN_GERAL"))) {

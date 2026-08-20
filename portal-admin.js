@@ -7,6 +7,24 @@ const MODULE_ROLES = {
 };
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+const STRONG_PASSWORD = /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/;
+
+async function functionErrorMessage(error, data) {
+  if (data?.error) return data.error;
+  const response = error?.context;
+  if (response && typeof response.clone === "function") {
+    try {
+      const body = await response.clone().json();
+      if (body?.error) return body.error;
+    } catch {
+      try {
+        const body = await response.clone().text();
+        if (body) return body;
+      } catch { /* resposta sem corpo legível */ }
+    }
+  }
+  return error?.message || "Falha no serviço de usuários.";
+}
 
 export function initPortalAdmin({ supabase, context }) {
   if (!context?.portal_admin) return;
@@ -47,7 +65,7 @@ export function initPortalAdmin({ supabase, context }) {
 
   async function invoke(body) {
     const { data, error } = await supabase.functions.invoke("manage-semed-user", { body });
-    if (error) throw new Error(data?.error || error.message || "Falha no serviço de usuários.");
+    if (error) throw new Error(await functionErrorMessage(error, data));
     if (data?.error) throw new Error(data.error);
     return data;
   }
@@ -86,7 +104,7 @@ export function initPortalAdmin({ supabase, context }) {
         <h3 class="access-admin-wide">${user ? "Editar usuário" : "Cadastrar usuário"}</h3>
         <label>Nome completo<input name="fullName" value="${esc(user?.full_name)}" required></label>
         <label>E-mail institucional<input name="email" type="email" value="${esc(user?.email)}" ${isDetic ? "readonly" : ""} required></label>
-        <label>Senha temporária<input name="temporaryPassword" type="password" autocomplete="new-password" minlength="12" ${user ? 'placeholder="Deixe vazio para manter a senha"' : "required"}><small>Ao receber uma senha temporária, o usuário deverá trocá-la no primeiro acesso.</small></label>
+        <label>Senha temporária<input name="temporaryPassword" type="password" autocomplete="new-password" minlength="12" pattern="(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{12,}" title="Use no mínimo 12 caracteres, com letra, número e símbolo." ${user ? 'placeholder="Deixe vazio para manter a senha"' : "required"}><small>Mínimo de 12 caracteres, com letra, número e símbolo. O usuário deverá trocá-la no primeiro acesso.</small></label>
         <label>Situação<select name="active" ${isDetic ? "disabled" : ""}><option value="true" ${user?.active !== false ? "selected" : ""}>Ativo</option><option value="false" ${user?.active === false ? "selected" : ""}>Inativo</option></select></label>
         <fieldset class="access-admin-wide"><legend>Perfis corporativos</legend><div class="profile-grid">
           ${(catalog.profiles || []).map((profile) => {
@@ -137,6 +155,16 @@ export function initPortalAdmin({ supabase, context }) {
       profileCodes: values.getAll("profiles"),
       moduleRoles,
     };
+    if (!payload.profileCodes.length) {
+      notice.textContent = "Selecione ao menos um perfil corporativo.";
+      return;
+    }
+    if ((!selectedUser || payload.temporaryPassword) && !STRONG_PASSWORD.test(payload.temporaryPassword)) {
+      notice.textContent = "A senha temporária deve ter ao menos 12 caracteres, incluindo letra, número e símbolo.";
+      return;
+    }
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
     notice.textContent = "Salvando…";
     try {
       await invoke(payload);
@@ -146,6 +174,8 @@ export function initPortalAdmin({ supabase, context }) {
       panel.querySelector("[data-notice]").textContent = "Usuário e acessos atualizados.";
     } catch (error) {
       notice.textContent = error.message || "Não foi possível salvar.";
+    } finally {
+      submitButton.disabled = false;
     }
   }
 

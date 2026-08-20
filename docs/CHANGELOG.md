@@ -1,5 +1,13 @@
 # Registro de alterações
 
+## 2026-08-20 — Diagnóstico do cadastro por Edge Function
+
+- o portal passou a apresentar a mensagem enviada no corpo das respostas não-2xx
+  da função `manage-semed-user`, em vez do erro genérico do cliente;
+- a senha temporária é validada no formulário com os mesmos requisitos do servidor;
+- o formulário impede envio sem perfil e bloqueia cliques duplicados durante o cadastro;
+- os scripts receberam nova versão para evitar o uso de arquivos antigos em cache.
+
 ## 2026-08-20 — Cadastro corporativo de usuários e perfis
 
 - criada administração central exclusiva para `detic@uberabadigital.com.br`;
