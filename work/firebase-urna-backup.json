@@ -3052,14 +3052,12 @@
         "email": "detic@uberabadigital.com.br",
         "id": "81acd307-bda7-4e83-a78e-ed5006bf8c47",
         "unitId": "",
-        "accessKind": "ADMINISTRADOR",
-        "password": "25@detic2025"
+        "accessKind": "ADMINISTRADOR"
       },
       {
         "email": "mesario01@urna.local",
         "accessKind": "MESARIO",
         "unitId": "unit-01-e-m-adolfo-bezerra-de-me",
-        "password": "123456",
         "id": "aa4a5018-8104-4828-a082-f1369b6d6ee1",
         "name": "Mesário 01",
         "active": true
@@ -3069,12 +3067,10 @@
         "name": "Mesário 02",
         "email": "mesario02@urna.local",
         "id": "c2b22a2a-d383-47eb-8558-52bb9d6e415a",
-        "password": "123456",
         "accessKind": "MESARIO",
         "unitId": "unit-02-e-m-arthur-de-mello-teix"
       },
       {
-        "password": "123456",
         "accessKind": "MESARIO",
         "id": "cb55fc24-5541-4f1e-b9b0-ae354e00a7a0",
         "active": true,
@@ -3088,20 +3084,17 @@
         "active": true,
         "unitId": "unit-04-e-m-celina-soares-de-pai",
         "id": "697527e9-e3dc-4620-bae8-c0270e7b1759",
-        "email": "mesario04@urna.local",
-        "password": "123456"
+        "email": "mesario04@urna.local"
       },
       {
         "unitId": "unit-05-e-m-doutor-aluizio-rosa-",
         "name": "Mesário 05",
         "id": "f8b25457-cf9e-42ae-ab1a-467182436a93",
         "accessKind": "MESARIO",
-        "password": "123456",
         "active": true,
         "email": "mesario05@urna.local"
       },
       {
-        "password": "123456",
         "unitId": "unit-06-e-m-frederico-peiro",
         "name": "Mesário 06",
         "id": "f314f8f4-96d9-4388-a58f-354337dfcf02",
@@ -3113,7 +3106,6 @@
         "unitId": "unit-07-e-m-gastao-mesquita-filh",
         "name": "Mesário 07",
         "id": "26e090a1-b21b-42dc-a02c-9832ffeb78e7",
-        "password": "123456",
         "email": "mesario07@urna.local",
         "active": true,
         "accessKind": "MESARIO"
@@ -3124,12 +3116,10 @@
         "name": "Mesário 08",
         "email": "mesario08@urna.local",
         "unitId": "unit-08-e-m-joaozinho-e-maria",
-        "accessKind": "MESARIO",
-        "password": "123456"
+        "accessKind": "MESARIO"
       },
       {
         "email": "mesario09@urna.local",
-        "password": "123456",
         "unitId": "unit-09-e-m-jose-marcus-cherem",
         "id": "f9e6a694-3281-453f-8bc4-4ea494233116",
         "accessKind": "MESARIO",
@@ -3137,7 +3127,6 @@
         "active": true
       },
       {
-        "password": "123456",
         "accessKind": "MESARIO",
         "unitId": "unit-10-e-m-joubert-de-carvalho",
         "id": "4926441c-1375-4abf-a5cc-7f3752d71e1b",
@@ -3151,14 +3140,12 @@
         "active": true,
         "email": "mesario11@urna.local",
         "unitId": "unit-11-e-m-madre-maria-georgina",
-        "name": "Mesário 11",
-        "password": "123456"
+        "name": "Mesário 11"
       },
       {
         "name": "Mesário 12",
         "unitId": "unit-12-e-m-maria-carolina-mende",
         "id": "c8d3afe6-dd9a-4ba0-8aa0-d73080064e39",
-        "password": "123456",
         "active": true,
         "email": "mesario12@urna.local",
         "accessKind": "MESARIO"
@@ -3168,13 +3155,11 @@
         "id": "bf2813f0-21ed-4158-9900-7a71bb80991b",
         "name": "Mesário 13",
         "email": "mesario13@urna.local",
-        "password": "123456",
         "unitId": "unit-13-e-m-maria-lourencina-pal",
         "accessKind": "MESARIO"
       },
       {
         "name": "Mesário 14",
-        "password": "123456",
         "accessKind": "MESARIO",
         "id": "52f14b04-6e88-42e6-932a-f1b2e6a2498d",
         "active": true,
@@ -3184,7 +3169,6 @@
       {
         "unitId": "unit-15-e-m-norma-sueli-borges",
         "id": "27e324da-1aac-4dff-98b8-d688fb15f11f",
-        "password": "123456",
         "name": "Mesário 15",
         "email": "mesario15@urna.local",
         "active": true,
@@ -3193,7 +3177,6 @@
       {
         "active": true,
         "email": "mesario16@urna.local",
-        "password": "123456",
         "id": "df52a13d-0747-4060-b782-7d6fecf4cb83",
         "accessKind": "MESARIO",
         "name": "Mesário 16",
@@ -3203,7 +3186,6 @@
         "unitId": "unit-17-e-m-pequeno-principe",
         "name": "Mesário 17",
         "email": "mesario17@urna.local",
-        "password": "123456",
         "active": true,
         "accessKind": "MESARIO",
         "id": "4f92c165-b326-49a1-8e9f-03ec05920547"
@@ -3211,7 +3193,6 @@
       {
         "unitId": "unit-18-e-m-prof-anisio-teixeira",
         "id": "34e85c4a-2bcf-4722-a0ae-27ad3b9ab688",
-        "password": "123456",
         "email": "mesario18@urna.local",
         "name": "Mesário 18",
         "active": true,
@@ -3220,7 +3201,6 @@
       {
         "active": true,
         "name": "Mesário 19",
-        "password": "123456",
         "unitId": "unit-19-e-m-prof-jose-geraldo-gu",
         "accessKind": "MESARIO",
         "id": "92efb60e-319f-4178-a25c-6611970d42a3",
@@ -3228,7 +3208,6 @@
       },
       {
         "name": "Mesário 20",
-        "password": "123456",
         "active": true,
         "accessKind": "MESARIO",
         "unitId": "unit-20-e-m-prof-jose-macciotti",
@@ -3240,12 +3219,10 @@
         "email": "mesario21@urna.local",
         "id": "cce980cf-278e-4c04-895b-f6ea346abbeb",
         "accessKind": "MESARIO",
-        "password": "123456",
         "name": "Mesário 21",
         "unitId": "unit-21-e-m-prof-paulo-rodrigues"
       },
       {
-        "password": "123456",
         "unitId": "unit-22-e-m-prof-esther-limirio-",
         "accessKind": "MESARIO",
         "id": "7644739f-d508-4bf1-a1a2-6572213043f7",
@@ -3256,7 +3233,6 @@
       {
         "active": true,
         "email": "mesario23@urna.local",
-        "password": "123456",
         "id": "1e9fecd1-ada9-4350-ae00-9ccdd83a60e9",
         "accessKind": "MESARIO",
         "name": "Mesário 23",
@@ -3268,13 +3244,11 @@
         "accessKind": "MESARIO",
         "unitId": "unit-24-e-m-prof-jane-luce-arauj",
         "email": "mesario24@urna.local",
-        "name": "Mesário 24",
-        "password": "123456"
+        "name": "Mesário 24"
       },
       {
         "email": "mesario25@urna.local",
         "accessKind": "MESARIO",
-        "password": "123456",
         "active": true,
         "id": "0beae42d-e8e3-45b0-8ce1-0d0e379a4187",
         "name": "Mesário 25",
@@ -3282,7 +3256,6 @@
       },
       {
         "unitId": "unit-26-e-m-prof-niza-marquez-gu",
-        "password": "123456",
         "name": "Mesário 26",
         "accessKind": "MESARIO",
         "id": "6a5c6c13-671b-4eed-a04b-d4bbf19c6c2c",
@@ -3290,7 +3263,6 @@
         "email": "mesario26@urna.local"
       },
       {
-        "password": "123456",
         "active": true,
         "email": "mesario27@urna.local",
         "unitId": "unit-27-e-m-prof-olga-de-oliveir",
@@ -3303,7 +3275,6 @@
         "email": "mesario28@urna.local",
         "id": "5ee7b984-4d3a-418c-a3b9-46735534bec5",
         "accessKind": "MESARIO",
-        "password": "123456",
         "unitId": "unit-28-e-m-prof-stella-chaves",
         "name": "Mesário 28"
       },
@@ -3313,7 +3284,6 @@
         "active": true,
         "accessKind": "MESARIO",
         "name": "Mesário 29",
-        "password": "123456",
         "unitId": "unit-29-e-m-prof-terezinha-hueb-"
       },
       {
@@ -3321,7 +3291,6 @@
         "email": "mesario30@urna.local",
         "id": "51c667a5-ca56-4423-b978-03f6a1f2a9aa",
         "unitId": "unit-30-e-m-reis-junior",
-        "password": "123456",
         "active": true,
         "name": "Mesário 30"
       },
@@ -3329,13 +3298,11 @@
         "active": true,
         "email": "mesario31@urna.local",
         "accessKind": "MESARIO",
-        "password": "123456",
         "id": "61a2c249-1990-451d-bc4a-0c5b6ada9f72",
         "name": "Mesário 31",
         "unitId": "unit-31-e-m-ricardo-misson"
       },
       {
-        "password": "123456",
         "active": true,
         "email": "mesario32@urna.local",
         "accessKind": "MESARIO",
@@ -3349,12 +3316,10 @@
         "email": "mesario33@urna.local",
         "name": "Mesário 33",
         "id": "ce4c06b5-7c95-43e4-8aa3-540e4d39c651",
-        "unitId": "unit-33-e-m-sao-judas-tadeu",
-        "password": "123456"
+        "unitId": "unit-33-e-m-sao-judas-tadeu"
       },
       {
         "unitId": "unit-34-e-m-sebastiao-antonio-le",
-        "password": "123456",
         "email": "mesario34@urna.local",
         "name": "Mesário 34",
         "accessKind": "MESARIO",
@@ -3362,7 +3327,6 @@
         "active": true
       },
       {
-        "password": "123456",
         "id": "f92c82ed-432a-4c97-88d9-4b6982460a34",
         "accessKind": "MESARIO",
         "name": "Mesário 35",
@@ -3375,7 +3339,6 @@
         "id": "70a8067d-d586-4c73-85e4-c6abb78319a3",
         "email": "mesario36@urna.local",
         "name": "Mesário 36",
-        "password": "123456",
         "accessKind": "MESARIO",
         "active": true
       },
@@ -3385,7 +3348,6 @@
         "id": "58714554-b18d-4b9c-add2-c6246f4cda41",
         "name": "Mesário 37",
         "email": "mesario37@urna.local",
-        "password": "123456",
         "unitId": "unit-37-e-m-uberaba"
       },
       {
@@ -3394,20 +3356,17 @@
         "unitId": "unit-38-e-m-urbana-frei-eugenio",
         "email": "mesario38@urna.local",
         "accessKind": "MESARIO",
-        "name": "Mesário 38",
-        "password": "123456"
+        "name": "Mesário 38"
       },
       {
         "id": "958e7837-073d-4c41-a3d2-162e7a0893fa",
         "unitId": "unit-39-e-m-vicente-alves-trinda",
-        "password": "123456",
         "name": "Mesário 39",
         "active": true,
         "email": "mesario39@urna.local",
         "accessKind": "MESARIO"
       },
       {
-        "password": "123456",
         "email": "mesario40@urna.local",
         "unitId": "unit-40-cemei-angela-beatriz-bon",
         "accessKind": "MESARIO",
@@ -3419,7 +3378,6 @@
         "accessKind": "MESARIO",
         "email": "mesario41@urna.local",
         "active": true,
-        "password": "123456",
         "id": "1ed2a8cd-3f99-487e-bdc2-5142b60f8e55",
         "name": "Mesário 41",
         "unitId": "unit-41-cemei-aparecida-conceicao"
@@ -3430,13 +3388,11 @@
         "id": "6f8046c1-1ae4-4db8-beb8-994f9c7364d5",
         "name": "Mesário 42",
         "accessKind": "MESARIO",
-        "password": "123456",
         "unitId": "unit-42-cemei-claudia-aparecida-"
       },
       {
         "unitId": "unit-43-cemei-diego-jose-ferreir",
         "name": "Mesário 43",
-        "password": "123456",
         "accessKind": "MESARIO",
         "active": true,
         "email": "mesario43@urna.local",
@@ -3446,7 +3402,6 @@
         "name": "Mesário 44",
         "active": true,
         "unitId": "unit-44-cemei-francisca-valias-w",
-        "password": "123456",
         "email": "mesario44@urna.local",
         "accessKind": "MESARIO",
         "id": "07c04eb0-f7c7-4abe-b3e0-67ce582b31e6"
@@ -3454,14 +3409,12 @@
       {
         "id": "16505c4e-bc8b-4129-9313-63da13278da0",
         "unitId": "unit-45-cemei-gervasio-pedro-alv",
-        "password": "123456",
         "email": "mesario45@urna.local",
         "name": "Mesário 45",
         "accessKind": "MESARIO",
         "active": true
       },
       {
-        "password": "123456",
         "accessKind": "MESARIO",
         "name": "Mesário 46",
         "active": true,
@@ -3470,7 +3423,6 @@
         "id": "3a4a7e42-f2bc-4101-9a43-80bd88c3da09"
       },
       {
-        "password": "123456",
         "accessKind": "MESARIO",
         "active": true,
         "email": "mesario47@urna.local",
@@ -3483,7 +3435,6 @@
         "name": "Mesário 48",
         "id": "a1200d07-ee68-4b58-b2f7-a44d200d55de",
         "accessKind": "MESARIO",
-        "password": "123456",
         "active": true,
         "email": "mesario48@urna.local"
       },
@@ -3493,21 +3444,18 @@
         "id": "89e47b4f-4b1f-4afa-b8c3-cd48ed802a2f",
         "name": "Mesário 49",
         "email": "mesario49@urna.local",
-        "password": "123456",
         "unitId": "unit-49-cemei-joao-miguel-hueb"
       },
       {
         "active": true,
         "email": "mesario50@urna.local",
         "id": "6d348a87-0769-4a39-b100-d0aaf0223aa0",
-        "password": "123456",
         "accessKind": "MESARIO",
         "unitId": "unit-50-cemei-juscelino-kubitsch",
         "name": "Mesário 50"
       },
       {
         "unitId": "unit-51-cemei-luciano-portelinha",
-        "password": "123456",
         "name": "Mesário 51",
         "id": "2793ac02-db70-4018-8db4-6f18c980c641",
         "accessKind": "MESARIO",
@@ -3516,7 +3464,6 @@
       },
       {
         "unitId": "unit-52-cemei-marcio-euripedes-m",
-        "password": "123456",
         "accessKind": "MESARIO",
         "email": "mesario52@urna.local",
         "id": "7543261c-ddb7-4799-986a-2037b8a4e746",
@@ -3526,7 +3473,6 @@
       {
         "email": "mesario53@urna.local",
         "active": true,
-        "password": "123456",
         "name": "Mesário 53",
         "id": "2093c56e-d520-4826-875f-eebb532c87fd",
         "unitId": "unit-53-cemei-maria-assis-rezend",
@@ -3535,7 +3481,6 @@
       {
         "name": "Mesário 54",
         "email": "mesario54@urna.local",
-        "password": "123456",
         "unitId": "unit-54-cemei-maria-de-lourdes-v",
         "active": true,
         "id": "aa70ac05-fc7b-4e74-8a71-8dc01c0f8b94",
@@ -3547,15 +3492,13 @@
         "accessKind": "MESARIO",
         "unitId": "unit-55-cemei-maria-de-nazare",
         "id": "f4dfd93f-7f22-4484-a365-d2ccebc750db",
-        "email": "mesario55@urna.local",
-        "password": "123456"
+        "email": "mesario55@urna.local"
       },
       {
         "accessKind": "MESARIO",
         "unitId": "unit-56-cemei-maria-eduarda-farn",
         "email": "mesario56@urna.local",
         "id": "8f81065b-c265-454b-85a0-9e90206621a8",
-        "password": "123456",
         "name": "Mesário 56",
         "active": true
       },
@@ -3563,7 +3506,6 @@
         "unitId": "unit-57-cemei-maria-elisabete-sa",
         "name": "Mesário 57",
         "email": "mesario57@urna.local",
-        "password": "123456",
         "active": true,
         "accessKind": "MESARIO",
         "id": "0a4cee63-c95b-47d3-9314-a22a39de4d68"
@@ -3571,7 +3513,6 @@
       {
         "active": true,
         "email": "mesario58@urna.local",
-        "password": "123456",
         "accessKind": "MESARIO",
         "id": "b003a117-39ad-4962-99e7-32330fa5e911",
         "name": "Mesário 58",
@@ -3580,7 +3521,6 @@
       {
         "active": true,
         "name": "Mesário 59",
-        "password": "123456",
         "email": "mesario59@urna.local",
         "id": "3c3c11f1-2504-4b0f-8ccf-6559bf787fcd",
         "unitId": "unit-59-cemei-michelle-flavia-ma",
@@ -3592,21 +3532,18 @@
         "id": "d7f3eea7-f5d1-48da-a3e8-4f4fe5630d09",
         "email": "mesario60@urna.local",
         "accessKind": "MESARIO",
-        "password": "123456",
         "unitId": "unit-60-cemei-monica-machiyama"
       },
       {
         "id": "22df8b3e-fdff-486b-b347-3ebe9b108eb4",
         "email": "mesario61@urna.local",
         "unitId": "unit-61-cemei-monsenhor-juvenal-",
-        "password": "123456",
         "active": true,
         "accessKind": "MESARIO",
         "name": "Mesário 61"
       },
       {
         "unitId": "unit-62-cemei-nicanor-pedro-da-s",
-        "password": "123456",
         "name": "Mesário 62",
         "id": "50bef717-3f06-4ffb-9551-52ad902f2fea",
         "active": true,
@@ -3619,15 +3556,13 @@
         "id": "105a46e8-9ac2-46c2-99e2-6163900fc2e8",
         "accessKind": "MESARIO",
         "name": "Mesário 63",
-        "unitId": "unit-63-cemei-nossa-senhora-de-l",
-        "password": "123456"
+        "unitId": "unit-63-cemei-nossa-senhora-de-l"
       },
       {
         "email": "mesario64@urna.local",
         "id": "ac503731-576c-4dc8-8bc4-7f75fcf813c9",
         "accessKind": "MESARIO",
         "unitId": "unit-64-cemei-octavia-alves-lope",
-        "password": "123456",
         "name": "Mesário 64",
         "active": true
       },
@@ -3637,7 +3572,6 @@
         "active": true,
         "email": "mesario65@urna.local",
         "name": "Mesário 65",
-        "password": "123456",
         "unitId": "unit-65-cemei-paraiso"
       },
       {
@@ -3646,8 +3580,7 @@
         "active": true,
         "name": "Mesário 66",
         "email": "mesario66@urna.local",
-        "unitId": "unit-66-cemei-prof-joao-wilson-d",
-        "password": "123456"
+        "unitId": "unit-66-cemei-prof-joao-wilson-d"
       },
       {
         "id": "b716f8e2-d48f-4e5c-97a9-e60f59868387",
@@ -3655,8 +3588,7 @@
         "name": "Mesário 67",
         "email": "mesario67@urna.local",
         "unitId": "unit-67-cemei-professor-raimundo",
-        "active": true,
-        "password": "123456"
+        "active": true
       },
       {
         "id": "c2621a06-f067-4cd2-8437-3207ab6c7eca",
@@ -3664,8 +3596,7 @@
         "email": "mesario68@urna.local",
         "unitId": "unit-68-cemei-prof-beatriz-faust",
         "active": true,
-        "accessKind": "MESARIO",
-        "password": "123456"
+        "accessKind": "MESARIO"
       },
       {
         "accessKind": "MESARIO",
@@ -3673,13 +3604,11 @@
         "unitId": "unit-69-cemei-prof-dirce-miziara",
         "active": true,
         "id": "30578957-5488-4bfa-a6cf-4707e722edc3",
-        "name": "Mesário 69",
-        "password": "123456"
+        "name": "Mesário 69"
       },
       {
         "active": true,
         "email": "mesario70@urna.local",
-        "password": "123456",
         "id": "222e3fd5-8fcf-45d5-b3b8-c6ffe3632935",
         "accessKind": "MESARIO",
         "name": "Mesário 70",
@@ -3691,7 +3620,6 @@
         "email": "mesario71@urna.local",
         "accessKind": "MESARIO",
         "active": true,
-        "password": "123456",
         "id": "aa23e083-3092-4a32-aa01-fc8920bd0095"
       },
       {
@@ -3700,7 +3628,6 @@
         "email": "mesario72@urna.local",
         "id": "5859cfd7-0617-4747-9d20-68bb61d71be3",
         "name": "Mesário 72",
-        "password": "123456",
         "unitId": "unit-72-cemei-prof-maria-emerenc"
       },
       {
@@ -3708,7 +3635,6 @@
         "unitId": "unit-73-cemei-prof-marilia-barbo",
         "name": "Mesário 73",
         "email": "mesario73@urna.local",
-        "password": "123456",
         "active": true,
         "id": "e92509a4-e158-43f5-a513-25dabcf1eda3"
       },
@@ -3716,7 +3642,6 @@
         "unitId": "unit-74-cemei-prof-natalya-dayre",
         "accessKind": "MESARIO",
         "email": "mesario74@urna.local",
-        "password": "123456",
         "active": true,
         "id": "9a3f4a6f-684b-4a8b-92d5-fada97ec99cb",
         "name": "Mesário 74"
@@ -3727,8 +3652,7 @@
         "name": "Mesário 75",
         "email": "mesario75@urna.local",
         "id": "e73f9daf-d0f3-405c-8a63-14ac9917a958",
-        "unitId": "unit-75-cemei-prof-zita-therezin",
-        "password": "123456"
+        "unitId": "unit-75-cemei-prof-zita-therezin"
       },
       {
         "unitId": "unit-76-cemei-solange-aparecidac",
@@ -3736,12 +3660,10 @@
         "name": "Mesário 76",
         "email": "mesario76@urna.local",
         "active": true,
-        "password": "123456",
         "id": "2149ac58-cd21-4f6d-9121-a6e4f13c5497"
       },
       {
         "id": "127e7f8c-46a0-474e-b55b-8c63257e9bc7",
-        "password": "123456",
         "unitId": "unit-77-cemei-tutunas",
         "name": "Mesário 77",
         "email": "mesario77@urna.local",
@@ -3750,7 +3672,6 @@
       },
       {
         "active": true,
-        "password": "123456",
         "name": "Mesário 78",
         "email": "mesario78@urna.local",
         "accessKind": "MESARIO",
@@ -3758,7 +3679,6 @@
         "id": "3b234437-25aa-41e5-b9c8-8ae61826830a"
       },
       {
-        "password": "123456",
         "unitId": "unit-79-cemei-vovo-tiana",
         "id": "e18b5567-9f43-4e25-adc2-51139e2578ee",
         "accessKind": "MESARIO",

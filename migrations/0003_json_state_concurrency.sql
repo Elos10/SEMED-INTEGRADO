@@ -1,5 +1,3 @@
--- STATUS: PENDENTE DE APLICAÇÃO NO PROJETO REMOTO (limite temporário da ferramenta em 2026-08-18).
--- Não adaptar os clientes para estas RPCs antes da aplicação e validação desta migration.
 alter table public.avd_app_state add column if not exists version bigint not null default 1;
 alter table public.avd_app_state add column if not exists updated_by uuid references auth.users(id);
 alter table public.semed_sistema add column if not exists version bigint not null default 1;

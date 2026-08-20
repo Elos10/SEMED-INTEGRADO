@@ -191,4 +191,4 @@ A migração para tabelas relacionais será feita por agregado funcional, sem
 substituição destrutiva. Até a desagregação, todo documento agregado deve usar
 versão esperada na gravação para detectar concorrência. A migration
 `0003_json_state_concurrency.sql` prepara esse controle para Avaliações e
-Inscrições e está marcada como pendente de aplicação remota.
+Inscrições e foi aplicada ao projeto central.

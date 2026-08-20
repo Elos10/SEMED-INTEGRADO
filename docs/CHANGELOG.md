@@ -1,5 +1,20 @@
 # Registro de alterações
 
+## 2026-08-20 — Prioridade imediata de segurança
+
+- implantados login, sessão, módulos e permissões centralizados;
+- acrescentado fluxo completo de recuperação e atualização de senha;
+- padronizados logout e recuperação nos cinco módulos;
+- preparado Cloudflare Turnstile no login e na recuperação;
+- removidas 80 senhas do backup JSON legado da Urna;
+- confirmado que os documentos ativos no Supabase não contêm chaves de senha;
+- aplicadas as migrations `json_state_concurrency`,
+  `harden_privileged_functions_rls` e `optimize_rls_policies`;
+- funções públicas privilegiadas passaram a `SECURITY INVOKER`;
+- corrigidas políticas corporativas, políticas da Urna e políticas de OS;
+- o Security Advisor passou a registrar apenas a proteção contra senhas
+  comprometidas, que depende de ativação no painel e de plano compatível.
+
 ## 2026-08-18 — Identidade, credenciais e auditoria corporativas
 
 - criada `semed_people`, sincronizada com `auth.users`;
@@ -10,8 +25,7 @@
 - formulários administrativos de Avaliações, Inscrições, Monitoramento, OS e
   Urna deixaram de administrar credenciais funcionais;
 - criada camada comum de carregamento e tratamento de erro;
-- preparada, mas ainda não aplicada remotamente,
-  `0003_json_state_concurrency.sql`.
+- aplicada `0003_json_state_concurrency.sql`.
 
 ## 2026-08-18 — Sessão e permissões centralizadas
 

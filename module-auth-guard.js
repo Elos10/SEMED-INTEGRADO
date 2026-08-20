@@ -7,6 +7,16 @@ const path = location.pathname.toLowerCase();
 const code = path.includes("/avaliacoes/") ? "avaliacoes" : path.includes("/inscricoes/") ? "inscricoes" : path.includes("/monitor/") ? "monitor" : path.includes("/os-semed/") ? "os_semed" : path.includes("/votacao/") ? "votacao" : "";
 const portalUrl = new URL("../../", location.href);
 portalUrl.searchParams.set("return", location.pathname + location.search);
+window.SEMED_AUTH_SIGN_OUT = async () => { await supabase.auth.signOut(); };
+
+document.addEventListener("click", (event) => {
+  const recoveryLink = event.target.closest?.(".entry-forgot");
+  if (!recoveryLink) return;
+  event.preventDefault();
+  const recoveryUrl = new URL("../../", location.href);
+  recoveryUrl.searchParams.set("recovery", "1");
+  location.assign(recoveryUrl);
+});
 
 window.SEMED_MODULE_ACCESS = (async () => {
   semedUi.loading("Validando acesso ao módulo…");
