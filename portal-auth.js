@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 import { createCaptcha } from "./captcha.js";
+import { initPortalAdmin } from "./portal-admin.js";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
@@ -78,6 +79,12 @@ function renderUser(session) {
 
 async function revealPortal(session) {
   const context = await accessContext();
+  if (context.user?.must_change_password) {
+    updateForm.querySelector("h2").textContent = "Troca obrigatória de senha";
+    updateForm.querySelector("p").textContent = "Por segurança, substitua a senha temporária antes de acessar os sistemas.";
+    showAuthView("update");
+    return;
+  }
   const codes = new Set((context.modules || []).filter((item) => item.permissions?.view).map((item) => item.code));
   document.querySelectorAll(".system-card").forEach((card) => {
     const href = card.querySelector(".access")?.getAttribute("href");
@@ -87,6 +94,7 @@ async function revealPortal(session) {
   if (!codes.size) throw new Error("Seu perfil não possui módulos autorizados.");
   renderUser(session);
   window.SEMED_ACCESS_CONTEXT = context;
+  initPortalAdmin({ supabase, context });
   overlay.hidden = true;
   document.body.classList.remove("portal-auth-pending");
 
@@ -151,6 +159,8 @@ updateForm.addEventListener("submit", async (event) => {
   }
   const { error } = await supabase.auth.updateUser({ password });
   if (error) { errorBox.textContent = error.message || "Não foi possível atualizar a senha."; return; }
+  const { error: confirmationError } = await supabase.rpc("confirm_my_password_change");
+  if (confirmationError) { errorBox.textContent = "A senha foi alterada, mas não foi possível concluir a confirmação do primeiro acesso."; return; }
   await supabase.auth.signOut();
   loginForm.reset();
   loginForm.querySelector(".auth-error").textContent = "Senha atualizada. Entre novamente.";

@@ -364,6 +364,34 @@ function recordsForUser(db, user) {
   return db.records || [];
 }
 
+async function centralEvaluationIdentity() {
+  const guard = await window.SEMED_MODULE_ACCESS;
+  const context = guard?.context;
+  const moduleAccess = context?.modules?.find((item) => item.code === 'avaliacoes');
+  if (!context?.user?.active || !moduleAccess?.permissions?.view) throw { status: 403, error: 'Perfil corporativo sem acesso ao módulo Avaliações.' };
+  const profileCodes = new Set((context.profiles || []).map((profile) => profile.code));
+  const perfil = context.portal_admin ? roles.ADMINISTRADOR
+    : profileCodes.has('GESTOR_SEMED') || profileCodes.has('AVALIACOES_GESTOR') ? roles.GESTOR_SEMED
+    : roles.GESTOR_UNIDADE;
+  return { context, moduleAccess, perfil };
+}
+
+async function ensureCentralEvaluationUser(db) {
+  const { context, moduleAccess, perfil } = await centralEvaluationIdentity();
+  const email = normalizeEmail(context.user.email);
+  let user = db.users.find((item) => normalizeEmail(item.email) === email);
+  const now = new Date().toISOString();
+  if (!user) {
+    user = { id: id('usr_'), unidadeEscolar: moduleAccess.scope?.unidade || 'SEMED', email, perfil, ativo: true, criadoEm: now, atualizadoEm: now };
+    db.users.push(user);
+  } else {
+    Object.assign(user, { email, perfil, ativo: true, atualizadoEm: now });
+    if (moduleAccess.scope?.unidade) user.unidadeEscolar = moduleAccess.scope.unidade;
+    delete user.senha; delete user.password; delete user.senhaHash;
+  }
+  return user;
+}
+
 function applyFilters(records, filters = {}) {
   return records.filter((row) => Object.entries(filterMap).every(([key, field]) => {
     const value = filters[key];
@@ -952,8 +980,7 @@ async function request(method, path, data = undefined, options = {}) {
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError || !authData.user) throw { status: 401, error: 'E-mail ou senha inválidos.' };
     const db = await readDb();
-    const user = db.users.find((item) => normalizeEmail(item.email) === email && item.ativo);
-    if (!user) { await supabase.auth.signOut(); throw { status: 403, error: 'Perfil sem acesso ao módulo Avaliações.' }; }
+    const user = await ensureCentralEvaluationUser(db);
     log(db, user, 'LOGIN');
     await writeDb(db);
     return { token: `avd:${user.id}:${Date.now()}`, refreshToken: `refresh:${user.id}:${Date.now()}`, user: publicUser(user), permissions: db.permissions[user.perfil] };
@@ -962,8 +989,8 @@ async function request(method, path, data = undefined, options = {}) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw { status: 401, error: 'Sessão central não encontrada.' };
     const db = await readDb();
-    const user = db.users.find((item) => normalizeEmail(item.email) === normalizeEmail(session.user.email) && item.ativo);
-    if (!user) throw { status: 403, error: 'Perfil sem acesso ao módulo Avaliações.' };
+    const user = await ensureCentralEvaluationUser(db);
+    await writeDb(db);
     return { token: `avd:${user.id}:${Date.now()}`, refreshToken: '', user: publicUser(user), permissions: db.permissions[user.perfil] };
   }
   const db = await readDb();

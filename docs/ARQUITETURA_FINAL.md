@@ -185,6 +185,11 @@ políticas RLS por operação.
 `semed_audit` recebe eventos corporativos comuns. Logs de domínio podem
 continuar nos módulos, associados ao mesmo `auth.uid()`.
 
+A administração de identidades é exclusiva do administrador DETIC e ocorre por
+Edge Function autenticada. `semed_user_module_roles` guarda o papel funcional e
+o escopo de cada módulo sem duplicar credenciais. Senhas temporárias são
+gravadas somente pelo Supabase Auth e exigem substituição no primeiro acesso.
+
 ## Desagregação dos documentos JSON
 
 A migração para tabelas relacionais será feita por agregado funcional, sem

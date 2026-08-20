@@ -140,6 +140,40 @@ function publicUser(user) {
   return safe;
 }
 
+function permissionsForCentralProfile(profileCodes) {
+  if (profileCodes.has('ADMIN_GERAL')) return [...ADMIN.permissions];
+  if (profileCodes.has('GESTOR_SEMED') || profileCodes.has('INSCRICOES_GESTOR')) {
+    return ADMIN.permissions.filter((permission) => !permission.startsWith('ACESSO:'));
+  }
+  if (profileCodes.has('INSCRICOES_OPERADOR')) {
+    return ADMIN.permissions.filter((permission) => /^(INSCRICOES|FREQUENCIA|GESTAO):(Visualizar|Cadastrar|Editar|Salvar|Gerar Folha|Inscricao)/.test(permission));
+  }
+  return ['INSCRICOES:Visualizar', 'GESTAO:Visualizar', 'FREQUENCIA:Visualizar', 'RELATORIOS:Gerencial'];
+}
+
+async function ensureCentralRegistrationUser(db) {
+  const guard = await window.SEMED_MODULE_ACCESS;
+  const context = guard?.context;
+  const moduleAccess = context?.modules?.find((item) => item.code === 'inscricoes');
+  if (!context?.user?.active || !moduleAccess?.permissions?.view) throw { status: 403, error: 'Perfil corporativo sem acesso ao módulo Inscrições.' };
+  const profileCodes = new Set((context.profiles || []).map((profile) => profile.code));
+  const role = context.portal_admin ? 'Administrador'
+    : profileCodes.has('GESTOR_SEMED') || profileCodes.has('INSCRICOES_GESTOR') ? 'Gestor SEMED'
+    : profileCodes.has('INSCRICOES_OPERADOR') ? 'Secretaria'
+    : 'Gestor Unidade';
+  const email = String(context.user.email || '').toLowerCase();
+  let user = db.users.find((item) => String(item.email || '').toLowerCase() === email);
+  if (!user) {
+    user = { id: nextId(db.users), name: context.user.full_name || email, email, role, unit_id: Number(moduleAccess.scope?.unit_id || 0) || null, status: 'Ativo', permissions: permissionsForCentralProfile(profileCodes) };
+    db.users.push(user);
+  } else {
+    Object.assign(user, { name: context.user.full_name || user.name, email, role, status: 'Ativo', permissions: permissionsForCentralProfile(profileCodes) });
+    if (moduleAccess.scope?.unit_id) user.unit_id = Number(moduleAccess.scope.unit_id) || user.unit_id;
+    delete user.password; delete user.senha;
+  }
+  return user;
+}
+
 const PERMISSION_ALIASES = {'RELATORIOS:Gerencial':['RELATORIOS:Visualizar'],'RELATORIOS:Agenda':['RELATORIOS:Visualizar'],'RELATORIOS:Logs':['RELATORIOS:Visualizar'],'RELATORIOS:Limpar Logs':['RELATORIOS:Exportar'],'GESTAO:Unidades':['GESTAO:Visualizar'],'GESTAO:Locais de Realizacao':['GESTAO:Visualizar'],'GESTAO:Modalidades':['GESTAO:Visualizar'],'GESTAO:Professores':['GESTAO:Visualizar'],'GESTAO:Atividades/Oficinas':['GESTAO:Visualizar'],'GESTAO:Turmas/Oficinas':['GESTAO:Visualizar'],'INSCRICOES:Inscricao Alunos da Rede':['INSCRICOES:Visualizar'],'INSCRICOES:Inscricao Comunidade':['INSCRICOES:Visualizar'],'FREQUENCIA:Gerar Folha':['FREQUENCIA:Visualizar']};
 const RESOURCE_PERMISSIONS = {units:'GESTAO:Unidades',locations:'GESTAO:Locais de Realizacao',modalities:'GESTAO:Modalidades',teachers:'GESTAO:Professores',activities:'GESTAO:Atividades/Oficinas',classes:'GESTAO:Turmas/Oficinas',users:'ACESSO:Visualizar'};
 function isAdminUser(user) {
@@ -332,8 +366,7 @@ async function request(method, path, data = undefined) {
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError || !authData.user) throw { status: 401, error: 'Credenciais invalidas.' };
     const db = await readDb();
-    const user = db.users.find((u) => String(u.email || '').toLowerCase() === email && String(u.status).toUpperCase() === 'ATIVO');
-    if (!user) { await supabase.auth.signOut(); throw { status: 403, error: 'Perfil sem acesso ao módulo Inscrições.' }; }
+    const user = await ensureCentralRegistrationUser(db);
     log(db, user, 'LOGIN', 'users', user.id);
     await writeDb(db);
     return { token: authData.session.access_token, user: publicUser(user) };
@@ -342,8 +375,8 @@ async function request(method, path, data = undefined) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw { status: 401, error: 'Sessão central não encontrada.' };
     const db = await readDb();
-    const user = db.users.find((item) => String(item.email || '').toLowerCase() === String(session.user.email || '').toLowerCase() && String(item.status).toUpperCase() === 'ATIVO');
-    if (!user) throw { status: 403, error: 'Perfil sem acesso ao módulo Inscrições.' };
+    const user = await ensureCentralRegistrationUser(db);
+    await writeDb(db);
     return { token: session.access_token, user: publicUser(user) };
   }
   const db = await readDb();

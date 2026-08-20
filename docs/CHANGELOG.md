@@ -1,5 +1,19 @@
 # Registro de alterações
 
+## 2026-08-20 — Cadastro corporativo de usuários e perfis
+
+- criada administração central exclusiva para `detic@uberabadigital.com.br`;
+- criada matriz com 13 perfis corporativos e permissões por operação;
+- criado vínculo de papel e escopo por usuário e módulo;
+- implantada senha temporária com troca obrigatória no primeiro acesso;
+- bloqueado o acesso direto aos módulos enquanto a troca estiver pendente;
+- Avaliações e Inscrições passaram a sincronizar usuários pelo contexto central;
+- Monitoramento, OS e Urna recebem os papéis locais pelo serviço central;
+- a Edge Function `manage-semed-user` passou a exigir JWT e valida o e-mail do
+  administrador no servidor;
+- adicionadas as migrations `central_user_profiles` e
+  `index_user_module_role_manager`.
+
 ## 2026-08-20 — Prioridade imediata de segurança
 
 - implantados login, sessão, módulos e permissões centralizados;

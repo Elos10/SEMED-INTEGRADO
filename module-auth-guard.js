@@ -23,6 +23,11 @@ window.SEMED_MODULE_ACCESS = (async () => {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { location.replace(portalUrl); return null; }
   const { data, error } = await supabase.rpc("get_my_access_context");
+  if (!error && data?.user?.must_change_password) {
+    portalUrl.searchParams.set("first_access", "1");
+    location.replace(portalUrl);
+    return null;
+  }
   const moduleAccess = !error && data?.user?.active ? (data.modules || []).find((item) => item.code === code) : null;
   const allowed = Boolean(moduleAccess?.permissions?.view);
   if (!allowed) { location.replace(portalUrl); return null; }
