@@ -1,5 +1,13 @@
 # Registro de alterações
 
+## 2026-08-21 — Navegação das telas iniciais dos módulos
+
+- reforçado o cabeçalho institucional compartilhado nas telas de login dos quatro módulos;
+- adicionados os controles padronizados `Voltar ao Portal` e `Ajuda` no lado direito;
+- o retorno aponta para a raiz do portal sem reabrir automaticamente o módulo anterior;
+- o botão é reinstalado quando a tela de login é reconstruída após o logout;
+- preservados os fluxos de autenticação e as regras de negócio de cada módulo.
+
 ## 2026-08-21 — Retirada do módulo Inscrições
 
 - removidos o cartão, a rota, a proteção de rota e o cadastro administrativo do módulo;

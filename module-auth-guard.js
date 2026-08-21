@@ -7,7 +7,39 @@ const path = location.pathname.toLowerCase();
 const code = path.includes("/avaliacoes/") ? "avaliacoes" : path.includes("/monitor/") ? "monitor" : path.includes("/os-semed/") ? "os_semed" : path.includes("/votacao/") ? "votacao" : "";
 const portalUrl = new URL("../../", location.href);
 portalUrl.searchParams.set("return", location.pathname + location.search);
+const portalHomeUrl = new URL("../../", location.href);
 window.SEMED_AUTH_SIGN_OUT = async () => { await supabase.auth.signOut(); };
+
+function installPortalButton(root = document) {
+  root.querySelectorAll?.(".semed-entry .entry-top").forEach((header) => {
+    if (header.querySelector("[data-portal-home]")) return;
+    header.classList.add("has-entry-actions");
+    let actions = header.querySelector(".entry-top-actions");
+    if (!actions) {
+      actions = document.createElement("nav");
+      actions.className = "entry-top-actions";
+      actions.setAttribute("aria-label", "Navegação da tela inicial");
+      const help = header.querySelector(".entry-help");
+      if (help) actions.append(help);
+      else {
+        const helpLabel = document.createElement("span");
+        helpLabel.className = "entry-help";
+        helpLabel.innerHTML = '<span aria-hidden="true">?</span> Ajuda';
+        actions.append(helpLabel);
+      }
+      header.append(actions);
+    }
+    const link = document.createElement("a");
+    link.className = "entry-portal-back";
+    link.dataset.portalHome = "1";
+    link.href = portalHomeUrl.href;
+    link.innerHTML = '<span aria-hidden="true">←</span><span>Voltar ao Portal</span>';
+    actions.prepend(link);
+  });
+}
+
+installPortalButton();
+new MutationObserver(() => installPortalButton()).observe(document.documentElement, { childList: true, subtree: true });
 
 document.addEventListener("click", (event) => {
   const recoveryLink = event.target.closest?.(".entry-forgot");

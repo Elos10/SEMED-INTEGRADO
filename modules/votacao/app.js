@@ -1705,6 +1705,7 @@ function renderLoginScreen() {
           <strong>Urna Escolar SEMED</strong>
           <span>Eleição de Diretores das Unidades Escolares</span>
         </div>
+        <nav class="entry-top-actions" aria-label="Navegação da tela inicial"><a class="entry-portal-back" data-portal-home href="../../"><span aria-hidden="true">←</span><span>Voltar ao Portal</span></a><span class="entry-help"><span aria-hidden="true">?</span> Ajuda</span></nav>
       </header>
       <section class="login-panel entry-stage"><aside class="entry-intro"><div class="entry-system-icon"><svg viewBox="0 0 64 64"><path d="M17 25h30l5 30H12zM22 25V13h20v12M20 39h24M20 47h15"/><path d="m29 18 4 4 8-9"/></svg></div><h1>Urna eletrônica</h1><p>Acesse o sistema de votação eletrônica da educação.</p><div class="entry-motto">Educação que transforma,<br>Uberaba que avança.</div></aside>
         <aside class="login-card entry-panel">
