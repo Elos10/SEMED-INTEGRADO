@@ -178,3 +178,14 @@
   **Aguardando recebimento**;
 - o horário continua sendo persistido pelo Supabase e apenas formatado para o
   padrão brasileiro na interface.
+
+## 2026-08-21 — Timeline ampliada e impressão corporativa
+
+- a Timeline dos detalhes do objeto no Monitoramento saiu da coluna lateral e
+  passou a ocupar toda a largura abaixo da Visão Geral;
+- os cards dos andamentos ganharam mais espaço horizontal para descrição,
+  movimentações, destinatário e confirmação de recebimento;
+- criado um padrão compartilhado de relatórios para Avaliações, Monitoramento,
+  Ordens de Serviço e Urna Eletrônica;
+- a impressão dos relatórios foi uniformizada em papel A4, orientação paisagem,
+  fonte Calibri tamanho 13 e margens de 1 cm nos quatro lados.

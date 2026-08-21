@@ -38,7 +38,12 @@ function assignmentNotice(){
 }
 
 const baseRender=render;
-render=function(){baseRender();setupLoginLogo();if(session){const content=document.querySelector('.content');if(content)content.insertAdjacentHTML('afterbegin',assignmentNotice());setupNotificationBell();setupEditObjectButton();setupObjectDetailSummary();setupObjectDetailTabs();setupTimelineEditButtons();setupNotificationTarget()}};
+render=function(){baseRender();setupLoginLogo();if(session){const content=document.querySelector('.content');if(content)content.insertAdjacentHTML('afterbegin',assignmentNotice());setupNotificationBell();setupEditObjectButton();setupObjectDetailLayout();setupObjectDetailSummary();setupObjectDetailTabs();setupTimelineEditButtons();setupNotificationTarget()}};
+
+function setupObjectDetailLayout(){
+  if(view!=='detail'||!selected)return;const grid=document.querySelector('.detail-grid'),overviewColumn=grid?.firstElementChild,aside=grid?.querySelector('aside'),sections=aside?[...aside.querySelectorAll(':scope > section')]:[],timelinePanel=sections.find(section=>section.querySelector('.timeline'));if(!grid||!overviewColumn||!timelinePanel||grid.dataset.timelineStacked)return;
+  grid.dataset.timelineStacked='true';grid.classList.add('detail-grid-stacked');timelinePanel.classList.add('object-detail-timeline');overviewColumn.insertAdjacentElement('afterend',timelinePanel);if(aside&&!aside.children.length)aside.remove()
+}
 
 function setupLoginLogo(){
   const seal=document.querySelector('.login .seal');if(!seal)return;

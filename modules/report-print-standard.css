@@ -1,0 +1,24 @@
+/* Padrão corporativo para relatórios dos módulos do Portal SEMED. */
+@page{size:A4 landscape;margin:1cm}
+@page report{size:A4 landscape;margin:1cm}
+@page habilidades{size:A4 landscape;margin:1cm}
+
+@media print{
+  html,body{font-family:Calibri,"Segoe UI",Arial,sans-serif!important;font-size:13pt!important}
+  #printReport,#printReport *,
+  .print-report,.print-report *,
+  .report-print,.report-print *,
+  .report-print-area,.report-print-area *,
+  .report-print-header,.report-print-header *,
+  .habilidades-print-report,.habilidades-print-report *,
+  body.print-report .content,body.print-report .content *,
+  body.print-report .page,body.print-report .page *{
+    font-family:Calibri,"Segoe UI",Arial,sans-serif!important;
+    font-size:13pt!important;
+  }
+  .print-report table,.report-print table,.report-print-area table,.habilidades-print-report table,
+  body.print-report table,body.print-report th,body.print-report td{
+    font-family:Calibri,"Segoe UI",Arial,sans-serif!important;
+    font-size:13pt!important;
+  }
+}
