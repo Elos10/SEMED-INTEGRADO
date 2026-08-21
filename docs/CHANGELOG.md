@@ -157,3 +157,15 @@
 - mantida a gestão corporativa em **Usuários e acessos**, exibida no portal
   somente quando `get_my_access_context()` confirma `portal_admin` para DETIC;
 - não houve alteração de tabelas, RLS ou migrations nesta etapa.
+
+## 2026-08-21 — Histórico sucessivo dos andamentos direcionados
+
+- o destinatário de um andamento passou a visualizar para edição somente
+  **Tipo**, **Status** e **Resposta / Movimentação**;
+- descrição, área, responsável, datas, direcionamento e demais dados recebidos
+  permanecem preservados como retrato inicial;
+- cada salvamento acrescenta uma movimentação com usuário e data, sem
+  sobrescrever respostas anteriores;
+- a conclusão define automaticamente 100% e encerra novas edições;
+- a migration `0011_monitor_directed_movement_history.sql` reforça a mesma
+  regra no banco, além da restrição já existente por posse e RLS.
