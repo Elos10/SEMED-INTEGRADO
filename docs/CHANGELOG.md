@@ -1,5 +1,18 @@
 # Registro de alterações
 
+## 2026-08-21 — Apresentação institucional nas entradas dos módulos
+
+- adicionada a apresentação **Portal de Sistemas Unificados** às telas iniciais
+  de Avaliações, Monitoramento, Ordens de Serviço e Urna Eletrônica;
+- o bloco compartilhado reproduz título, texto institucional, faixa azul e
+  acabamento visual do modelo fornecido;
+- a inserção é automática e idempotente, inclusive após logout ou reconstrução
+  da tela de login;
+- preservados os formulários, identificação individual de cada sistema, botão
+  de retorno ao portal e rodapé de segurança/suporte;
+- ajustado o encaixe responsivo para manter o formulário visível em desktop e
+  permitir rolagem vertical segura em telas pequenas.
+
 ## 2026-08-21 — Central de Relatórios do Monitoramento
 
 - incluído resumo do recorte com total de objetos, progresso médio, atrasos,

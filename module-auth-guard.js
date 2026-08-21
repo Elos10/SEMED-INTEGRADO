@@ -12,6 +12,17 @@ window.SEMED_AUTH_SIGN_OUT = async () => { await supabase.auth.signOut(); };
 
 function installPortalButton(root = document) {
   root.querySelectorAll?.(".semed-entry .entry-top").forEach((header) => {
+    const entry = header.closest(".semed-entry");
+    if (entry && !entry.querySelector(":scope > .entry-portal-intro")) {
+      const intro = document.createElement("section");
+      intro.className = "entry-portal-intro";
+      intro.setAttribute("aria-label", "Apresentação do Portal de Sistemas Unificados");
+      intro.innerHTML = '<div><span>Bem-vindo ao</span><h1>Portal de Sistemas<br>Unificados</h1><p>Acesse de forma integrada os principais sistemas<br>da Secretaria de Educação de Uberaba.</p><i aria-hidden="true"></i></div>';
+      header.insertAdjacentElement("afterend", intro);
+      entry.classList.add("entry-portal-layout");
+      entry.style.setProperty("grid-template-rows", "72px auto minmax(0, 1fr) 72px", "important");
+      entry.style.setProperty("overflow", "auto", "important");
+    }
     if (header.querySelector("[data-portal-home]")) return;
     header.classList.add("has-entry-actions");
     let actions = header.querySelector(".entry-top-actions");
