@@ -24,7 +24,9 @@ function eventProgressBar(event){const progress=normalizeEventProgress(event.sta
 function syncEventProgress(statusField){const form=statusField.form,input=form?.elements.progress,output=form?.querySelector('[data-event-progress-value]');if(!input)return;const completed=isCompletedEventStatus(statusField.value);input.max=completed?'100':'99';input.value=completed?'100':String(normalizeEventProgress(statusField.value,input.value));input.disabled=completed;if(output)output.textContent=input.value+'%'}
 function updateEventProgress(input){const status=input.form?.elements.status;if(status&&isCompletedEventStatus(status.value))input.value='100';else input.value=String(normalizeEventProgress(status?.value,input.value));const output=input.form?.querySelector('[data-event-progress-value]');if(output)output.textContent=input.value+'%'}
 function assignedEvents(){return state.events.filter(e=>e.assignedTo&&(e.assignedTo===session?.id||e.assignedToName===session?.name))}
-function senderReceipts(){return state.events.filter(e=>e.assignedBy&&(e.assignedBy===session?.id||e.assignedByName===session?.name)&&e.receivedAt)}
+function senderReceipts(){return state.events.filter(e=>e.assignedBy&&(e.assignedBy===session?.id||e.assignedByName===session?.name)&&e.receivedAt&&!state.notificationReads?.includes(e.id))}
+
+let notificationTargetEventId='';
 
 function assignmentNotice(){
   const pending=assignedEvents().filter(e=>!e.receivedAt),receipts=senderReceipts();
@@ -33,7 +35,7 @@ function assignmentNotice(){
 }
 
 const baseRender=render;
-render=function(){baseRender();setupLoginLogo();if(session){const content=document.querySelector('.content');if(content)content.insertAdjacentHTML('afterbegin',assignmentNotice());setupNotificationBell();setupEditObjectButton();setupObjectDetailSummary();setupObjectDetailTabs()}};
+render=function(){baseRender();setupLoginLogo();if(session){const content=document.querySelector('.content');if(content)content.insertAdjacentHTML('afterbegin',assignmentNotice());setupNotificationBell();setupEditObjectButton();setupObjectDetailSummary();setupObjectDetailTabs();setupNotificationTarget()}};
 
 function setupLoginLogo(){
   const seal=document.querySelector('.login .seal');if(!seal)return;
@@ -53,6 +55,15 @@ function setupObjectDetailTabs(){
   if(view!=='detail'||!selected)return;const tabs=document.querySelector('.detail-grid .tabs'),panel=tabs?.closest('.panel');if(!tabs||!panel||tabs.dataset.functional)return;tabs.dataset.functional='true';
   let sibling=tabs.nextElementSibling;while(sibling){const next=sibling.nextElementSibling;sibling.remove();sibling=next}
   panel.insertAdjacentHTML('beforeend','<div class="detail-tab-content" id="detailTabContent"></div>');showDetailTab('activities',selected)
+}
+
+function setupNotificationTarget(){
+  if(view!=='detail'||!selected||!notificationTargetEventId)return;
+  const objectEvents=state.events.filter(event=>event.objectId===selected),timelineItems=[...document.querySelectorAll('.detail-grid .timeline .event')];
+  timelineItems.forEach((item,index)=>{const event=objectEvents[index];if(event)item.dataset.eventId=event.id});
+  const target=timelineItems.find(item=>item.dataset.eventId===notificationTargetEventId);if(!target)return;
+  target.classList.add('notification-event-target');target.setAttribute('tabindex','-1');
+  requestAnimationFrame(()=>{target.scrollIntoView({behavior:'smooth',block:'center'});target.focus({preventScroll:true})});notificationTargetEventId=''
 }
 
 function detailTabData(objectId){return{activities:state.activities.filter(item=>item.objectId===objectId),costs:state.costs.filter(item=>item.objectId===objectId),documents:(state.documents||[]).filter(item=>item.objectCode===objectId||item.objectId===objectId||item.objectId===state.objects.find(o=>o.id===objectId)?.dbId)}}
@@ -118,12 +129,18 @@ function setupNotificationBell(){
 
 function showNotificationDropdown(){
   hideNotificationDropdown();const bell=document.querySelectorAll('.top-actions .icon-btn')[1],items=availableNotifications().slice(0,6);if(!bell)return;
-  bell.insertAdjacentHTML('afterend',`<div class="notification-dropdown" id="notificationDropdown" onmouseenter="this.dataset.hover='1'" onmouseleave="this.remove()"><strong>Notificações</strong>${items.map(n=>`<div><span class="pill ${n.kind==='assigned'?'amber':'blue'}">${n.kind==='assigned'?'Para você':'Informação'}</span><p>${esc(n.text)}</p></div>`).join('')||'<p class="empty-mini">Nenhuma notificação disponível.</p>'}<button class="btn block" onclick="openNotificationCenter()">Ver todas</button></div>`)
+  bell.insertAdjacentHTML('afterend',`<div class="notification-dropdown" id="notificationDropdown" onmouseenter="this.dataset.hover='1'" onmouseleave="this.remove()"><strong>Notificações</strong>${items.map(n=>`<button type="button" class="notification-dropdown-item" onclick="openNotification('${n.event.id}','${n.kind}')"><span class="pill ${n.kind==='assigned'?'amber':n.kind==='receipt'?'green':'blue'}">${n.kind==='assigned'?'Para você':'Informação'}</span><p>${esc(n.text)}</p></button>`).join('')||'<p class="empty-mini">Nenhuma notificação disponível.</p>'}<button class="btn block" onclick="openNotificationCenter()">Ver todas</button></div>`)
 }
 function hideNotificationDropdown(){const box=document.getElementById('notificationDropdown');if(box&&!box.dataset.hover)box.remove()}
 
 function openNotificationCenter(){
-  hideNotificationDropdown();const items=availableNotifications();modal(`<div class="modal-head"><h2>Central de notificações</h2><button class="icon-btn" onclick="closeModal()">✕</button></div><div class="notification-center">${items.map(n=>`<article><div><span class="pill ${n.kind==='assigned'?'amber':n.kind==='receipt'?'green':'blue'}">${esc(n.title)}</span><p>${esc(n.text)}</p><small>${esc(n.event.date||'')}</small></div>${n.kind==='assigned'?`<button class="btn" onclick="receiveAssignedEvent('${n.event.id}')">Receber andamento</button>`:n.kind==='general'?`<button class="btn secondary" onclick="markNotificationRead('${n.event.id}')">Dar como lido</button>`:'<span class="pill green">Recebido</span>'}</article>`).join('')||'<div class="empty">Nenhuma notificação disponível.</div>'}</div>`)
+  hideNotificationDropdown();const items=availableNotifications();modal(`<div class="modal-head"><div><h2>Central de notificações</h2><p class="notification-center-hint">Selecione uma mensagem para abrir o andamento. A leitura será confirmada automaticamente.</p></div><button class="icon-btn" onclick="closeModal()" aria-label="Fechar notificações">✕</button></div><div class="notification-center">${items.map(n=>`<button type="button" class="notification-center-item" onclick="openNotification('${n.event.id}','${n.kind}')"><span class="notification-center-content"><span class="pill ${n.kind==='assigned'?'amber':n.kind==='receipt'?'green':'blue'}">${esc(n.title)}</span><span class="notification-center-text">${esc(n.text)}</span><small>${esc(n.event.date||'')}</small></span><span class="notification-open-label">Abrir andamento <span aria-hidden="true">→</span></span></button>`).join('')||'<div class="empty">Nenhuma notificação disponível.</div>'}</div>`)
+}
+
+async function openNotification(eventId,kind){
+  const event=state.events.find(item=>item.id===eventId||item.dbId===eventId);if(!event)return toast('O andamento desta notificação não foi encontrado.');
+  if(kind==='assigned'&&!event.receivedAt){event.receivedAt=new Date().toISOString();event.receivedBy=session.id||session.name;if(backend&&event.dbId){try{await backend.dataSdk.updateDoc(backend.dataSdk.doc(backend.db,'events',event.dbId),{receivedAt:backend.dataSdk.serverTimestamp(),receivedBy:session.id,receivedByName:session.name})}catch(error){return toast('Não foi possível confirmar a leitura: '+error.message)}}}
+  if(!await persistNotificationRead(event.id))return;save();closeModal();notificationTargetEventId=event.id;selected=event.objectId;view='detail';render();toast('Notificação lida. Andamento aberto.')
 }
 
 async function receiveAssignedEvent(id){
@@ -131,8 +148,13 @@ async function receiveAssignedEvent(id){
 }
 
 async function markNotificationRead(eventId){
-  state.notificationReads=state.notificationReads||[];if(!state.notificationReads.includes(eventId))state.notificationReads.push(eventId);
-  if(backend&&session?.id){try{const {doc,setDoc,serverTimestamp}=backend.dataSdk;await setDoc(doc(backend.db,'notificationReads',`${session.id}_${eventId}`),{userId:session.id,eventId,readAt:serverTimestamp()},{merge:true})}catch(error){return toast('Não foi possível marcar como lida: '+error.message)}}save();closeModal();toast('Notificação marcada como lida.');render()
+  if(!await persistNotificationRead(eventId))return;save();closeModal();toast('Notificação marcada como lida.');render()
+}
+
+async function persistNotificationRead(eventId){
+  state.notificationReads=state.notificationReads||[];
+  if(backend&&session?.id){try{const {doc,setDoc,serverTimestamp}=backend.dataSdk;await setDoc(doc(backend.db,'notificationReads',`${session.id}_${eventId}`),{userId:session.id,eventId,readAt:serverTimestamp()},{merge:true})}catch(error){toast('Não foi possível marcar como lida: '+error.message);return false}}
+  if(!state.notificationReads.includes(eventId))state.notificationReads.push(eventId);return true
 }
 
 accessView=function(){

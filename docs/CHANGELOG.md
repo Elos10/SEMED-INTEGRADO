@@ -1,5 +1,15 @@
 # Registro de alterações
 
+## 2026-08-21 — Notificações interativas do Monitoramento
+
+- transformadas as mensagens da Central de Notificações em cartões inteiros
+  clicáveis, com suporte a teclado e adaptação para telas pequenas;
+- ao selecionar uma mensagem, a leitura é registrada no Supabase e o objeto
+  correspondente é aberto com o andamento destacado na linha do tempo;
+- andamentos direcionados também confirmam automaticamente o recebimento;
+- confirmações de recebimento passam a desaparecer da Central após a leitura;
+- mantidas as regras existentes de destinatário, sessão e persistência.
+
 ## 2026-08-21 — Apresentação institucional nas entradas dos módulos
 
 - adicionada a apresentação **Portal de Sistemas Unificados** às telas iniciais
