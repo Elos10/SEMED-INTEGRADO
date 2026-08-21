@@ -7,6 +7,11 @@
   --entry-muted: #5c6f9c;
 }
 
+/* Garante que CSS legado dos módulos não oculte a entrada institucional. */
+.semed-entry>.entry-stage{display:grid!important;visibility:visible!important;opacity:1!important;min-height:0!important}
+.semed-entry>.entry-stage>.entry-intro,.semed-entry>.entry-stage>.entry-panel{visibility:visible!important;opacity:1!important}
+.semed-entry>.entry-footer{display:grid!important;visibility:visible!important;opacity:1!important}
+
 /* Avaliações */
 .login:has(.login-forms) { padding: 0 !important; background: #fff !important; }
 .login:has(.login-forms) .login-card {

@@ -64,7 +64,6 @@ const navItems = [
   ["routes", "Rotas"],
   ["vehicles", "Veículos"],
   ["drivers", "Motoristas"],
-  ["users", "Usuários"],
   ["docs", "Documentação"],
 ];
 
@@ -268,7 +267,6 @@ function canViewCatalogs() {
 function visibleNavItems() {
   return navItems.filter(([id]) => {
     if (id === "new-order") return canOpenOrders();
-    if (id === "users") return isAdmin();
     if (["units", "logistics", "routes", "vehicles", "drivers"].includes(id)) return canViewCatalogs();
     return true;
   });
@@ -440,7 +438,8 @@ function renderShell() {
 }
 
 function renderView() {
-  if (!visibleNavItems().some(([id]) => id === currentView) && !["catalog-form", "user-form"].includes(currentView)) {
+  if (["users", "user-form"].includes(currentView)) currentView = "dashboard";
+  if (!visibleNavItems().some(([id]) => id === currentView) && currentView !== "catalog-form") {
     currentView = "dashboard";
   }
   const view = document.querySelector("#view");
@@ -452,8 +451,6 @@ function renderView() {
     view.innerHTML = crudHtml();
   }
   if (currentView === "catalog-form") view.innerHTML = catalogFormHtml();
-  if (currentView === "users") view.innerHTML = usersHtml();
-  if (currentView === "user-form") view.innerHTML = userFormHtml();
   if (currentView === "docs") view.innerHTML = docsHtml();
   bindViewEvents();
 }
@@ -893,8 +890,6 @@ function bindViewEvents() {
   if (currentView === "orders") renderOrdersTable();
   if (["units", "logistics", "routes", "vehicles", "drivers"].includes(currentView)) bindCrudEvents();
   if (currentView === "catalog-form") bindCatalogFormEvents();
-  if (currentView === "users") bindUsersEvents();
-  if (currentView === "user-form") bindUserFormEvents();
 }
 
 function bindCascadeFields() {

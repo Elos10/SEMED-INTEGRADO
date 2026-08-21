@@ -157,7 +157,6 @@ function shell() {
     ["habilidadesAplicadas", "Cadastro de Habilidades", "habilidadesAplicadas"],
     ["importacoes", "Importações", "importacoes"],
     ["qualidade", "Qualidade dos dados", "qualidade"],
-    ["admin", "Administração", "admin"],
   ].filter(([, , permissionKey]) => state.permissions[permissionKey] !== false);
   return `
     <section class="shell">
@@ -190,7 +189,10 @@ function shell() {
 
 function viewHtml() {
   if (state.view === "inicio") return homeView();
-  if (state.view === "admin") return adminView();
+  if (state.view === "admin") {
+    state.view = "dashboard";
+    return dashboardView();
+  }
   if (state.view === "importacoes") return importView();
   if (state.view === "analise") return analysisView();
   if (state.view === "analiseQuestoes") return questionAnalysisView();

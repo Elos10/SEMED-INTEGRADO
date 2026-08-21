@@ -75,3 +75,16 @@
 - reforçadas as políticas RLS de Monitoramento, Ordens de Serviço e Urna com a
   permissão central do módulo;
 - preservadas as regras de negócio e as tabelas internas de cada aplicação.
+## 2026-08-21 — Entrada dos módulos e gestão central de usuários
+
+- reforçada a exibição integral do conteúdo central e do rodapé nas quatro
+  telas institucionais de login, neutralizando regras visuais legadas;
+- corrigida a estrutura HTML de inicialização do módulo Monitoramento;
+- removidas das navegações de Avaliações, Monitoramento e Ordens de Serviço
+  as opções locais de usuários e perfis;
+- removida da Urna Eletrônica a aba administrativa de acessos;
+- tentativas de abrir estados antigos dessas áreas agora retornam ao painel
+  operacional do respectivo módulo;
+- mantida a gestão corporativa em **Usuários e acessos**, exibida no portal
+  somente quando `get_my_access_context()` confirma `portal_admin` para DETIC;
+- não houve alteração de tabelas, RLS ou migrations nesta etapa.

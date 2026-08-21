@@ -188,7 +188,7 @@ const uiState = {
   activeSessionId: null,
   loginError: "",
   loginEmail: "",
-  adminTab: "access",
+  adminTab: "units",
   activeAccessEditId: null,
   accessEditorOpen: false,
   activeUnitEditId: null,
@@ -638,24 +638,12 @@ function handleClick(event) {
     renderApp();
   } else if (action === "resume-session") {
     resumeCurrentSession();
-  } else if (action === "edit-access") {
-    uiState.activeAccessEditId = value;
-    uiState.accessEditorOpen = true;
-    uiState.adminTab = "access";
-    uiState.accessNotice = "";
-    renderApp();
-  } else if (action === "new-access") {
-    uiState.activeAccessEditId = null;
-    uiState.accessEditorOpen = true;
-    uiState.accessNotice = "";
-    renderApp();
-  } else if (action === "close-access-editor") {
+  } else if (["edit-access", "new-access", "close-access-editor", "toggle-access"].includes(action)) {
     uiState.activeAccessEditId = null;
     uiState.accessEditorOpen = false;
-    uiState.accessNotice = "";
+    uiState.adminTab = "units";
+    uiState.accessNotice = "A gestão de usuários e perfis é exclusiva do Portal SEMED.";
     renderApp();
-  } else if (action === "toggle-access") {
-    toggleAccessActive(value);
   } else if (action === "edit-unit") {
     uiState.activeUnitEditId = value;
     uiState.unitEditorOpen = true;
@@ -2031,7 +2019,6 @@ function renderAdminScreen() {
         </section>
 
         <nav class="admin-tabs">
-          ${renderTab("access", "Acessos")}
           ${renderTab("units", "Unidades")}
           ${renderTab("candidates", "Chapas")}
           ${renderTab("sessions", "Tokens")}
@@ -2064,9 +2051,7 @@ function renderTab(tabKey, label) {
 }
 
 function renderAdminTabBody() {
-  if (uiState.adminTab === "access") {
-    return renderAccessTab();
-  }
+  if (uiState.adminTab === "access") uiState.adminTab = "units";
   if (uiState.adminTab === "units") {
     return renderUnitsTab();
   }
