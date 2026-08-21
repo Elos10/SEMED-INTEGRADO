@@ -1,5 +1,19 @@
 # Registro de alterações
 
+## 2026-08-21 — Posse e edição dos andamentos do Monitoramento
+
+- adicionado o botão **Editar** aos andamentos da timeline somente para o
+  criador, quando não direcionado, ou para o usuário que estiver com a posse;
+- o responsável atual pode responder, atualizar status e progresso, encaminhar
+  a outro usuário ou devolver o andamento ao remetente;
+- após o encaminhamento, o usuário anterior perde imediatamente a permissão de
+  movimentação e o novo responsável recebe a posse exclusiva;
+- andamentos já direcionados não podem ficar sem responsável;
+- autoria original e histórico de encaminhamentos são preservados;
+- adicionada a migration `0009_monitor_event_ownership.sql`, com trigger de
+  integridade e política RLS de atualização por criador/possuidor;
+- política e trigger aplicados e validados no projeto Supabase ativo.
+
 ## 2026-08-21 — Notificações interativas do Monitoramento
 
 - transformadas as mensagens da Central de Notificações em cartões inteiros
