@@ -1,5 +1,23 @@
 # Registro de alterações
 
+## 2026-08-21 — Central de Relatórios do Monitoramento
+
+- incluído resumo do recorte com total de objetos, progresso médio, atrasos,
+  criticidade e última atualização;
+- adicionados filtros explícitos de busca e situação, compartilhados entre a
+  pré-visualização e a impressão;
+- reorganizados os cartões da Central por finalidade, quantidade de registros
+  e formato de saída;
+- ampliado o Relatório Executivo com seis indicadores, distribuições por
+  situação e prioridade e tabela visual de itens que exigem atenção;
+- ampliado o Relatório Geral com resumo gerencial, distribuições e detalhamento
+  condensado de objeto, responsável, período, situação e progresso;
+- adicionados marcadores de situação, barras de progresso, hierarquia visual,
+  linhas alternadas e identificação dos filtros no documento impresso;
+- corrigido o tratamento dos filtros especiais `Atrasado`, `Concluído` e
+  `Alta prioridade` dentro dos relatórios;
+- preservadas as consultas, tabelas, permissões RLS e regras de negócio.
+
 ## 2026-08-21 — Navegação das telas iniciais dos módulos
 
 - reforçado o cabeçalho institucional compartilhado nas telas de login dos quatro módulos;
