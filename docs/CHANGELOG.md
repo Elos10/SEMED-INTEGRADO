@@ -169,3 +169,12 @@
 - a conclusão define automaticamente 100% e encerra novas edições;
 - a migration `0011_monitor_directed_movement_history.sql` reforça a mesma
   regra no banco, além da restrição já existente por posse e RLS.
+
+## 2026-08-21 — Rastreamento de recebimento na timeline
+
+- o emissor passou a visualizar na timeline com qual usuário está o andamento;
+- a confirmação apresenta o nome de quem recebeu e a data/hora registrada;
+- enquanto o destinatário ainda não abriu o andamento, a timeline informa
+  **Aguardando recebimento**;
+- o horário continua sendo persistido pelo Supabase e apenas formatado para o
+  padrão brasileiro na interface.
