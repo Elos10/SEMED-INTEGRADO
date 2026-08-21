@@ -189,3 +189,11 @@
   Ordens de Serviço e Urna Eletrônica;
 - a impressão dos relatórios foi uniformizada em papel A4, orientação paisagem,
   fonte Calibri tamanho 13 e margens de 1 cm nos quatro lados.
+
+## 2026-08-21 — Áreas institucionais dos andamentos
+
+- o campo Área de Novo andamento passou a utilizar as 13 áreas institucionais
+  informadas pela SEMED;
+- a mesma relação foi aplicada ao cadastro central de usuários;
+- a validação da Edge Function e as restrições do banco foram atualizadas para
+  aceitar a nova estrutura institucional.

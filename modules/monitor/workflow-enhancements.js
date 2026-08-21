@@ -1,4 +1,4 @@
-const MONITOR_AREAS=['Gestão Pedagógica','Infraestrutura','Logística','Tecnologia','Transporte'];
+const MONITOR_AREAS=['Gestão SEMED','Diretoria de Ensino','Diretoria de Apoio à Educação Básica','Diretoria de Logística','Diretoria de Planejamento Gestão e Finanças','Arte e Cultura','Formação - Casa do Educador','Formação - Polo UAB','Inclusão','Infraestrutura','Planejamento Financeiro','Tecnologia','Transporte'];
 const monitorAreaOptions=(selected='')=>MONITOR_AREAS.map(area=>`<option value="${area}" ${selected===area?'selected':''}>${area}</option>`).join('');
 
 loadRemoteState=async function(){

@@ -9,7 +9,7 @@ const headers = { ...corsHeaders, "Content-Type": "application/json" };
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers });
 const strongPassword = (value: string) => /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/.test(value);
 const DETIC_EMAIL = "detic@uberabadigital.com.br";
-const USER_AREAS = ["Gestão Pedagógica", "Infraestrutura", "Logística", "Tecnologia", "Transporte"] as const;
+const USER_AREAS = ["Gestão SEMED", "Diretoria de Ensino", "Diretoria de Apoio à Educação Básica", "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças", "Arte e Cultura", "Formação - Casa do Educador", "Formação - Polo UAB", "Inclusão", "Infraestrutura", "Planejamento Financeiro", "Tecnologia", "Transporte"] as const;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
