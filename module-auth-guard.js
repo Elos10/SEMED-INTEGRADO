@@ -4,7 +4,7 @@ import { semedUi } from "./shared-runtime.js";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const path = location.pathname.toLowerCase();
-const code = path.includes("/avaliacoes/") ? "avaliacoes" : path.includes("/inscricoes/") ? "inscricoes" : path.includes("/monitor/") ? "monitor" : path.includes("/os-semed/") ? "os_semed" : path.includes("/votacao/") ? "votacao" : "";
+const code = path.includes("/avaliacoes/") ? "avaliacoes" : path.includes("/monitor/") ? "monitor" : path.includes("/os-semed/") ? "os_semed" : path.includes("/votacao/") ? "votacao" : "";
 const portalUrl = new URL("../../", location.href);
 portalUrl.searchParams.set("return", location.pathname + location.search);
 window.SEMED_AUTH_SIGN_OUT = async () => { await supabase.auth.signOut(); };

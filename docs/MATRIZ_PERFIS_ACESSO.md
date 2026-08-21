@@ -15,9 +15,6 @@ ocultação visual.
 | Gestor SEMED | Todos | visualizar, cadastrar, editar e aprovar; Urna apenas consulta |
 | Avaliações — Gestor | Avaliações | visualizar, cadastrar, editar e aprovar |
 | Avaliações — Consulta | Avaliações | somente visualizar |
-| Inscrições — Gestor | Inscrições | visualizar, cadastrar, editar, excluir e aprovar |
-| Inscrições — Operador | Inscrições | visualizar, cadastrar e editar |
-| Inscrições — Consulta | Inscrições | somente visualizar |
 | Monitoramento — Gestão | Monitoramento | visualizar, cadastrar, editar e aprovar |
 | Monitoramento — Consulta | Monitoramento | somente visualizar |
 | OS — Solicitante | Ordens de Serviço | abrir e acompanhar as próprias OS |
@@ -28,7 +25,6 @@ ocultação visual.
 ## Papéis funcionais por módulo
 
 - Avaliações: Gestor SEMED, Gestor Unidade e Consulta.
-- Inscrições: Gestor SEMED, Gestor Unidade, Professor e Secretaria.
 - Monitoramento: Gabinete, Assessoria, Diretoria, Departamento, Seção e
   Servidor.
 - Ordens de Serviço: Solicitante, Responsável e Gestor/Consulta.
@@ -50,4 +46,3 @@ departamento, área responsável ou urna.
 
 A recuperação por “Esqueci minha senha” segue o fluxo de e-mail do Supabase
 Auth e também elimina a pendência de primeiro acesso após a troca bem-sucedida.
-

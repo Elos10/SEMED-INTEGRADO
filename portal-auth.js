@@ -6,7 +6,6 @@ import { initPortalAdmin } from "./portal-admin.js?v=20260820-users-2";
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",
-  "./modules/inscricoes/": "inscricoes",
   "./modules/monitor/": "monitor",
   "./modules/os-semed/": "os_semed",
   "./modules/votacao/": "votacao",

@@ -1,6 +1,5 @@
 const MODULE_ROLES = {
   avaliacoes: ["GESTOR SEMED", "GESTOR UNIDADE", "CONSULTA"],
-  inscricoes: ["Gestor SEMED", "Gestor Unidade", "Professor", "Secretaria"],
   monitor: ["gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
   os_semed: ["Solicitante", "Responsável", "Gestor/Consulta"],
   votacao: ["MESARIO"],
@@ -142,7 +141,6 @@ export function initPortalAdmin({ supabase, context }) {
         scope: module.code === "votacao" ? { unit_id: scopeValue || null }
           : module.code === "os_semed" ? { unit_name: scopeValue }
           : module.code === "avaliacoes" ? { unidade: scopeValue }
-          : module.code === "inscricoes" ? { unit_id: scopeValue }
           : scopeValue ? { area: scopeValue } : {},
       };
     }

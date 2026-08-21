@@ -2,7 +2,7 @@
 
 ## 1. Decisão arquitetural
 
-Adotar uma evolução por estrangulamento, não uma reescrita: um portal central passa a controlar autenticação, navegação e autorização; cada módulo é encaixado e migrado internamente em ondas. O stack inicial permanece HTML/CSS/JavaScript modular, pois é o denominador comum dos cinco sistemas. Uma migração futura para framework só deve ocorrer por benefício comprovado e módulo a módulo.
+Adotar uma evolução por estrangulamento, não uma reescrita: um portal central passa a controlar autenticação, navegação e autorização; cada módulo é encaixado e migrado internamente em ondas. O stack inicial permanece HTML/CSS/JavaScript modular, pois é o denominador comum dos quatro sistemas ativos. Uma migração futura para framework só deve ocorrer por benefício comprovado e módulo a módulo.
 
 ## 2. Visão de componentes
 
@@ -15,7 +15,6 @@ Navegador
       ├─ Layout, menu, breadcrumbs, troca de módulo, logout
       └─ Adaptadores dos módulos
           ├─ Avaliações
-          ├─ Inscrições
           ├─ Votação
           ├─ OS SEMED
           └─ Monitor
@@ -49,7 +48,6 @@ semed-integrado/
     forms/
   modules/
     avaliacoes/
-    inscricoes/
     votacao/
     os-semed/
     monitor/
@@ -67,7 +65,7 @@ No primeiro encaixe, cada pasta de módulo pode conter os arquivos legados quase
 
 ### 4.1 Namespaces
 
-Usar schemas PostgreSQL por domínio (`core`, `avaliacoes`, `inscricoes`, `votacao`, `os_semed`, `monitor`, `audit`) e um schema `api` com views/RPC explicitamente expostas quando necessário. Isso evita colisões como `users`, `units` e `documents`. Caso a configuração de schemas expostos imponha risco operacional na primeira onda, usar temporariamente tabelas `public` prefixadas (`core_*`, `avaliacoes_*`) mantendo a mesma separação lógica; não misturar nomes genéricos em `public`.
+Usar schemas PostgreSQL por domínio (`core`, `avaliacoes`, `votacao`, `os_semed`, `monitor`, `audit`) e um schema `api` com views/RPC explicitamente expostas quando necessário. Isso evita colisões como `users`, `units` e `documents`. Caso a configuração de schemas expostos imponha risco operacional na primeira onda, usar temporariamente tabelas `public` prefixadas (`core_*`, `avaliacoes_*`) mantendo a mesma separação lógica; não misturar nomes genéricos em `public`.
 
 ### 4.2 Core proposto
 
@@ -86,7 +84,6 @@ Perfis iniciais são seeds administráveis, não enums: Administrador Geral, Adm
 ### 4.3 Domínios
 
 - `avaliacoes`: imports, records, habilidades aplicadas e metadados; retirar usuários/permissões do blob.
-- `inscricoes`: unidades locais/locais, modalidades, atividades, turmas, professores, inscrições, vínculos de turma, frequência e documentos; normalizar o blob preservando IDs legados.
 - `votacao`: eleições/configuração, unidades participantes, chapas/membros, credenciais funcionais de mesário ligadas a Auth, sessões, urnas e votos. Voto deve ser append-only e confirmado por uma única RPC transacional.
 - `os_semed`: ordens, catálogo logístico, responsáveis por área, rotas, veículos, motoristas, mensagens, histórico e anexos.
 - `monitor`: objetos, eventos, atividades, custos, documentos, leituras de notificação e imports.
@@ -131,7 +128,6 @@ Registrar no banco, preferencialmente por trigger/RPC, e não confiar somente no
 | Módulo | Preservar | Substituir primeiro |
 |---|---|---|
 | Avaliações | filtros, cálculos, importação, análises, BNCC, relatórios | auth/token, usuários/perfis no JSON, RLS pública |
-| Inscrições | formulários, conflitos de horário, vagas, frequência, relatórios | auth, blob único, permissões apenas no cliente |
 | Votação | fluxo mesário/urna, tipologia, pesos e transação lógica | contas próprias, regras públicas, documentos agregados |
 | OS SEMED | cascata logística, escopos por perfil, histórico/mensagens | erro de sintaxe, localStorage, anexos locais, credenciais demo |
 | Monitor | UI, modelo de objeto/evento/custo, auditoria e upload | Firebase Auth/dados, papéis fixos/amplos |
@@ -194,6 +190,5 @@ gravadas somente pelo Supabase Auth e exigem substituição no primeiro acesso.
 
 A migração para tabelas relacionais será feita por agregado funcional, sem
 substituição destrutiva. Até a desagregação, todo documento agregado deve usar
-versão esperada na gravação para detectar concorrência. A migration
-`0003_json_state_concurrency.sql` prepara esse controle para Avaliações e
-Inscrições e foi aplicada ao projeto central.
+versão esperada na gravação para detectar concorrência. O controle de concorrência
+permanece ativo para os documentos agregados dos módulos preservados.

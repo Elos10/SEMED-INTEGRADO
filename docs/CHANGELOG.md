@@ -1,5 +1,13 @@
 # Registro de alterações
 
+## 2026-08-21 — Retirada do módulo Inscrições
+
+- removidos o cartão, a rota, a proteção de rota e o cadastro administrativo do módulo;
+- removidos os arquivos e estilos exclusivos de Inscrições;
+- removidos do Supabase o módulo, seus três perfis, permissões, vínculos e auditoria exclusiva;
+- removidos o documento funcional `semed_sistema` e a função `commit_inscricoes_state`;
+- preservados usuários do Supabase Auth e todos os dados dos quatro módulos restantes.
+
 ## 2026-08-20 — Diagnóstico do cadastro por Edge Function
 
 - o portal passou a apresentar a mensagem enviada no corpo das respostas não-2xx

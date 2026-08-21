@@ -27,23 +27,6 @@
 .login:has(.login-forms) .login-form-head { position: relative; padding-right: 78px; }
 .login:has(.login-forms) .login-form-head::after { content: "✓"; position: absolute; right: 0; top: 0; width: 58px; height: 58px; display: grid; place-items: center; border-radius: 16px; color: #fff; background: linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size: 28px; font-weight: 900; }
 
-/* Inscrições */
-.app-inscricoes .login {
-  grid-template-columns: minmax(0, 1.1fr) minmax(420px, .9fr) !important; place-items: stretch !important;
-  padding: 0 !important; background: linear-gradient(145deg,var(--entry-blue),var(--entry-royal)) !important;
-}
-.app-inscricoes .login::before {
-  content: "Conexões que transformam oportunidades em participação."; align-self: center;
-  max-width: 760px; padding: clamp(60px, 9vw, 150px); color: #fff; font-size: clamp(42px, 5vw, 76px);
-  font-weight: 900; line-height: 1.02; letter-spacing: -.045em;
-}
-.app-inscricoes .login form {
-  width: 100% !important; max-width: none !important; min-height: 100vh; margin: 0 !important;
-  align-content: center; padding: clamp(40px, 7vw, 130px) !important; border-radius: 0 !important;
-  box-shadow: none !important; position: relative;
-}
-.app-inscricoes .login form::after { content: "+"; position: absolute; right: clamp(30px,5vw,80px); top: clamp(30px,7vh,80px); width: 58px; height: 58px; display:grid; place-items:center; border-radius:16px; color:#fff; background:linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size:34px; font-weight:700; }
-
 /* OS SEMED */
 .login-shell { grid-template-columns: minmax(0, 1.1fr) minmax(420px, .9fr) !important; background: #fff; }
 .login-shell .brand-panel { background: linear-gradient(145deg,var(--entry-blue),var(--entry-royal)) !important; padding: clamp(45px,7vw,130px) !important; }
@@ -72,10 +55,9 @@
 .login-page .login-card::after { content:"✓"; position:absolute; right:0; top:0; width:58px; height:58px; display:grid; place-items:center; border-radius:16px; color:#fff; background:linear-gradient(135deg,var(--entry-blue),var(--entry-royal)); font-size:28px; font-weight:900; }
 
 @media (max-width: 760px) {
-  .login:has(.login-forms) .login-card, .app-inscricoes .login, .login-shell, .login-page { grid-template-columns: 1fr !important; }
+  .login:has(.login-forms) .login-card, .login-shell, .login-page { grid-template-columns: 1fr !important; }
   .login:has(.login-forms) .login-logo { width: calc(100% - 48px); max-height: 130px !important; margin: 32px 24px; }
-  .login:has(.login-forms) .login-forms, .app-inscricoes .login form, .login-page .login-panel { min-height: auto; padding: 36px 24px !important; }
-  .app-inscricoes .login::before { padding: 42px 24px; font-size: 37px; }
+  .login:has(.login-forms) .login-forms, .login-page .login-panel { min-height: auto; padding: 36px 24px !important; }
   .login-shell .brand-panel { padding: 36px 24px !important; }
   .login-shell .brand-panel h1 { font-size: 38px !important; }
   .login-shell .login-card { width: auto; margin: 0 24px 36px !important; }
@@ -186,34 +168,6 @@
   .login.semed-entry.monitor-entry>.entry-stage{width:calc(100% - 32px)!important}
   .login.semed-entry.monitor-entry form.login-card.entry-panel{justify-self:center!important;padding:26px 22px!important}
 }
-.app-inscricoes .login.semed-entry.inscricoes-entry{
-  width:100%!important;min-width:100%!important;height:100vh!important;min-height:100vh!important;
-  display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:72px minmax(0,1fr) 72px!important;
-  place-items:stretch!important;align-items:stretch!important;justify-items:stretch!important;padding:0!important;
-  background:linear-gradient(145deg,#1258e5 0%,#2c79f4 58%,#0b42bd 100%)!important;overflow:hidden!important;
-}
-.app-inscricoes .login.semed-entry.inscricoes-entry::before{content:none!important;display:none!important}
-.app-inscricoes .login.semed-entry.inscricoes-entry>.entry-top,
-.app-inscricoes .login.semed-entry.inscricoes-entry>.entry-footer{width:100%!important;max-width:none!important}
-.app-inscricoes .login.semed-entry.inscricoes-entry>.entry-stage{width:min(1050px,calc(100% - 40px))!important;max-width:1050px!important;margin:0 auto!important}
-.app-inscricoes .login.semed-entry.inscricoes-entry form.entry-panel{
-  width:min(500px,100%)!important;max-width:500px!important;height:auto!important;min-height:0!important;
-  align-self:center!important;justify-self:end!important;align-content:center!important;margin:0!important;padding:38px!important;
-  border:0!important;border-radius:20px!important;background:#fff!important;box-shadow:0 24px 55px rgba(0,19,66,.34)!important;
-}
-.app-inscricoes .login.semed-entry.inscricoes-entry form.entry-panel::after{content:none!important;display:none!important}
-.inscricoes-entry .entry-brand img{filter:brightness(0) invert(1);mix-blend-mode:normal!important;opacity:.96}
-.inscricoes-entry .entry-intro h1,.inscricoes-entry .entry-intro p{display:block!important;visibility:visible!important;opacity:1!important;color:#fff!important}
-.inscricoes-entry .entry-motto{visibility:visible!important;opacity:1!important;color:#d9e8ff!important}
-.inscricoes-entry .entry-panel input#email{padding-left:36px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d6598' stroke-width='1.8'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:12px center!important}
-.inscricoes-entry .entry-panel input#pass{padding-left:36px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d6598' stroke-width='1.8'%3E%3Crect x='5' y='10' width='14' height='11' rx='2'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:12px center!important}
-.inscricoes-entry .entry-panel button[type=submit]{margin-top:5px}
-@media(max-width:760px){
-  .app-inscricoes .login.semed-entry.inscricoes-entry{height:auto!important;min-height:100vh!important;grid-template-rows:auto auto auto!important;overflow:auto!important}
-  .app-inscricoes .login.semed-entry.inscricoes-entry>.entry-stage{width:calc(100% - 32px)!important}
-.app-inscricoes .login.semed-entry.inscricoes-entry form.entry-panel{justify-self:center!important;padding:26px 22px!important}
-}
-
 /* Urna eletrônica — entrada institucional conforme o modelo oficial. */
 .login-page.semed-entry.urna-entry{
   width:100%!important;min-width:100%!important;height:100vh!important;min-height:100vh!important;
