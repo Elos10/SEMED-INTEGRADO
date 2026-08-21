@@ -1,5 +1,19 @@
 # Registro de alterações
 
+## 2026-08-21 — Área institucional de usuários e andamentos
+
+- adicionado o campo obrigatório **Área de atuação** ao cadastro administrativo
+  de usuários do portal;
+- a área passou a ser exibida na listagem e incluída na pesquisa de usuários;
+- padronizadas as opções em Gestão Pedagógica, Infraestrutura, Logística,
+  Tecnologia e Transporte;
+- a mesma lista passou a ser utilizada na criação e edição de andamentos do
+  módulo Monitoramento;
+- adicionada a migration `0010_user_institutional_area.sql`, incluindo o campo
+  validado em `semed_people` e `monitor_profiles`;
+- atualizada e publicada a Edge Function `manage-semed-user` para carregar,
+  validar e persistir a área no cadastro central e no Monitoramento.
+
 ## 2026-08-21 — Posse e edição dos andamentos do Monitoramento
 
 - adicionado o botão **Editar** aos andamentos da timeline somente para o

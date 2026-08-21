@@ -9,6 +9,7 @@ const headers = { ...corsHeaders, "Content-Type": "application/json" };
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers });
 const strongPassword = (value: string) => /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/.test(value);
 const DETIC_EMAIL = "detic@uberabadigital.com.br";
+const USER_AREAS = ["Gestão Pedagógica", "Infraestrutura", "Logística", "Tecnologia", "Transporte"] as const;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
 
     if (action === "list") {
       const [people, profiles, modules, assignments, roles] = await Promise.all([
-        admin.from("semed_people").select("user_id,email,full_name,active,must_change_password,password_changed_at,created_at").order("full_name"),
+        admin.from("semed_people").select("user_id,email,full_name,area,active,must_change_password,password_changed_at,created_at").order("full_name"),
         admin.from("semed_profiles").select("id,code,name,description,active").eq("active", true).order("name"),
         admin.from("semed_modules").select("id,code,name,description,display_order").eq("active", true).order("display_order"),
         admin.from("semed_user_profiles").select("user_id,profile_id,active").eq("active", true),
@@ -51,12 +52,14 @@ Deno.serve(async (req) => {
     const uid = input.uid ? String(input.uid) : "";
     const email = String(input.email || "").trim().toLowerCase();
     const fullName = String(input.fullName || "").trim();
+    const area = String(input.area || "").trim();
     const temporaryPassword = String(input.temporaryPassword || "");
     const active = input.active !== false;
     const requestedProfiles = [...new Set((Array.isArray(input.profileCodes) ? input.profileCodes : []).map(String))];
     const requestedRoles = input.moduleRoles && typeof input.moduleRoles === "object" ? input.moduleRoles : {};
 
-    if (!email || !fullName || !requestedProfiles.length) throw new Error("Nome, e-mail e ao menos um perfil são obrigatórios.");
+    if (!email || !fullName || !area || !requestedProfiles.length) throw new Error("Nome, e-mail, área e ao menos um perfil são obrigatórios.");
+    if (!USER_AREAS.includes(area as typeof USER_AREAS[number])) throw new Error("Área de atuação inválida.");
     if (!uid && !strongPassword(temporaryPassword)) throw new Error("A senha temporária deve ter 12 caracteres, letra, número e símbolo.");
     if (uid && temporaryPassword && !strongPassword(temporaryPassword)) throw new Error("A nova senha temporária não atende aos requisitos de segurança.");
     if (email !== DETIC_EMAIL && requestedProfiles.includes("ADMIN_GERAL")) throw new Error("O perfil Administrador Geral é exclusivo do usuário DETIC.");
@@ -86,7 +89,7 @@ Deno.serve(async (req) => {
 
     const mustChange = !uid || Boolean(temporaryPassword);
     const { error: personError } = await admin.from("semed_people").upsert({
-      user_id: target.id, email, full_name: fullName, active,
+      user_id: target.id, email, full_name: fullName, area, active,
       must_change_password: mustChange,
       password_changed_at: mustChange ? null : undefined,
       updated_at: new Date().toISOString(),
@@ -122,7 +125,7 @@ Deno.serve(async (req) => {
     const allowedCodes = new Set((moduleRows || []).map((module) => module.code));
 
     if (allowedCodes.has("monitor")) {
-      const { error } = await admin.from("monitor_profiles").upsert({ user_id: target.id, full_name: fullName, email, role: roleFor("monitor", "servidor"), active, updated_by: user.id, updated_at: new Date().toISOString() });
+      const { error } = await admin.from("monitor_profiles").upsert({ user_id: target.id, full_name: fullName, email, area, role: roleFor("monitor", "servidor"), active, updated_by: user.id, updated_at: new Date().toISOString() });
       if (error) throw error;
     } else await admin.from("monitor_profiles").update({ active: false, updated_by: user.id }).eq("user_id", target.id);
 
@@ -139,10 +142,10 @@ Deno.serve(async (req) => {
     await admin.from("semed_audit").insert({
       user_id: user.id, module_code: "portal", action: uid ? "UPDATE_USER_ACCESS" : "CREATE_USER_ACCESS",
       entity_type: "auth.users", entity_id: target.id,
-      metadata: { email, fullName, active, profileCodes: requestedProfiles, passwordReset: Boolean(temporaryPassword) },
+      metadata: { email, fullName, area, active, profileCodes: requestedProfiles, passwordReset: Boolean(temporaryPassword) },
     });
 
-    return respond({ user: { user_id: target.id, email, full_name: fullName, active, must_change_password: mustChange } });
+    return respond({ user: { user_id: target.id, email, full_name: fullName, area, active, must_change_password: mustChange } });
   } catch (error) {
     return respond({ error: error instanceof Error ? error.message : String(error) }, 400);
   }

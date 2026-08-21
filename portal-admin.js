@@ -7,6 +7,7 @@ const MODULE_ROLES = {
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const STRONG_PASSWORD = /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/;
+const USER_AREAS = ["Gestão Pedagógica", "Infraestrutura", "Logística", "Tecnologia", "Transporte"];
 
 async function functionErrorMessage(error, data) {
   if (data?.error) return data.error;
@@ -81,12 +82,12 @@ export function initPortalAdmin({ supabase, context }) {
   }
 
   function renderList() {
-    const users = (catalog.users || []).filter((user) => !search || `${user.full_name} ${user.email}`.toLowerCase().includes(search));
+    const users = (catalog.users || []).filter((user) => !search || `${user.full_name} ${user.email} ${user.area || ""}`.toLowerCase().includes(search));
     panel.querySelector("[data-content]").innerHTML = `
       <div class="access-admin-toolbar"><input type="search" data-search placeholder="Pesquisar usuário…" value="${esc(search)}"><button class="access-primary" type="button" data-new>Novo usuário</button></div>
       <div class="access-notice" data-notice></div>
-      <table><thead><tr><th>Usuário</th><th>Perfis</th><th>Situação</th><th>Senha</th><th></th></tr></thead><tbody>
-      ${users.map((user) => `<tr><td><strong>${esc(user.full_name)}</strong><br><small>${esc(user.email)}</small></td><td>${userProfiles(user.user_id).map((profile) => `<span class="access-pill">${esc(profile.name)}</span>`).join(" ") || "Sem perfil"}</td><td>${user.active ? "Ativo" : "Inativo"}</td><td>${user.must_change_password ? '<span class="access-pill pending">Troca obrigatória</span>' : "Regular"}</td><td><button class="access-secondary" type="button" data-edit="${user.user_id}">Editar</button></td></tr>`).join("")}
+      <table><thead><tr><th>Usuário</th><th>Área</th><th>Perfis</th><th>Situação</th><th>Senha</th><th></th></tr></thead><tbody>
+      ${users.map((user) => `<tr><td><strong>${esc(user.full_name)}</strong><br><small>${esc(user.email)}</small></td><td>${esc(user.area || "Não informada")}</td><td>${userProfiles(user.user_id).map((profile) => `<span class="access-pill">${esc(profile.name)}</span>`).join(" ") || "Sem perfil"}</td><td>${user.active ? "Ativo" : "Inativo"}</td><td>${user.must_change_password ? '<span class="access-pill pending">Troca obrigatória</span>' : "Regular"}</td><td><button class="access-secondary" type="button" data-edit="${user.user_id}">Editar</button></td></tr>`).join("")}
       </tbody></table>`;
     panel.querySelector("[data-search]").addEventListener("input", (event) => { search = event.target.value.trim().toLowerCase(); renderList(); });
     panel.querySelector("[data-new]").addEventListener("click", () => renderForm(null));
@@ -103,6 +104,7 @@ export function initPortalAdmin({ supabase, context }) {
         <h3 class="access-admin-wide">${user ? "Editar usuário" : "Cadastrar usuário"}</h3>
         <label>Nome completo<input name="fullName" value="${esc(user?.full_name)}" required></label>
         <label>E-mail institucional<input name="email" type="email" value="${esc(user?.email)}" ${isDetic ? "readonly" : ""} required></label>
+        <label>Área de atuação<select name="area" required><option value="">Selecione a área</option>${USER_AREAS.map((area) => `<option value="${esc(area)}" ${user?.area === area ? "selected" : ""}>${esc(area)}</option>`).join("")}</select><small>Área institucional utilizada também no módulo Monitoramento.</small></label>
         <label>Senha temporária<input name="temporaryPassword" type="password" autocomplete="new-password" minlength="12" pattern="(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{12,}" title="Use no mínimo 12 caracteres, com letra, número e símbolo." ${user ? 'placeholder="Deixe vazio para manter a senha"' : "required"}><small>Mínimo de 12 caracteres, com letra, número e símbolo. O usuário deverá trocá-la no primeiro acesso.</small></label>
         <label>Situação<select name="active" ${isDetic ? "disabled" : ""}><option value="true" ${user?.active !== false ? "selected" : ""}>Ativo</option><option value="false" ${user?.active === false ? "selected" : ""}>Inativo</option></select></label>
         <fieldset class="access-admin-wide"><legend>Perfis corporativos</legend><div class="profile-grid">
@@ -148,6 +150,7 @@ export function initPortalAdmin({ supabase, context }) {
       action: "save", uid: selectedUser?.user_id,
       fullName: String(values.get("fullName") || "").trim(),
       email: String(values.get("email") || "").trim().toLowerCase(),
+      area: String(values.get("area") || "").trim(),
       temporaryPassword: String(values.get("temporaryPassword") || ""),
       active: selectedUser?.email?.toLowerCase() === "detic@uberabadigital.com.br" ? true : values.get("active") === "true",
       profileCodes: values.getAll("profiles"),

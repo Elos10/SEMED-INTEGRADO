@@ -7,7 +7,7 @@ window.supabaseReady = (async () => {
   const collection = (_db, name) => ref(name);
   const doc = (first, second, third) => first?.collection ? ref(first.collection, second || crypto.randomUUID()) : ref(second, third);
   const serverTimestamp = () => new Date().toISOString();
-  const snapshot = (row) => ({ id: row?.user_id || row?.id, exists: () => !!row, data: () => row ? (row.data || { fullName: row.full_name, email: row.email, role: row.role, active: row.active }) : undefined });
+  const snapshot = (row) => ({ id: row?.user_id || row?.id, exists: () => !!row, data: () => row ? (row.data || { fullName: row.full_name, email: row.email, area: row.area || '', role: row.role, active: row.active }) : undefined });
   async function getDoc(target) {
     if (target.collection === 'users') { const { data, error } = await client.from('monitor_profiles').select('*').eq('user_id', target.id).maybeSingle(); if (error) throw error; return snapshot(data); }
     const { data, error } = await client.from('monitor_records').select('*').eq('collection', target.collection).eq('id', target.id).maybeSingle(); if (error) throw error; return snapshot(data);
@@ -22,7 +22,7 @@ window.supabaseReady = (async () => {
   const orderBy = (field, direction) => ({ type: 'order', field, direction });
   const query = (base, ...clauses) => ({ base, collection: base.collection, clauses });
   async function setDoc(target, data) {
-    if (target.collection === 'users') { const { error } = await client.from('monitor_profiles').upsert({ user_id: target.id, full_name: data.fullName, email: data.email, role: data.role, active: data.active !== false, updated_at: new Date().toISOString() }); if (error) throw error; return; }
+    if (target.collection === 'users') { const { error } = await client.from('monitor_profiles').upsert({ user_id: target.id, full_name: data.fullName, email: data.email, area: data.area || '', role: data.role, active: data.active !== false, updated_at: new Date().toISOString() }); if (error) throw error; return; }
     if (target.collection === 'audit') { const { error } = await client.from('monitor_audit').insert({ id: target.id, user_id: data.userId || null, user_name: data.userName, action: data.action, entity: data.entity, record_id: data.recordId, old_data: data.oldData, new_data: data.newData, created_at: data.createdAt || new Date().toISOString() }); if (error) throw error; return; }
     const { data: { user } } = await client.auth.getUser();
     const { error } = await client.from('monitor_records').upsert({ collection: target.collection, id: target.id, data, active: data.active !== false, created_by: user?.id, updated_by: user?.id, updated_at: new Date().toISOString() }); if (error) throw error;
