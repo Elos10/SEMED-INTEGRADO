@@ -197,3 +197,13 @@
 - a mesma relação foi aplicada ao cadastro central de usuários;
 - a validação da Edge Function e as restrições do banco foram atualizadas para
   aceitar a nova estrutura institucional.
+
+## 2026-08-24 — Retorno à seleção de aplicativos
+
+- usuários com acesso a mais de um módulo passaram a visualizar **Voltar ao
+  Portal** também dentro da área autenticada de cada aplicativo;
+- o retorno preserva a sessão Supabase e abre a seleção dos módulos atualmente
+  autorizados pelo perfil corporativo;
+- o parâmetro de seleção impede que o portal redirecione automaticamente para o
+  aplicativo anterior;
+- usuários com somente um módulo não recebem o seletor adicional durante o uso.

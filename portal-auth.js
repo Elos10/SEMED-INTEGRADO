@@ -97,11 +97,19 @@ async function revealPortal(session) {
   overlay.hidden = true;
   document.body.classList.remove("portal-auth-pending");
 
-  const target = new URLSearchParams(location.search).get("return");
+  const parameters = new URLSearchParams(location.search);
+  const selectionRequested = parameters.get("select") === "1";
+  const target = selectionRequested ? "" : parameters.get("return");
   if (target) {
     const decoded = decodeURIComponent(target);
     const moduleCode = Object.entries(moduleByHref).find(([href]) => decoded.includes(href.replace("./", "/")))?.[1];
     if (moduleCode && codes.has(moduleCode)) location.assign(decoded);
+  }
+  if (selectionRequested) {
+    const cleanUrl = new URL(location.href);
+    cleanUrl.searchParams.delete("select");
+    cleanUrl.searchParams.delete("return");
+    history.replaceState({}, "", cleanUrl);
   }
 }
 

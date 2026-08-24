@@ -8,6 +8,8 @@ const code = path.includes("/avaliacoes/") ? "avaliacoes" : path.includes("/moni
 const portalUrl = new URL("../../", location.href);
 portalUrl.searchParams.set("return", location.pathname + location.search);
 const portalHomeUrl = new URL("../../", location.href);
+portalHomeUrl.searchParams.set("select", "1");
+let moduleSwitchEnabled = false;
 window.SEMED_AUTH_SIGN_OUT = async () => { await supabase.auth.signOut(); };
 
 function installPortalButton(root = document) {
@@ -49,10 +51,41 @@ function installPortalButton(root = document) {
   });
 }
 
+function installModulePortalButton(root = document) {
+  if (!moduleSwitchEnabled || root.querySelector?.("[data-module-portal-switch]")) return;
+  const placements = [
+    [".top .top-actions", "prepend"],
+    [".app-shell .sidebar", "before-logout"],
+    [".shell .sidebar .nav", "append"],
+    [".brand-header .brand-header-inner", "before-logout"],
+    [".admin-header", "prepend"],
+    [".urna-topbar", "prepend"],
+  ];
+  const match = placements.map(([selector, mode]) => [root.querySelector?.(selector), mode]).find(([target]) => target);
+  if (!match) return;
+  const [target, mode] = match;
+  const link = document.createElement("a");
+  link.className = "module-portal-switch";
+  link.dataset.modulePortalSwitch = "1";
+  link.dataset.portalHome = "1";
+  link.href = portalHomeUrl.href;
+  link.innerHTML = '<span aria-hidden="true">←</span><span>Voltar ao Portal</span>';
+  const logout = target.querySelector?.("#logout,[data-action='logout'],.topbar-logout");
+  if (mode === "prepend") target.prepend(link);
+  else if (mode === "before-logout" && logout) logout.insertAdjacentElement("beforebegin", link);
+  else target.append(link);
+}
+
 installPortalButton();
-new MutationObserver(() => installPortalButton()).observe(document.documentElement, { childList: true, subtree: true });
+new MutationObserver(() => { installPortalButton(); installModulePortalButton(); }).observe(document.documentElement, { childList: true, subtree: true });
 
 document.addEventListener("click", (event) => {
+  const portalLink = event.target.closest?.("[data-portal-home]");
+  if (portalLink) {
+    event.preventDefault();
+    location.assign(portalHomeUrl.href);
+    return;
+  }
   const recoveryLink = event.target.closest?.(".entry-forgot");
   if (!recoveryLink) return;
   event.preventDefault();
@@ -74,6 +107,8 @@ window.SEMED_MODULE_ACCESS = (async () => {
   const moduleAccess = !error && data?.user?.active ? (data.modules || []).find((item) => item.code === code) : null;
   const allowed = Boolean(moduleAccess?.permissions?.view);
   if (!allowed) { location.replace(portalUrl); return null; }
+  moduleSwitchEnabled = (data.modules || []).filter((item) => item.permissions?.view).length > 1;
+  installModulePortalButton();
   document.documentElement.classList.remove("semed-auth-check");
   if (document.body) document.body.style.visibility = "visible";
   semedUi.clear();
