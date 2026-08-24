@@ -210,3 +210,84 @@
   .login-page.semed-entry.urna-entry aside.login-card.entry-panel{justify-self:center!important;padding:26px 22px!important}
 }
 .module-portal-switch{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 12px;border:1px solid currentColor;border-radius:9px;color:inherit;background:transparent;font:800 12px/1.2 Arial,sans-serif;text-decoration:none;white-space:nowrap;cursor:pointer}.module-portal-switch:hover,.module-portal-switch:focus-visible{filter:brightness(1.08);outline:3px solid #4f83ff40;outline-offset:2px}.top .module-portal-switch,.brand-header .module-portal-switch,.admin-header .module-portal-switch,.urna-topbar .module-portal-switch{color:#0b347c;background:#fff;border-color:#b9ccec}.sidebar .module-portal-switch{width:100%;margin-top:8px;color:#fff;border-color:#ffffff66;background:#ffffff12}.sidebar .nav .module-portal-switch{margin:8px 0 0;padding:10px 12px}.top .top-actions .module-portal-switch{order:-1}@media(max-width:700px){.module-portal-switch span:last-child{display:none}.module-portal-switch{min-width:40px;padding:8px}}
+
+/*
+ * Padrão final das entradas dos módulos.
+ * O Monitoramento é a referência visual e estas regras neutralizam diferenças
+ * residuais dos estilos legados sem interferir na autenticação de cada sistema.
+ */
+.semed-entry.monitor-entry,
+.semed-entry.avaliacoes-entry,
+.semed-entry.os-entry,
+.semed-entry.urna-entry{
+  width:100%!important;
+  min-width:100%!important;
+  min-height:100vh!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:72px minmax(0,1fr) 72px!important;
+  place-items:stretch!important;
+  margin:0!important;
+  padding:0!important;
+  background:linear-gradient(145deg,#061e68 0%,#0a3da9 58%,#123a98 100%)!important;
+  color:#fff!important;
+  overflow:hidden!important;
+}
+.semed-entry.entry-portal-layout.monitor-entry,
+.semed-entry.entry-portal-layout.avaliacoes-entry,
+.semed-entry.entry-portal-layout.os-entry,
+.semed-entry.entry-portal-layout.urna-entry{
+  grid-template-rows:72px auto minmax(0,1fr) 72px!important;
+  overflow:auto!important;
+}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry)>.entry-top,
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry)>.entry-footer{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry)>.entry-stage{
+  width:min(1050px,calc(100% - 40px))!important;
+  max-width:1050px!important;
+  min-height:0!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(300px,.9fr) minmax(420px,1.1fr)!important;
+  align-items:center!important;
+  gap:clamp(24px,6vw,90px)!important;
+  margin:0 auto!important;
+  padding:18px 0!important;
+  background:transparent!important;
+}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-panel{
+  position:relative!important;
+  width:min(500px,100%)!important;
+  max-width:500px!important;
+  height:auto!important;
+  min-height:0!important;
+  align-self:center!important;
+  justify-self:end!important;
+  align-content:center!important;
+  gap:0!important;
+  margin:0!important;
+  padding:38px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  box-shadow:0 24px 55px rgba(0,19,66,.34)!important;
+}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-panel::after{content:none!important;display:none!important}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-panel>form,
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) form.entry-panel{display:grid!important;gap:10px!important}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-panel button[type=submit]{display:block!important;width:100%!important;margin-top:5px!important}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-brand img{filter:brightness(0) invert(1);mix-blend-mode:normal!important;opacity:.96}
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-intro h1,
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-intro p,
+.semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-motto{display:block!important;visibility:visible!important;opacity:1!important}
+@media(max-width:760px){
+  .semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry){height:auto!important;min-height:100vh!important;grid-template-rows:auto auto auto!important;overflow:auto!important}
+  .semed-entry.entry-portal-layout:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry){grid-template-rows:auto auto auto auto!important}
+  .semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry)>.entry-stage{width:calc(100% - 32px)!important;grid-template-columns:1fr!important}
+  .semed-entry:is(.monitor-entry,.avaliacoes-entry,.os-entry,.urna-entry) .entry-panel{justify-self:center!important;padding:26px 22px!important}
+}
