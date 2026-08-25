@@ -6,7 +6,7 @@ const MODULE_ROLES = {
 };
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
-const STRONG_PASSWORD = /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/;
+const STRONG_PASSWORD = /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/;
 const USER_AREAS = ["Gestão SEMED", "Diretoria de Ensino", "Diretoria de Apoio à Educação Básica", "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças", "Arte e Cultura", "Formação - Casa do Educador", "Formação - Polo UAB", "Inclusão", "Infraestrutura", "Planejamento Financeiro", "Tecnologia", "Transporte"];
 
 async function functionErrorMessage(error, data) {
@@ -105,7 +105,7 @@ export function initPortalAdmin({ supabase, context }) {
         <label>Nome completo<input name="fullName" value="${esc(user?.full_name)}" required></label>
         <label>E-mail institucional<input name="email" type="email" value="${esc(user?.email)}" ${isDetic ? "readonly" : ""} required></label>
         <label>Área de atuação<select name="area" required><option value="">Selecione a área</option>${USER_AREAS.map((area) => `<option value="${esc(area)}" ${user?.area === area ? "selected" : ""}>${esc(area)}</option>`).join("")}</select><small>Área institucional utilizada também no módulo Monitoramento.</small></label>
-        <label>Senha temporária<input name="temporaryPassword" type="password" autocomplete="new-password" minlength="12" pattern="(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{12,}" title="Use no mínimo 12 caracteres, com letra, número e símbolo." ${user ? 'placeholder="Deixe vazio para manter a senha"' : "required"}><small>Mínimo de 12 caracteres, com letra, número e símbolo. O usuário deverá trocá-la no primeiro acesso.</small></label>
+        <label>Senha temporária<input name="temporaryPassword" type="password" autocomplete="new-password" minlength="8" pattern="(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}" title="Use no mínimo 8 caracteres, com letra, número e símbolo." ${user ? 'placeholder="Deixe vazio para manter a senha"' : "required"}><small>Mínimo de 8 caracteres, com letra, número e símbolo. O usuário deverá trocá-la no primeiro acesso.</small></label>
         <label>Situação<select name="active" ${isDetic ? "disabled" : ""}><option value="true" ${user?.active !== false ? "selected" : ""}>Ativo</option><option value="false" ${user?.active === false ? "selected" : ""}>Inativo</option></select></label>
         <fieldset class="access-admin-wide"><legend>Perfis corporativos</legend><div class="profile-grid">
           ${(catalog.profiles || []).map((profile) => {
@@ -161,7 +161,7 @@ export function initPortalAdmin({ supabase, context }) {
       return;
     }
     if ((!selectedUser || payload.temporaryPassword) && !STRONG_PASSWORD.test(payload.temporaryPassword)) {
-      notice.textContent = "A senha temporária deve ter ao menos 12 caracteres, incluindo letra, número e símbolo.";
+      notice.textContent = "A senha temporária deve ter ao menos 8 caracteres, incluindo letra, número e símbolo.";
       return;
     }
     const submitButton = form.querySelector('button[type="submit"]');

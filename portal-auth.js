@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 import { createCaptcha } from "./captcha.js";
-import { initPortalAdmin } from "./portal-admin.js?v=20260821-areas-1";
+import { initPortalAdmin } from "./portal-admin.js?v=20260825-password-8-1";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
@@ -42,9 +42,9 @@ overlay.innerHTML = `
     <button type="submit">Enviar link</button><button class="auth-link" type="button" data-back-login>Voltar ao login</button>
   </form>
   <form class="portal-login" data-auth-view="update" hidden>
-    <h2>Definir nova senha</h2><p>Use pelo menos 12 caracteres, com letras, número e símbolo.</p>
-    <label>Nova senha<input name="password" type="password" autocomplete="new-password" minlength="12" required></label>
-    <label>Confirmar senha<input name="confirmation" type="password" autocomplete="new-password" minlength="12" required></label>
+    <h2>Definir nova senha</h2><p>Use pelo menos 8 caracteres, com letras, número e símbolo.</p>
+    <label>Nova senha<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+    <label>Confirmar senha<input name="confirmation" type="password" autocomplete="new-password" minlength="8" required></label>
     <div class="auth-error" role="alert"></div><button type="submit">Atualizar senha</button>
   </form>`;
 document.body.append(overlay);
@@ -160,8 +160,8 @@ updateForm.addEventListener("submit", async (event) => {
   const errorBox = updateForm.querySelector(".auth-error");
   errorBox.textContent = "";
   if (password !== confirmation) { errorBox.textContent = "As senhas informadas são diferentes."; return; }
-  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}/.test(password)) {
-    errorBox.textContent = "Use 12 caracteres com maiúscula, minúscula, número e símbolo.";
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/.test(password)) {
+    errorBox.textContent = "Use 8 caracteres com maiúscula, minúscula, número e símbolo.";
     return;
   }
   const { error } = await supabase.auth.updateUser({ password });

@@ -18,7 +18,7 @@ bloquear o acesso antes da configuração do servidor.
 Em **Authentication > Sign In / Providers > Email**, ative a proteção contra
 senhas vazadas e configure:
 
-- mínimo de 12 caracteres;
+- mínimo de 8 caracteres;
 - maiúscula, minúscula, número e símbolo;
 - reautenticação para alteração de senha, quando disponível.
 
