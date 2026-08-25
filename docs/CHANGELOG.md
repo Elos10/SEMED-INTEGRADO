@@ -11,6 +11,9 @@
   direcionamento, descrição e área;
 - o novo relatório utiliza os filtros, a pré-visualização, a impressão A4 em
   paisagem e a identidade visual dos demais relatórios.
+- incluído filtro específico por objeto no Relatório de Andamentos, mantendo
+  a opção **Todos os objetos** e registrando o recorte selecionado no cabeçalho
+  da impressão.
 
 ## 2026-08-21 — Área institucional de usuários e andamentos
 
