@@ -12,9 +12,12 @@ const DB_ID = 'db';
 const REST_URL = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1`;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const importPreviewCache = new Map();
-const DB_CACHE_MS = 15000;
+// Gravações locais invalidam o cache; a janela maior evita baixar novamente
+// dezenas de milhares de avaliações durante a navegação entre telas.
+const DB_CACHE_MS = 120000;
 let dbCache = null;
 let dbCacheExpiresAt = 0;
+let dbLoadPromise = null;
 const questionFields = Array.from({ length: 20 }, (_, index) => `Q${index + 1}`);
 const pointFields = Array.from({ length: 20 }, (_, index) => `PT_Q${index + 1}`);
 const questionLimitsByYearNumber = { 1: 10, 2: 10, 3: 10, 4: 15, 5: 15, 6: 20, 7: 20, 8: 20, 9: 20 };
@@ -23,7 +26,6 @@ const recordColumns = [
   'email', 'nivel', 'raca', 'inclusao', 'pontos', 'pontos_possiveis', 'percentual_acertos',
   ...questionFields.map((field) => field.toLowerCase()),
   ...pointFields.map((field) => field.toLowerCase()),
-  'data',
 ];
 const roles = {
   ADMINISTRADOR: 'ADMINISTRADOR',
@@ -173,6 +175,16 @@ async function supabaseRequest(path, options = {}) {
 
 async function readDb() {
   if (dbCache && Date.now() < dbCacheExpiresAt) return dbCache;
+  if (dbLoadPromise) return dbLoadPromise;
+  dbLoadPromise = loadDbFresh();
+  try {
+    return await dbLoadPromise;
+  } finally {
+    dbLoadPromise = null;
+  }
+}
+
+async function loadDbFresh() {
   const rows = await supabaseRequest(`/${TABLE}?select=value&id=eq.${encodeURIComponent(DB_ID)}&limit=1`);
   const data = Array.isArray(rows) ? rows[0] : null;
   const normalized = ensureDb(data?.value || seed());
@@ -931,16 +943,27 @@ function questionAnalysis(db, user, filters = {}) {
     disciplineValuesMatch(item.disciplina, filters.disciplina) &&
     questionFilterMatch(item.questao, filters.questao)
   ));
+  const recordBuckets = new Map();
+  for (const row of baseRecords) {
+    const key = [normalizedComparable(row.AVALIACAO), normalizedComparable(row.ANO), disciplineComparable(row.DISCIPLINA)].join('|');
+    if (!recordBuckets.has(key)) recordBuckets.set(key, []);
+    recordBuckets.get(key).push(row);
+  }
   const rows = filtered.map((item) => {
     const q = `Q${item.questao}`;
-    const recordFilters = { ...filters, avaliacao: item.avaliacao, ano: item.ano };
-    delete recordFilters.questao;
-    delete recordFilters.disciplina;
-    const records = filteredRecords(db, user, recordFilters)
-      .filter((row) => disciplineValuesMatch(row.DISCIPLINA, item.disciplina));
-    const avaliados = records.filter((row) => row[q] !== undefined && row[q] !== '').length;
-    const acertos = records.filter((row) => String(row[q] || '').trim().toUpperCase() === String(item.alternativaCorreta || '').toUpperCase()).length;
-    const distribuicaoRespostas = Object.fromEntries(['A', 'B', 'C', 'D', 'E'].map((alt) => [alt, records.filter((row) => String(row[q] || '').trim().toUpperCase() === alt).length]));
+    const key = [normalizedComparable(item.avaliacao), normalizedComparable(item.ano), disciplineComparable(item.disciplina)].join('|');
+    const records = recordBuckets.get(key) || [];
+    const distribuicaoRespostas = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+    let avaliados = 0;
+    let acertos = 0;
+    const correta = String(item.alternativaCorreta || '').trim().toUpperCase();
+    for (const row of records) {
+      const resposta = String(row[q] || '').trim().toUpperCase();
+      if (!resposta) continue;
+      avaliados += 1;
+      if (resposta === correta) acertos += 1;
+      if (Object.hasOwn(distribuicaoRespostas, resposta)) distribuicaoRespostas[resposta] += 1;
+    }
     return { ...item, questao: q, questaoNumero: item.questao, avaliados, acertos, erros: Math.max(avaliados - acertos, 0), percentual: avaliados ? round((acertos / avaliados) * 100) : 0, distribuicaoRespostas };
   }).sort((a, b) => Number(a.questaoNumero || 0) - Number(b.questaoNumero || 0));
   return { filters, options: questionOptions(habilidades, filters), rows, inconsistencias: [], kpis: { alunosAnalisados: baseRecords.length, habilidadesCadastradas: filtered.length, habilidadesComDados: rows.filter((row) => row.avaliados).length, totalAvaliacoesQuestao: rows.reduce((s, row) => s + row.avaliados, 0), percentualMedio: rows.length ? round(rows.reduce((s, row) => s + row.percentual, 0) / rows.length) : 0 } };

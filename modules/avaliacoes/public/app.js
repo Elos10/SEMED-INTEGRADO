@@ -43,6 +43,7 @@ const state = {
 
 const app = document.querySelector("#app");
 const apiCache = new Map();
+const apiPending = new Map();
 let currentLoadId = 0;
 let pendingLoadTimer = null;
 const filterOrder = ["avaliacao", "unidade", "ano", "turma", "disciplina", "aluno", "nivel", "raca", "inclusao"];
@@ -1598,7 +1599,7 @@ async function handleFilterChange(event) {
   clearChildFilters(key);
   applyUserScopeFilters();
   state.loading = true;
-  render();
+  document.querySelector("#loadingOverlay")?.classList.add("is-visible");
   await scheduleLoadCurrent();
 }
 
@@ -1611,7 +1612,7 @@ async function handleQuestionFilterChange(event) {
   else delete state.filters[key];
   clearQuestionChildFilters(key);
   state.loading = true;
-  render();
+  document.querySelector("#loadingOverlay")?.classList.add("is-visible");
   await scheduleLoadCurrent();
 }
 
@@ -1829,14 +1830,18 @@ async function loadCompare() {
 
 async function loadDashboard() {
   const qs = query();
-  const optionsPayload = await api(`/options?${qs}`);
-  applyOptionsPayload(optionsPayload);
   state.rows = [];
   if (!hasReportFilters()) {
+    applyOptionsPayload(await api(`/options?${qs}`));
     state.dashboard = null;
     return;
   }
-  state.dashboard = await api(`/dashboard?${query()}`);
+  const [optionsPayload, dashboardPayload] = await Promise.all([
+    api(`/options?${qs}`),
+    api(`/dashboard?${qs}`),
+  ]);
+  applyOptionsPayload(optionsPayload);
+  state.dashboard = dashboardPayload;
 }
 
 async function loadQuality() {
@@ -1851,17 +1856,18 @@ async function loadQuality() {
 
 async function loadAnalysis() {
   const qs = query();
-  const optionsPayload = await api(`/options?${qs}`);
-  applyOptionsPayload(optionsPayload);
   if (!hasRequiredAnalysisFilters()) {
+    applyOptionsPayload(await api(`/options?${qs}`));
     state.analysis = null;
     state.dashboard = null;
     return;
   }
-  const [analysisPayload, dashboardPayload] = await Promise.all([
+  const [optionsPayload, analysisPayload, dashboardPayload] = await Promise.all([
+    api(`/options?${qs}`),
     api(`/analysis?${qs}`),
     api(`/dashboard?${qs}`),
   ]);
+  applyOptionsPayload(optionsPayload);
   state.analysis = analysisPayload;
   state.dashboard = dashboardPayload;
 }
@@ -2196,13 +2202,16 @@ async function api(url, options = {}) {
   const method = options.method || "GET";
   const cacheKey = method === "GET" ? `${method}:${url}:${state.token || ""}` : "";
   if (cacheKey && apiCache.has(cacheKey)) return structuredClone(apiCache.get(cacheKey));
+  if (cacheKey && apiPending.has(cacheKey)) return structuredClone(await apiPending.get(cacheKey));
   const showSaving = shouldShowSavingOverlay(method, url);
   const showLoading = method === "GET" && options.loading !== false;
   const loadingStartedAt = Date.now();
   if (showSaving) setSavingOverlay(true);
   if (showLoading) setLoadingOverlay(true);
+  const requestPromise = window.AVD_DB_REQUEST(method, url, options.body || options.form, { token: state.token, auth: options.auth !== false });
+  if (cacheKey) apiPending.set(cacheKey, requestPromise);
   try {
-    const result = await window.AVD_DB_REQUEST(method, url, options.body || options.form, { token: state.token, auth: options.auth !== false });
+    const result = await requestPromise;
     if (cacheKey) apiCache.set(cacheKey, structuredClone(result));
     if (method !== "GET") clearApiCache();
     return result;
@@ -2210,9 +2219,10 @@ async function api(url, options = {}) {
     const message = error?.error || error?.message || "Falha na requisicao.";
     throw new Error(error?.detail ? `${message} ${error.detail}` : message);
   } finally {
+    if (cacheKey) apiPending.delete(cacheKey);
     if (showSaving) setSavingOverlay(false);
     if (showLoading) {
-      const remaining = Math.max(0, 120 - (Date.now() - loadingStartedAt));
+      const remaining = Math.max(0, 40 - (Date.now() - loadingStartedAt));
       if (remaining) await new Promise((resolve) => setTimeout(resolve, remaining));
       setLoadingOverlay(false);
     }
@@ -2221,6 +2231,7 @@ async function api(url, options = {}) {
 
 function clearApiCache() {
   apiCache.clear();
+  apiPending.clear();
 }
 
 function shouldShowSavingOverlay(method, url) {
@@ -2244,7 +2255,7 @@ function setLoadingOverlay(value) {
   if (overlay) overlay.classList.toggle("is-visible", state.loading || state.loadingRequests > 0);
 }
 
-async function waitForMinimumLoading(startedAt, minimum = 160) {
+async function waitForMinimumLoading(startedAt, minimum = 60) {
   const remaining = Math.max(0, minimum - (Date.now() - startedAt));
   if (remaining) await new Promise((resolve) => setTimeout(resolve, remaining));
 }
