@@ -1,5 +1,17 @@
 # Registro de alterações
 
+## 2026-08-25 — Navegação dos módulos e Relatório de Andamentos
+
+- o botão **Voltar** dentro dos módulos passou a retornar à tela principal do
+  próprio aplicativo;
+- o botão **Sair** passou a retornar à seleção de aplicativos do portal,
+  preservando a sessão corporativa para a escolha de outro módulo;
+- a Central de Relatórios do Monitoramento recebeu o **Relatório de
+  Andamentos**, com objeto, tipo de evento, status mais atual, prioridade,
+  direcionamento, descrição e área;
+- o novo relatório utiliza os filtros, a pré-visualização, a impressão A4 em
+  paisagem e a identidade visual dos demais relatórios.
+
 ## 2026-08-21 — Área institucional de usuários e andamentos
 
 - adicionado o campo obrigatório **Área de atuação** ao cadastro administrativo

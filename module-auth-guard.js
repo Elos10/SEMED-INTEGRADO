@@ -9,6 +9,7 @@ const portalUrl = new URL("../../", location.href);
 portalUrl.searchParams.set("return", location.pathname + location.search);
 const portalHomeUrl = new URL("../../", location.href);
 portalHomeUrl.searchParams.set("select", "1");
+const moduleHomeUrl = new URL("./", location.href);
 let moduleSwitchEnabled = false;
 window.SEMED_AUTH_SIGN_OUT = async () => { await supabase.auth.signOut(); };
 
@@ -67,9 +68,9 @@ function installModulePortalButton(root = document) {
   const link = document.createElement("a");
   link.className = "module-portal-switch";
   link.dataset.modulePortalSwitch = "1";
-  link.dataset.portalHome = "1";
-  link.href = portalHomeUrl.href;
-  link.innerHTML = '<span aria-hidden="true">←</span><span>Voltar ao Portal</span>';
+  link.dataset.moduleHome = "1";
+  link.href = moduleHomeUrl.href;
+  link.innerHTML = '<span aria-hidden="true">←</span><span>Voltar</span>';
   const logout = target.querySelector?.("#logout,[data-action='logout'],.topbar-logout");
   if (mode === "prepend") target.prepend(link);
   else if (mode === "before-logout" && logout) logout.insertAdjacentElement("beforebegin", link);
@@ -80,6 +81,12 @@ installPortalButton();
 new MutationObserver(() => { installPortalButton(); installModulePortalButton(); }).observe(document.documentElement, { childList: true, subtree: true });
 
 document.addEventListener("click", (event) => {
+  const moduleHomeLink = event.target.closest?.("[data-module-home]");
+  if (moduleHomeLink) {
+    event.preventDefault();
+    location.assign(moduleHomeUrl.href);
+    return;
+  }
   const portalLink = event.target.closest?.("[data-portal-home]");
   if (portalLink) {
     event.preventDefault();
@@ -93,6 +100,14 @@ document.addEventListener("click", (event) => {
   recoveryUrl.searchParams.set("recovery", "1");
   location.assign(recoveryUrl);
 });
+
+document.addEventListener("click", (event) => {
+  const logout = event.target.closest?.("#logout,[data-action='logout'],.topbar-logout,.sidebar-logout");
+  if (!logout || logout.closest?.(".semed-entry")) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  location.assign(portalHomeUrl.href);
+}, true);
 
 window.SEMED_MODULE_ACCESS = (async () => {
   semedUi.loading("Validando acesso ao módulo…");
