@@ -859,25 +859,64 @@ function trimAfterRaca(headers) {
 
 async function readExcelFile(file) {
   if (!file) throw { status: 400, error: 'Selecione uma planilha Excel.' };
-  let XLSX;
-  try {
-    XLSX = await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm');
-  } catch {
-    throw { status: 503, error: 'Não foi possível carregar o leitor de Excel. Verifique a conexão com a internet e tente novamente.' };
-  }
-  const buffer = await file.arrayBuffer();
-  const workbook = XLSX.read(buffer, { type: 'array', dense: true, cellDates: false });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  if (!sheet) throw { status: 400, error: 'A planilha não possui abas para leitura.' };
-  const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  const matrix = await readExcelMatrix(file);
   const originalHeaders = (matrix[0] || []).map((header) => String(header || '').trim());
   const { kept, ignored } = trimAfterRaca(originalHeaders);
   const headers = kept.map(canonicalHeader);
-  const rows = matrix.slice(1)
-    .map((line) => Object.fromEntries(headers.map((header, index) => [header, normalizeCell(line[index])])))
-    .filter((row) => Object.values(row).some((value) => String(value || '').trim() !== ''))
-    .map(normalizeRecord);
+  const rows = [];
+  for (let lineIndex = 1; lineIndex < matrix.length; lineIndex += 1) {
+    const line = matrix[lineIndex];
+    const row = Object.fromEntries(headers.map((header, index) => [header, normalizeCell(line[index])]));
+    if (Object.values(row).some((value) => String(value || '').trim() !== '')) rows.push(normalizeRecord(row));
+    if (lineIndex % 2000 === 0) await yieldToBrowser();
+  }
   return { originalHeaders: kept, headers, rows, ignoredColumnsAfterRaca: ignored };
+}
+
+function yieldToBrowser() {
+  return new Promise((resolve) => {
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => resolve());
+    else setTimeout(resolve, 0);
+  });
+}
+
+async function readExcelMatrix(file) {
+  if (typeof Worker !== 'undefined') {
+    try {
+      const worker = new Worker(new URL('./xlsx-import-worker.js?v=20260826-1', import.meta.url), { type: 'module' });
+      const buffer = await file.arrayBuffer();
+      return await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          worker.terminate();
+          reject(new Error('Tempo limite excedido ao processar a planilha.'));
+        }, 180000);
+        worker.onmessage = ({ data }) => {
+          clearTimeout(timeout);
+          worker.terminate();
+          if (data?.error) reject(new Error(data.error));
+          else resolve(data?.matrix || []);
+        };
+        worker.onerror = (event) => {
+          clearTimeout(timeout);
+          worker.terminate();
+          reject(new Error(event.message || 'Falha no processamento em segundo plano.'));
+        };
+        worker.postMessage({ buffer }, [buffer]);
+      });
+    } catch (error) {
+      console.warn('Processamento em segundo plano indisponível; usando modo compatível.', error);
+    }
+  }
+  try {
+    const XLSX = await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm');
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: 'array', dense: true, cellDates: false });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    if (!sheet) throw new Error('A planilha não possui abas para leitura.');
+    return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  } catch (error) {
+    throw { status: 503, error: 'Não foi possível carregar o leitor de Excel.', detail: error.message || 'Verifique a conexão com a internet e tente novamente.' };
+  }
 }
 
 function normalizeCell(value) {
