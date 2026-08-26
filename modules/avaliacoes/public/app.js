@@ -2421,7 +2421,7 @@ function drawGroupedBars(id, data, key, options = {}) {
     units.forEach((unit, unitIndex) => {
       const baseX = padL + unitIndex * slot + (slot - groupW) / 2;
       disciplines.forEach((discipline, disciplineIndex) => {
-        const item = data.find((entry) => entry.unidade === unit && entry.disciplina === discipline) || { unidade: unit, disciplina, label: unit, [key]: 0 };
+        const item = data.find((entry) => entry.unidade === unit && entry.disciplina === discipline) || { unidade: unit, disciplina: discipline, label: unit, [key]: 0 };
         const value = Number(item[key] || 0);
         const bh = (cssH - padT - padB) * (value / max);
         const x = baseX + disciplineIndex * (bw + gap);
