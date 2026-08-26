@@ -30,7 +30,7 @@
   };
 
   const baseEditEventWithActivity=editEvent;
-  editEvent=function(id){const current=state.events.find(item=>item.id===id||item.dbId===id);baseEditEventWithActivity(id);const form=document.querySelector('.event-edit-form');if(!current||!form||form.classList.contains('directed-movement-form')||form.elements.activity)return;const objectField=form.elements[0]?.closest('.field');objectField?.insertAdjacentHTML('afterend',`<div class="field"><label>Atividade</label><input name="activity" value="${esc(current.activity||'NÃO INFORMADA')}" disabled></div>`)};
+  editEvent=function(id){const current=state.events.find(item=>item.id===id||item.dbId===id);baseEditEventWithActivity(id);const form=document.querySelector('.event-edit-form');if(!current||!form||form.classList.contains('directed-movement-form')||form.elements.activity)return;const administrator=session.role==='administrador',objectField=form.elements[0]?.closest('.field');objectField?.insertAdjacentHTML('afterend',`<div class="field"><label>Atividade</label><input name="activity" value="${esc(current.activity||'NÃO INFORMADA')}" maxlength="180" ${administrator?'required':'disabled'} aria-describedby="activityEditHelp"><small id="activityEditHelp">${administrator?'Campo editável exclusivamente pelo Administrador.':'Somente o Administrador pode alterar a atividade.'}</small></div>`)};
 
   detailTabData=function(objectId){return{activities:activityNames(objectId),costs:state.costs.filter(item=>item.objectId===objectId),documents:(state.documents||[]).filter(item=>item.objectCode===objectId||item.objectId===objectId||item.objectId===state.objects.find(object=>object.id===objectId)?.dbId)}};
   showDetailTab=function(tabName,objectId){
