@@ -1781,9 +1781,10 @@ async function loadCurriculoMunicipal() {
 }
 
 async function loadReports() {
-  const qs = query();
+  let qs = query();
   const optionsPayload = await api(`/options?${qs}`);
   applyOptionsPayload(optionsPayload);
+  qs = query();
   state.rows = [];
   state.statistics = null;
   state.analysis = null;
@@ -1817,63 +1818,55 @@ async function loadReports() {
 }
 
 async function loadCompare() {
-  const qs = query();
-  const [optionsPayload, comparisonPayload, dashboardPayload] = await Promise.all([
-    api(`/options?${qs}`),
+  let qs = query();
+  const optionsPayload = await api(`/options?${qs}`);
+  applyOptionsPayload(optionsPayload);
+  qs = query();
+  [state.comparison, state.dashboard] = await Promise.all([
     api(`/compare?${qs}`),
     api(`/dashboard?${qs}`),
   ]);
-  applyOptionsPayload(optionsPayload);
-  state.comparison = comparisonPayload;
-  state.dashboard = dashboardPayload;
 }
 
 async function loadDashboard() {
-  const qs = query();
+  let qs = query();
   state.rows = [];
+  const optionsPayload = await api(`/options?${qs}`);
+  applyOptionsPayload(optionsPayload);
+  qs = query();
   if (!hasReportFilters()) {
-    applyOptionsPayload(await api(`/options?${qs}`));
     state.dashboard = null;
     return;
   }
-  const [optionsPayload, dashboardPayload] = await Promise.all([
-    api(`/options?${qs}`),
-    api(`/dashboard?${qs}`),
-  ]);
-  applyOptionsPayload(optionsPayload);
-  state.dashboard = dashboardPayload;
+  state.dashboard = await api(`/dashboard?${qs}`);
 }
 
 async function loadQuality() {
-  const qs = query();
-  const [optionsPayload, qualityPayload] = await Promise.all([
-    api(`/options?${qs}`),
-    api(`/quality?${qs}`),
-  ]);
+  let qs = query();
+  const optionsPayload = await api(`/options?${qs}`);
   applyOptionsPayload(optionsPayload);
-  state.quality = qualityPayload;
+  qs = query();
+  state.quality = await api(`/quality?${qs}`);
 }
 
 async function loadAnalysis() {
-  const qs = query();
+  let qs = query();
+  const optionsPayload = await api(`/options?${qs}`);
+  applyOptionsPayload(optionsPayload);
+  qs = query();
   if (!hasRequiredAnalysisFilters()) {
-    applyOptionsPayload(await api(`/options?${qs}`));
     state.analysis = null;
     state.dashboard = null;
     return;
   }
-  const [optionsPayload, analysisPayload, dashboardPayload] = await Promise.all([
-    api(`/options?${qs}`),
+  [state.analysis, state.dashboard] = await Promise.all([
     api(`/analysis?${qs}`),
     api(`/dashboard?${qs}`),
   ]);
-  applyOptionsPayload(optionsPayload);
-  state.analysis = analysisPayload;
-  state.dashboard = dashboardPayload;
 }
 
 async function loadQuestionAnalysis() {
-  const qs = query();
+  const qs = questionQuery();
   const payload = await api(`/analysis/questions?${qs}`);
   if (!hasRequiredQuestionAnalysisFilters()) {
     state.questionAnalysis = { ...payload, rows: [], inconsistencias: [], kpis: {} };
@@ -2700,6 +2693,18 @@ function query() {
     if (Array.isArray(value)) value.forEach((item) => params.append(key, item));
     else if (value) params.set(key, value);
   }
+  return params.toString();
+}
+
+function questionQuery() {
+  const params = new URLSearchParams();
+  const filters = scopedFilters();
+  for (const key of questionAnalysisFilterOrder) {
+    const value = filters[key];
+    if (Array.isArray(value)) value.filter(Boolean).forEach((item) => params.append(key, item));
+    else if (value) params.set(key, value);
+  }
+  if (isUnitManager() && filters.unidade) params.set('unidade', filters.unidade);
   return params.toString();
 }
 

@@ -59,6 +59,7 @@ const filterDbColumnMap = {
 };
 const optionRecordColumns = ['id', 'avaliacao', 'unidade', 'ano', 'turma', 'disciplina', 'nome', 'nivel', 'raca', 'inclusao'];
 const filterOrder = ['avaliacao', 'unidade', 'ano', 'turma', 'disciplina', 'aluno', 'nivel', 'raca', 'inclusao'];
+const questionAnalysisFilterOrder = ['avaliacao', 'ano', 'disciplina', 'questao'];
 
 function seed() {
   const now = new Date().toISOString();
@@ -1131,12 +1132,20 @@ function questionAnalysis(db, user, filters = {}) {
 }
 
 function questionOptions(items, filters) {
-  const scoped = items.filter((item) => (
-    valuesMatch(item.avaliacao, filters.avaliacao) &&
-    valuesMatch(item.ano, filters.ano) &&
-    disciplineValuesMatch(item.disciplina, filters.disciplina)
-  ));
-  return { avaliacao: unique(items.map((i) => i.avaliacao)), ano: unique(scoped.map((i) => i.ano)), disciplina: unique(scoped.map((i) => i.disciplina)), questao: unique(scoped.map((i) => `Q${i.questao}`)) };
+  const scopedUntil = (targetKey) => {
+    const targetIndex = questionAnalysisFilterOrder.indexOf(targetKey);
+    return items.filter((item) => questionAnalysisFilterOrder.slice(0, targetIndex).every((key) => {
+      if (key === 'disciplina') return disciplineValuesMatch(item.disciplina, filters.disciplina);
+      if (key === 'questao') return questionFilterMatch(item.questao, filters.questao);
+      return valuesMatch(item[key], filters[key]);
+    }));
+  };
+  return {
+    avaliacao: unique(items.map((item) => item.avaliacao)),
+    ano: unique(scopedUntil('ano').map((item) => item.ano)),
+    disciplina: unique(scopedUntil('disciplina').map((item) => item.disciplina)),
+    questao: unique(scopedUntil('questao').map((item) => `Q${item.questao}`)),
+  };
 }
 
 function routeParts(path) {
