@@ -18,6 +18,9 @@ const DB_CACHE_MS = 120000;
 let dbCache = null;
 let dbCacheExpiresAt = 0;
 let dbLoadPromise = null;
+let optionRecordsCache = null;
+let optionRecordsCacheExpiresAt = 0;
+let optionRecordsPromise = null;
 const questionFields = Array.from({ length: 20 }, (_, index) => `Q${index + 1}`);
 const pointFields = Array.from({ length: 20 }, (_, index) => `PT_Q${index + 1}`);
 const questionLimitsByYearNumber = { 1: 10, 2: 10, 3: 10, 4: 15, 5: 15, 6: 20, 7: 20, 8: 20, 9: 20 };
@@ -27,6 +30,11 @@ const recordColumns = [
   ...questionFields.map((field) => field.toLowerCase()),
   ...pointFields.map((field) => field.toLowerCase()),
 ];
+const normalizedRecordFieldSet = new Set([
+  'id', 'importacaoId', 'AVALIACAO', 'UNIDADE', 'ANO', 'TURMA', 'DISCIPLINA', 'NOME', 'EMAIL',
+  'NIVEL', 'RAÇA', 'INCLUSÃO', 'PONTOS', 'PONTOS POSSIVEIS', '% ACERTOS',
+  ...questionFields, ...pointFields,
+]);
 const roles = {
   ADMINISTRADOR: 'ADMINISTRADOR',
   GESTOR_SEMED: 'GESTOR SEMED',
@@ -45,6 +53,11 @@ const filterMap = {
   raca: 'RAÇA',
   inclusao: 'INCLUSÃO',
 };
+const filterDbColumnMap = {
+  avaliacao: 'avaliacao', unidade: 'unidade', ano: 'ano', turma: 'turma', disciplina: 'disciplina',
+  aluno: 'nome', nivel: 'nivel', raca: 'raca', inclusao: 'inclusao',
+};
+const optionRecordColumns = ['id', 'avaliacao', 'unidade', 'ano', 'turma', 'disciplina', 'nome', 'nivel', 'raca', 'inclusao'];
 const filterOrder = ['avaliacao', 'unidade', 'ano', 'turma', 'disciplina', 'aluno', 'nivel', 'raca', 'inclusao'];
 
 function seed() {
@@ -204,6 +217,31 @@ async function loadDbFresh() {
   return normalized.db;
 }
 
+async function readStateDb() {
+  const rows = await supabaseRequest(`/${TABLE}?select=value&id=eq.${encodeURIComponent(DB_ID)}&limit=1`);
+  const data = Array.isArray(rows) ? rows[0] : null;
+  const normalized = ensureDb(data?.value || seed());
+  normalized.db.records = [];
+  normalized.db.recordsExternal = true;
+  if (!data || normalized.changed) await writeStateDb(normalized.db);
+  return normalized.db;
+}
+
+async function writeStateDb(db) {
+  const normalized = ensureDb(db);
+  const stateDb = { ...normalized.db, records: [], importPreviews: [] };
+  await supabaseRequest(`/${TABLE}`, {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ id: DB_ID, value: stateDb, updated_at: new Date().toISOString() }),
+  });
+  if (dbCache?.records) {
+    const cachedRecords = dbCache.records;
+    dbCache = { ...normalized.db, records: cachedRecords, recordsExternal: true };
+    dbCacheExpiresAt = Date.now() + DB_CACHE_MS;
+  }
+}
+
 async function writeDb(db) {
   const normalized = ensureDb(db);
   const stateDb = { ...normalized.db, records: [], importPreviews: [] };
@@ -220,6 +258,24 @@ async function writeDb(db) {
 function invalidateDbCache() {
   dbCache = null;
   dbCacheExpiresAt = 0;
+  optionRecordsCache = null;
+  optionRecordsCacheExpiresAt = 0;
+}
+
+async function readOptionRecords(user) {
+  const scopeKey = `${user?.perfil || ''}|${user?.unidadeEscolar || ''}`;
+  if (optionRecordsCache?.scopeKey === scopeKey && Date.now() < optionRecordsCacheExpiresAt) return optionRecordsCache.rows;
+  if (optionRecordsPromise?.scopeKey === scopeKey) return optionRecordsPromise.promise;
+  const promise = readRecords({}, user, optionRecordColumns);
+  optionRecordsPromise = { scopeKey, promise };
+  try {
+    const rows = await promise;
+    optionRecordsCache = { scopeKey, rows };
+    optionRecordsCacheExpiresAt = Date.now() + DB_CACHE_MS;
+    return rows;
+  } finally {
+    optionRecordsPromise = null;
+  }
 }
 
 function isMissingRecordsTable(error) {
@@ -227,13 +283,24 @@ function isMissingRecordsTable(error) {
   return error?.status === 404 || text.includes(RECORDS_TABLE) || text.includes('schema cache') || text.includes('Could not find') || (text.includes('column') && text.includes('does not exist'));
 }
 
-async function readRecords() {
+async function readRecords(filters = {}, user = null, columns = recordColumns) {
   const records = [];
   const pageSize = 1000;
+  const serverFilters = [];
+  for (const [key, column] of Object.entries(filterDbColumnMap)) {
+    const value = filters[key];
+    if (value && !Array.isArray(value) && key !== 'disciplina') {
+      serverFilters.push(`${column}=eq.${encodeURIComponent(value)}`);
+    }
+  }
+  if (user?.perfil === roles.GESTOR_UNIDADE && user.unidadeEscolar) {
+    serverFilters.push(`unidade=eq.${encodeURIComponent(user.unidadeEscolar)}`);
+  }
+  const filterSuffix = serverFilters.length ? `&${serverFilters.join('&')}` : '';
   for (let offset = 0; ; offset += pageSize) {
     let rows;
     try {
-      rows = await supabaseRequest(`/${RECORDS_TABLE}?select=${recordColumns.join(',')}&order=id.asc`, {
+      rows = await supabaseRequest(`/${RECORDS_TABLE}?select=${columns.join(',')}${filterSuffix}&order=id.asc`, {
         headers: {
           Range: `${offset}-${offset + pageSize - 1}`,
         },
@@ -252,24 +319,36 @@ async function readRecords() {
   return records;
 }
 
-async function upsertRecords(rows) {
+async function upsertRecords(rows, { invalidate = true } = {}) {
   const chunkSize = 500;
+  const chunks = [];
   for (let index = 0; index < rows.length; index += chunkSize) {
-    const chunk = rows.slice(index, index + chunkSize).map(recordToDb);
-    try {
-      await supabaseRequest(`/${RECORDS_TABLE}?on_conflict=id`, {
-        method: 'POST',
-        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify(chunk),
-      });
-    } catch (error) {
-      if (isMissingRecordsTable(error)) {
-        throw { status: 500, error: 'Tabela de registros não encontrada.', detail: 'Execute o supabase.sql atualizado no Supabase para criar a tabela avd_records antes de importar planilhas.' };
-      }
-      throw error;
+    chunks.push(rows.slice(index, index + chunkSize).map(recordToDb));
+  }
+  let nextChunk = 0;
+  async function uploadWorker() {
+    while (nextChunk < chunks.length) {
+      const chunk = chunks[nextChunk++];
+      await uploadRecordChunk(chunk);
     }
   }
-  invalidateDbCache();
+  await Promise.all(Array.from({ length: Math.min(3, chunks.length) }, () => uploadWorker()));
+  if (invalidate) invalidateDbCache();
+}
+
+async function uploadRecordChunk(chunk) {
+  try {
+    await supabaseRequest(`/${RECORDS_TABLE}?on_conflict=id`, {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(chunk),
+    });
+  } catch (error) {
+    if (isMissingRecordsTable(error)) {
+      throw { status: 500, error: 'Tabela de registros não encontrada.', detail: 'Execute o supabase.sql atualizado no Supabase para criar a tabela avd_records antes de importar planilhas.' };
+    }
+    throw error;
+  }
 }
 
 function recordFromDb(row) {
@@ -298,6 +377,7 @@ function recordFromDb(row) {
 
 function recordToDb(row) {
   const normalized = normalizeRecord(row);
+  const extraData = Object.fromEntries(Object.entries(normalized).filter(([key]) => !normalizedRecordFieldSet.has(key)));
   const payload = {
     id: normalized.id,
     importacao_id: normalized.importacaoId,
@@ -315,7 +395,9 @@ function recordToDb(row) {
     pontos: Number(normalized.PONTOS || 0),
     pontos_possiveis: Number(normalized['PONTOS POSSIVEIS'] || 0),
     percentual_acertos: Number(normalized['% ACERTOS'] || 0),
-    data: normalized,
+    // Colunas funcionais já estão normalizadas acima. O JSON preserva somente
+    // metadados/campos adicionais, evitando duplicar toda a linha no envio.
+    data: extraData,
     updated_at: new Date().toISOString(),
   };
   for (const field of questionFields) payload[field.toLowerCase()] = emptyToNull(normalized[field]);
@@ -784,7 +866,7 @@ async function readExcelFile(file) {
     throw { status: 503, error: 'Não foi possível carregar o leitor de Excel. Verifique a conexão com a internet e tente novamente.' };
   }
   const buffer = await file.arrayBuffer();
-  const workbook = XLSX.read(buffer, { type: 'array' });
+  const workbook = XLSX.read(buffer, { type: 'array', dense: true, cellDates: false });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   if (!sheet) throw { status: 400, error: 'A planilha não possui abas para leitura.' };
   const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
@@ -851,7 +933,7 @@ async function previewImport(db, user, form) {
   const file = form?.get?.('file');
   const parsed = await readExcelFile(file);
   const checks = validateImportRows(parsed.rows, parsed.headers);
-  const existing = new Set((db.records || []).map(duplicateKey));
+  const existing = await existingDuplicateKeys();
   const seen = new Set();
   let duplicates = 0;
   for (const row of parsed.rows) {
@@ -884,6 +966,25 @@ async function previewImport(db, user, form) {
   };
 }
 
+async function existingDuplicateKeys() {
+  if (dbCache?.records?.length && Date.now() < dbCacheExpiresAt) {
+    return new Set(dbCache.records.map(duplicateKey));
+  }
+  const keys = new Set();
+  const pageSize = 1000;
+  for (let offset = 0; ; offset += pageSize) {
+    const rows = await supabaseRequest(`/${RECORDS_TABLE}?select=duplicate_key&order=id.asc`, {
+      headers: { Range: `${offset}-${offset + pageSize - 1}` },
+    });
+    for (const row of rows || []) {
+      const parts = String(row.duplicate_key || '').split('|');
+      keys.add(parts.length > 2 ? parts.slice(0, -2).join('|') : String(row.duplicate_key || ''));
+    }
+    if (!rows || rows.length < pageSize) break;
+  }
+  return keys;
+}
+
 async function commitImport(db, user, previewId) {
   if (db.recordsExternal !== true) {
     throw { status: 500, error: 'Tabela de registros não encontrada.', detail: db.recordsSetupError || 'Execute o supabase.sql atualizado no Supabase para criar a tabela avd_records antes de importar planilhas.' };
@@ -894,6 +995,7 @@ async function commitImport(db, user, previewId) {
   const recordsToSave = [];
   let novosRegistros = preview.rows.length;
   let registrosAtualizados = 0;
+  const importedAt = new Date().toISOString();
   preview.rows.forEach((row, index) => {
     const created = {
       id: id('rec_'),
@@ -901,10 +1003,9 @@ async function commitImport(db, user, previewId) {
       importacaoId: importId,
       importRowNumber: index + 2,
       originalDuplicateKey: duplicateKey(row),
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString(),
+      criadoEm: importedAt,
+      atualizadoEm: importedAt,
     };
-    db.records.push(created);
     recordsToSave.push(created);
   });
   const importInfo = {
@@ -914,15 +1015,36 @@ async function commitImport(db, user, previewId) {
     novosRegistros,
     registrosAtualizados,
     usuarioEmail: user.email,
-    criadaEm: new Date().toISOString(),
+    criadaEm: importedAt,
   };
+  const importedPoints = sum(recordsToSave, 'PONTOS');
+  const importedPossible = sum(recordsToSave, 'PONTOS POSSIVEIS');
+  if (db.importSummary) {
+    const totalAlunos = Number(db.importSummary.totalAlunos || 0) + recordsToSave.length;
+    const acertos = Number(db.importSummary.acertos || 0) + importedPoints;
+    const pontosPossiveis = Number(db.importSummary.pontosPossiveis || 0) + importedPossible;
+    db.importSummary = {
+      totalAlunos,
+      acertos,
+      pontosPossiveis,
+      percentualAcertos: pontosPossiveis ? round((acertos / pontosPossiveis) * 100) : 0,
+    };
+  }
   db.imports.unshift(importInfo);
   db.importPreviews = (db.importPreviews || []).filter((item) => item.id !== previewId);
   importPreviewCache.delete(previewId);
   log(db, user, 'IMPORTOU_PLANILHA', importInfo);
-  await upsertRecords(recordsToSave);
-  await writeDb(db);
-  return { ok: true, importacao: importInfo, kpis: dashboard(recordsForUser(db, user)) };
+  await upsertRecords(recordsToSave, { invalidate: false });
+  optionRecordsCache = null;
+  optionRecordsCacheExpiresAt = 0;
+  if (dbCache?.records) {
+    dbCache.records.push(...recordsToSave);
+    dbCacheExpiresAt = Date.now() + DB_CACHE_MS;
+  }
+  await writeStateDb(db);
+  // A tela atualiza os indicadores uma única vez após a gravação. Evita uma
+  // consolidação duplicada de toda a base ainda dentro da confirmação.
+  return { ok: true, importacao: importInfo };
 }
 
 function questionAnalysis(db, user, filters = {}) {
@@ -1016,6 +1138,43 @@ async function request(method, path, data = undefined, options = {}) {
     await writeDb(db);
     return { token: `avd:${user.id}:${Date.now()}`, refreshToken: '', user: publicUser(user), permissions: db.permissions[user.perfil] };
   }
+  if (method === 'POST' && (route === 'imports/preview' || route === 'imports/commit')) {
+    const db = await readStateDb();
+    const user = currentUser(db, options.token);
+    if (!user) throw { status: 401, error: 'Sessão inválida ou expirada.' };
+    if (route === 'imports/preview') return previewImport(db, user, data);
+    return commitImport(db, user, data?.previewId);
+  }
+  if (method === 'GET' && (route === 'imports' || route === 'imports/summary')) {
+    const db = await readStateDb();
+    const user = currentUser(db, options.token);
+    if (!user) throw { status: 401, error: 'Sessão inválida ou expirada.' };
+    if (route === 'imports') return db.imports || [];
+    if (db.importSummary) return db.importSummary;
+    const summary = await supabaseRequest('/rpc/avd_records_summary', { method: 'POST', body: '{}' });
+    db.importSummary = summary;
+    await writeStateDb(db);
+    return summary;
+  }
+  if (method === 'GET' && (route === 'options' || ['dashboard', 'records', 'quality', 'analysis', 'statistics', 'compare', 'analysis/questions'].includes(route))) {
+    const db = await readStateDb();
+    const user = currentUser(db, options.token);
+    if (!user) throw { status: 401, error: 'Sessão inválida ou expirada.' };
+    const filters = filtersFrom(path);
+    if (route === 'options') {
+      db.records = await readOptionRecords(user);
+      return optionsFor(db, user, filters);
+    }
+    db.records = await readRecords(filters, user);
+    const scoped = filteredRecords(db, user, filters);
+    if (route === 'dashboard') return dashboard(scoped, filters);
+    if (route === 'records') return { total: scoped.length, rows: tableRows(scoped, Number(new URLSearchParams(path.split('?')[1] || '').get('limit') || 500)) };
+    if (route === 'quality') return quality(scoped);
+    if (route === 'analysis') return diagnosticAnalysis(scoped);
+    if (route === 'statistics') return statisticalAnalysis(scoped);
+    if (route === 'compare') return comparisonByEvaluation(scoped, Array.isArray(filters.avaliacao) ? filters.avaliacao : filters.avaliacao ? [filters.avaliacao] : []);
+    return questionAnalysis(db, user, filters);
+  }
   const db = await readDb();
   const user = currentUser(db, options.token);
   if (!user) throw { status: 401, error: 'Sessão inválida ou expirada.' };
@@ -1103,8 +1262,10 @@ async function request(method, path, data = undefined, options = {}) {
     await deleteRecordsByImport(p[1]);
     db.records = db.records.filter((row) => row.importacaoId !== p[1]);
     db.imports = db.imports.filter((item) => item.id !== p[1]);
+    const kpis = dashboard(filteredRecords(db, user, {})).kpis;
+    db.importSummary = kpis;
     await writeDb(db);
-    return { ok: true, registrosRemovidos: before - db.records.length, totalImportacoes: db.imports.length, kpis: dashboard(filteredRecords(db, user, {})).kpis };
+    return { ok: true, registrosRemovidos: before - db.records.length, totalImportacoes: db.imports.length, kpis };
   }
   if (method === 'POST' && route === 'imports/preview') return previewImport(db, user, data);
   if (method === 'POST' && route === 'imports/commit') return commitImport(db, user, data?.previewId);

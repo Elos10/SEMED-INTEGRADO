@@ -1883,12 +1883,12 @@ async function loadQuestionAnalysis() {
 }
 
 async function loadImports() {
-  const [importsPayload, dashboardPayload] = await Promise.all([
+  const [importsPayload, summaryPayload] = await Promise.all([
     api("/imports"),
-    api("/dashboard"),
+    api("/imports/summary"),
   ]);
   state.imports = importsPayload;
-  state.importStats = dashboardPayload.kpis;
+  state.importStats = summaryPayload;
 }
 
 async function deleteImport(id) {
