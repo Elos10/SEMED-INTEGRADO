@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#032e86">
+  <meta name="theme-color" content="#11241f">
   <meta name="description" content="Portal de Sistemas Unificados da Secretaria de Educação de Uberaba">
   <title>Portal de Sistemas Unificados · SEMED Uberaba</title>
+  <link rel="stylesheet" href="./design-system.css?v=20260916-1">
   <style>
     :root{--navy:#002164;--royal:#0046c7;--blue:#0868e6;--cyan:#10a8ff;--ink:#062b78;--muted:#425f98;--line:#dbe5f5;--pale:#f4f8ff}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:#fff;font-family:Inter,"Segoe UI",Arial,sans-serif}a{color:inherit}
@@ -30,6 +31,14 @@
     @media(max-width:900px){.hero{min-height:600px}.building{width:90vw;opacity:.1}.slogan{display:none}.systems-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.system-card,.system-card:nth-child(4),.system-card:nth-child(5){grid-column:auto}.system-card:last-child{grid-column:1/-1}.news{grid-template-columns:auto 1fr}.news-divider{display:none}.news-link{grid-column:1/-1;width:100%}.footer-inner{grid-template-columns:1fr 1fr}.motto{grid-column:1/-1;padding:20px 0 0;border-left:0;border-top:1px solid #ffffff37}.topbar{height:auto;min-height:100px}.municipal-logo{width:135px}.education-brand strong{font-size:21px}}
     @media(max-width:620px){.hero{min-height:570px}.topbar{padding:16px 20px}.identity{gap:10px}.municipal-logo{width:105px;height:58px}.identity-divider{height:45px}.education-brand span{font-size:11px}.education-brand strong{font-size:17px}.help{padding:9px;border-radius:50%}.help>span:last-child{display:none}.hero-content{width:calc(100% - 40px);padding-top:48px}.welcome{font-size:22px}.hero h1{font-size:43px}.hero-copy{font-size:16px}.systems-section{padding:25px 14px 12px;border-radius:42px 42px 0 0}.systems-grid{grid-template-columns:1fr;gap:18px}.system-card,.system-card:last-child{grid-column:1;min-height:280px}.news{grid-template-columns:1fr;text-align:center;padding:22px}.bell{justify-self:center}.footer-inner{grid-template-columns:1fr}.contact,.motto{padding:20px 0 0;border-left:0;border-top:1px solid #ffffff37}.footer-brand img{width:88px}}
     @media(min-width:901px){body{height:100vh;overflow:hidden;display:grid;grid-template-rows:31vh minmax(0,1fr) 82px}.hero{min-height:0;height:auto}.topbar{height:68px;padding-top:0;padding-bottom:0}.municipal-logo{width:128px;height:52px}.identity-divider{height:38px}.education-brand span{font-size:11px}.education-brand strong{font-size:19px}.hero-content{width:min(1120px,calc(100% - 64px));padding:22px 0 40px}.welcome{font-size:17px}.hero h1{font-size:40px;line-height:1}.hero-copy{margin-top:12px;font-size:13px;line-height:1.45}.hero-accent{margin-top:14px}.building{height:250px;bottom:-10px}.slogan{bottom:40px;font-size:11px}.slogan strong{font-size:16px}.hero::after{bottom:-65px;height:100px}.systems-section{min-height:0;margin-top:-20px;padding:15px 24px 8px;border-radius:48px 48px 0 0;overflow:hidden}.systems-wrap{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}.section-title{margin:0 0 10px;font-size:20px}.section-title::after{height:3px;margin-top:6px}.systems-grid{height:100%;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px 18px}.system-card{min-height:0;padding:10px 16px 11px;border-radius:12px}.card-icon{width:54px;height:54px}.card-icon svg{width:32px;height:32px}.system-card h2{margin:7px 0 3px;font-size:16px}.system-card p{font-size:10px;line-height:1.25}.access{min-height:31px;margin-top:7px;font-size:11px}.news{display:none}.footer{padding:10px 24px}.footer-inner{height:62px;gap:24px}.footer-brand img{width:68px;height:50px}.footer-brand strong{font-size:15px}.footer-brand span,.footer-brand small,.contact{font-size:9px}.contact{gap:3px}.motto{font-size:13px}}
+    /* Identidade visual institucional inspirada no novo acesso do portal. */
+    :root{--navy:var(--semed-green-950);--royal:#1c4b3c;--blue:var(--semed-green-700);--cyan:var(--semed-gold-600);--ink:var(--semed-green-950);--muted:var(--semed-neutral-700);--line:var(--semed-color-border);--pale:var(--semed-ivory-100)}
+    .hero{background:radial-gradient(circle at 77% 26%,rgba(65,126,102,.45),transparent 30%),linear-gradient(118deg,var(--semed-green-950) 0%,#15352c 52%,var(--semed-green-700) 100%)}
+    .topbar{background:linear-gradient(100deg,rgba(8,26,21,.93) 0 38%,rgba(19,54,44,.5) 38%)}
+    .building{color:#d9d0ba;filter:drop-shadow(0 0 18px #071712)}.building path[fill="#002d83"]{fill:#173b30}.hero-copy{color:#f2eee4}.hero-accent{background:#c6a568}.slogan em{color:#d2b478}
+    .systems-section{background:var(--semed-ivory-100);box-shadow:0 -8px 30px #0b1d181c}.section-title,.system-card h2{color:var(--semed-green-950)}.section-title::after{background:var(--semed-green-700)}.system-card{border-color:var(--semed-color-border);box-shadow:var(--semed-shadow-card)}.card-icon{color:var(--semed-green-700);background:linear-gradient(145deg,#f1ebdc,#e7deca)}
+    .access{background:var(--semed-green-700);box-shadow:0 7px 15px #15352c2b}.access:hover,.access:focus-visible{background:var(--semed-color-action-hover);outline-color:var(--semed-color-focus)}.news{border-color:#d8cfbc;background:linear-gradient(100deg,#eee7d8,#f8f5ee)}.bell{background:linear-gradient(145deg,#173d31,#2c7559)}.news-link{border-color:var(--semed-green-700);color:#225f48}
+    .footer{background:linear-gradient(100deg,#0b1d18,#1d4c3d)}.motto strong{color:#cfb072}
   </style>
 </head>
 <body>
@@ -53,6 +62,6 @@
   </div></main>
 
   <footer class="footer" id="contato"><div class="footer-inner"><div class="footer-brand"><img src="./modules/votacao/assets/logo-municipal.png" alt="Brasão de Uberaba"><div><span>Secretaria de</span><strong>EDUCAÇÃO</strong><small>UBERABA · MG</small></div></div><div class="contact"><span>⌖ &nbsp;Av. Dom Luiz Maria de Santana, 141<br>&nbsp;&nbsp;&nbsp;&nbsp;Santa Marta · Uberaba/MG · CEP 38061-080</span><span>☎ &nbsp;(34) 3318-2000</span><span>◎ &nbsp;educacao.uberaba.mg.gov.br</span></div><div class="motto">Educação<br>é o futuro.<strong>É agora.</strong></div></div></footer>
-  <script type="module" src="./portal-auth.js?v=20260825-password-8-1"></script>
+  <script type="module" src="./portal-auth.js?v=20260916-institutional-login-5"></script>
 </body>
 </html>

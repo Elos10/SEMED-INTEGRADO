@@ -152,6 +152,29 @@ Não promover automaticamente `units`/escolas a `core.units`. Criar staging por 
 - Testes concorrentes para matrícula/vagas, importações, mudança de status e voto único.
 - Acessibilidade, responsividade e regressão visual do shell e de cada módulo.
 - Reconciliação de dados com totais, chaves, duplicidades e amostras aprovadas pelos donos de negócio.
+
+## 12. Design system institucional
+
+O shell compartilhado adota a referência visual aprovada para o SEMED Integrado sem alterar regras de negócio ou a avaliação de permissões. A tela de acesso usa uma composição *split-screen*: identidade e mensagem institucional em superfície clara à esquerda; área verde profunda à direita com o formulário em card marfim. Em telas de até 900 px, as regiões passam a formar uma única coluna, preservando ordem de leitura, rótulos e alvos de toque.
+
+Os tokens canônicos ficam em `design-system.css` e devem ser consumidos por login, portal e, de forma incremental, pelos layouts compartilhados dos módulos:
+
+| Papel | Token | Valor |
+|---|---|---|
+| Fundo institucional profundo | `--semed-green-950` | `#10231D` |
+| Variação de fundo | `--semed-green-900` | `#12251F` |
+| Ação primária | `--semed-green-700` | `#28674F` |
+| Superfície marfim | `--semed-ivory-100` | `#F5F2EA` |
+| Branco/off-white | `--semed-white` | `#FAFAF8` |
+| Título institucional | `--semed-navy-900` | `#071A58` |
+| Acento dourado/bege | `--semed-gold-600` | `#A88A5A` |
+| Texto principal | `--semed-neutral-900` | `#17211E` |
+| Texto secundário | `--semed-neutral-700` | `#5F655F` |
+| Borda neutra | `--semed-neutral-300` | `#D5D1C8` |
+
+Componentes devem preferir os aliases semânticos (`--semed-color-action`, `--semed-color-title`, `--semed-color-surface`, `--semed-color-text-muted`) para permitir evolução da paleta sem retrabalho. Botões primários usam verde de ação com texto branco; inputs e cards usam borda neutra e foco visível; estados de erro usam `--semed-color-danger`. O arquivo também padroniza raios, sombras, transições, seleção, foco por teclado e redução de movimento.
+
+O Portal de Módulos mantém a mesma identidade com cabeçalho verde profundo, superfícies marfim, cartões claros e chamadas de ação verdes. A filtragem dinâmica e a guarda de rota continuam sendo conduzidas por `get_my_modules()` e pelas verificações existentes; a camada visual não codifica perfil, e-mail ou autorização.
 # Autenticação central do portal
 
 O Portal SEMED usa uma única sessão do Supabase Auth. Antes de apresentar os

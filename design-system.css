@@ -1,0 +1,59 @@
+:root {
+  color-scheme: light;
+
+  /* Cores institucionais normalizadas a partir da referência aprovada. */
+  --semed-green-950: #10231d;
+  --semed-green-900: #12251f;
+  --semed-green-700: #28674f;
+  --semed-green-600: #317b60;
+  --semed-ivory-100: #f5f2ea;
+  --semed-white: #fafaf8;
+  --semed-navy-900: #071a58;
+  --semed-gold-600: #a88a5a;
+  --semed-neutral-900: #17211e;
+  --semed-neutral-700: #5f655f;
+  --semed-neutral-600: #6d6a64;
+  --semed-neutral-300: #d5d1c8;
+  --semed-danger-700: #9f2f2f;
+
+  /* Tokens semânticos: os componentes devem consumir estes nomes. */
+  --semed-color-page: var(--semed-white);
+  --semed-color-surface: var(--semed-ivory-100);
+  --semed-color-surface-raised: #fffefa;
+  --semed-color-brand: var(--semed-green-950);
+  --semed-color-action: var(--semed-green-700);
+  --semed-color-action-hover: #205740;
+  --semed-color-title: var(--semed-navy-900);
+  --semed-color-accent: var(--semed-gold-600);
+  --semed-color-text: var(--semed-neutral-900);
+  --semed-color-text-muted: var(--semed-neutral-700);
+  --semed-color-border: var(--semed-neutral-300);
+  --semed-color-focus: #8fc8b1;
+  --semed-color-danger: var(--semed-danger-700);
+
+  --semed-radius-sm: 10px;
+  --semed-radius-md: 16px;
+  --semed-radius-lg: 22px;
+  --semed-shadow-card: 0 12px 32px rgb(16 35 29 / 12%);
+  --semed-shadow-dialog: 0 28px 75px rgb(6 17 14 / 45%);
+  --semed-transition: 160ms ease;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--semed-color-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  color: var(--semed-white);
+  background: var(--semed-green-700);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
