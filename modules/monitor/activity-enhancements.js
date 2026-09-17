@@ -3,15 +3,18 @@
   const baseLoadRemoteStateWithActivities=loadRemoteState;
   loadRemoteState=async function(){
     await baseLoadRemoteStateWithActivities();
-    if(!backend)return;
-    try{const {collection,getDocs}=backend.dataSdk,snapshot=await getDocs(collection(backend.db,'events')),activities=new Map(snapshot.docs.map(item=>[item.id,item.data().activity||'']));state.events.forEach(event=>event.activity=activities.get(event.dbId||event.id)||event.activity||'')}catch(error){console.warn('Não foi possível complementar as atividades dos andamentos.',error)}
   };
 
+  let indexedEventsByObject=new Map(),indexedSubStages=new Map();
+  function rebuildEventIndexes(){
+    indexedEventsByObject=new Map();indexedSubStages=new Map();
+    state.events.forEach(event=>{if(!indexedEventsByObject.has(event.objectId))indexedEventsByObject.set(event.objectId,[]);indexedEventsByObject.get(event.objectId).push(event);if(event.parentEventId){if(!indexedSubStages.has(event.parentEventId))indexedSubStages.set(event.parentEventId,[]);indexedSubStages.get(event.parentEventId).push(event)}})
+  }
   function activityNames(objectId){
-    const names=[...state.events.filter(event=>event.objectId===objectId).map(event=>event.activity),...state.activities.filter(activity=>activity.objectId===objectId).map(activity=>activity.title)].map(value=>String(value||'').trim()).filter(Boolean);
+    const names=[...(indexedEventsByObject.get(objectId)||[]).map(event=>event.activity),...state.activities.filter(activity=>activity.objectId===objectId).map(activity=>activity.title)].map(value=>String(value||'').trim()).filter(Boolean);
     return [...new Map(names.map(name=>[name.toLocaleUpperCase('pt-BR'),name])).values()].sort((a,b)=>a.localeCompare(b,'pt-BR'))
   }
-  function activityCount(objectId,name){return state.events.filter(event=>event.objectId===objectId&&String(event.activity||'').localeCompare(name,'pt-BR',{sensitivity:'base'})===0).length}
+  function activityCount(objectId,name){return (indexedEventsByObject.get(objectId)||[]).filter(event=>String(event.activity||'').localeCompare(name,'pt-BR',{sensitivity:'base'})===0).length}
   function objectActivityText(objectId){const values=activityNames(objectId);return values.length?values.join('; '):'Não informada'}
 
   eventModal=function(id=''){
@@ -49,22 +52,17 @@
   };
 
   const activityBaseRender=render;
-  render=function(){activityBaseRender();if(view==='detail'&&selected)applyDetailTimelineFilter(selected);if(view==='timeline'&&selectedTimelineObject){const events=state.events.filter(event=>event.objectId===selectedTimelineObject&&!event.parentEventId).sort((a,b)=>(b.date||'').localeCompare(a.date||'')),items=[...document.querySelectorAll('.object-timeline-panel .timeline > .event')];items.forEach((item,index)=>{const event=events[index];if(event?.activity&&!item.querySelector(':scope > .timeline-activity'))item.querySelector(':scope > p')?.insertAdjacentHTML('beforebegin',`<span class="timeline-activity">ATIVIDADE · ${esc(event.activity)}</span>`)})}enhanceDetailSubStages()}
+  render=function(){rebuildEventIndexes();activityBaseRender();if(view==='detail'&&selected)applyDetailTimelineFilter(selected);if(view==='timeline'&&selectedTimelineObject){const events=(indexedEventsByObject.get(selectedTimelineObject)||[]).filter(event=>!event.parentEventId).sort((a,b)=>(b.date||'').localeCompare(a.date||'')),items=[...document.querySelectorAll('.object-timeline-panel .timeline > .event')];items.forEach((item,index)=>{const event=events[index];if(event?.activity&&!item.querySelector(':scope > .timeline-activity'))item.querySelector(':scope > p')?.insertAdjacentHTML('beforebegin',`<span class="timeline-activity">ATIVIDADE · ${esc(event.activity)}</span>`)})}enhanceDetailSubStages()}
 
   const loadStateBeforeSubStages=loadRemoteState;
   loadRemoteState=async function(){
     await loadStateBeforeSubStages();
-    if(!backend)return;
-    try{
-      const {collection,getDocs}=backend.dataSdk,snapshot=await getDocs(collection(backend.db,'events')),links=new Map(snapshot.docs.map(item=>{const data=item.data();return[item.id,{parentEventId:data.parentEventId||'',recordKind:data.recordKind||'',active:data.active!==false}]}));
-      state.events.forEach(event=>Object.assign(event,links.get(event.dbId||event.id)||{}));state.events=state.events.filter(event=>event.active!==false);
-      recalculateAllProgress();save()
-    }catch(error){console.warn('Não foi possível carregar os vínculos das Sub-Etapas.',error)}
+    state.events=state.events.filter(event=>event.active!==false);recalculateAllProgress();save()
   };
 
   progressEvents=function(objectId){return state.events.filter(event=>event.objectId===objectId&&event.status&&!event.parentEventId)};
 
-  function subStagesOf(parent){const parentId=parent?.dbId||parent?.id;return state.events.filter(event=>event.parentEventId===parentId).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))}
+  function subStagesOf(parent){const parentId=parent?.dbId||parent?.id;return [...(indexedSubStages.get(parentId)||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))}
   function subStageButton(parent){return parent?.status&&!parent.parentEventId?`<button type="button" class="btn secondary timeline-substage-btn" onclick="subStageModal('${parent.dbId||parent.id}')">+ Sub-Etapa</button>`:''}
   function subStageCard(subStage){return `<article class="timeline-substage"><div class="event-title-row"><div><span class="timeline-substage-label">SUB-ETAPA</span><strong>${esc(subStage.type||'Andamento')}</strong></div><span class="event-title-actions">${subStage.priority?`<span class="pill ${subStage.priority==='Alta'?'amber':subStage.priority==='Baixa'?'green':'blue'}">${esc(subStage.priority)}</span>`:''}${subStage.status?`<span class="pill ${subStage.status==='finalizado'?'green':'blue'}">${esc(eventStatusLabel(subStage.status))}</span>`:''}${eventEditButton(subStage)}</span></div>${subStage.activity?`<span class="timeline-activity">ATIVIDADE · ${esc(subStage.activity)}</span>`:''}<p>${esc(subStage.text||subStage.productDelivery||'SEM DESCRIÇÃO')}</p>${subStage.productDelivery?`<div class="timeline-detail"><span>PRODUTO / ENTREGA</span><strong>${esc(subStage.productDelivery)}</strong></div>`:''}${subStage.status?eventProgressBar(subStage):''}${eventDatesHtml(subStage)}${assignmentReceiptHtml(subStage)}${movementHistoryHtml(subStage)}<small>${esc(subStage.date)} · ${esc(subStage.user)}</small></article>`}
   function subStageList(parent){const children=subStagesOf(parent);return children.length?`<section class="timeline-substages"><header><strong>Sub-Etapas</strong><span>${children.length}</span></header>${children.map(subStageCard).join('')}</section>`:''}

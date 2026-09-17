@@ -1464,8 +1464,12 @@ async function applySupabaseSession(authUser, profile) {
   };
   if (local) Object.assign(local, user); else state.users.push(user);
   state.session = { id: user.id, name: user.name, email: user.email, role: user.role, unit: user.unit, photo: user.photo || "" };
-  state.orders = await window.OS_SUPABASE.loadOrders();
-  state.notificationReads[user.id] = await window.OS_SUPABASE.loadReads();
+  const [orders, notificationReads] = await Promise.all([
+    window.OS_SUPABASE.loadOrders(),
+    window.OS_SUPABASE.loadReads(),
+  ]);
+  state.orders = orders;
+  state.notificationReads[user.id] = notificationReads;
   currentView = "dashboard";
   render();
 }

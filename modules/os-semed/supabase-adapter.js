@@ -11,18 +11,18 @@ function throwIfError(result) {
 window.OS_SUPABASE = {
   async login(email, password) {
     const auth = throwIfError(await client.auth.signInWithPassword({ email, password }));
-    const profile = throwIfError(await client.from("os_profiles").select("*").eq("user_id", auth.user.id).eq("active", true).single());
+    const profile = throwIfError(await client.from("os_profiles").select("user_id,full_name,email,role,unit_name,active").eq("user_id", auth.user.id).eq("active", true).single());
     return { authUser: auth.user, profile };
   },
   async restoreSession() {
     const { data: { session } } = await client.auth.getSession();
     if (!session?.user) return null;
-    const profile = throwIfError(await client.from("os_profiles").select("*").eq("user_id", session.user.id).eq("active", true).single());
+    const profile = throwIfError(await client.from("os_profiles").select("user_id,full_name,email,role,unit_name,active").eq("user_id", session.user.id).eq("active", true).single());
     return { authUser: session.user, profile };
   },
   async logout() { throwIfError(await client.auth.signOut()); },
   async loadOrders() {
-    const rows = throwIfError(await client.from("os_orders").select("*").order("opened_at", { ascending: false }));
+    const rows = throwIfError(await client.from("os_orders").select("id,payload,active,opened_at,opened_by_email").order("opened_at", { ascending: false }));
     return rows.map((row) => ({ ...row.payload, id: row.id, active: row.active, openedAt: row.opened_at, openedBy: row.opened_by_email, persisted: true }));
   },
   async saveOrder(order) {
