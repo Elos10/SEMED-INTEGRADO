@@ -56,8 +56,8 @@
     await loadStateBeforeSubStages();
     if(!backend)return;
     try{
-      const {collection,getDocs}=backend.dataSdk,snapshot=await getDocs(collection(backend.db,'events')),links=new Map(snapshot.docs.map(item=>{const data=item.data();return[item.id,{parentEventId:data.parentEventId||'',recordKind:data.recordKind||''}]}));
-      state.events.forEach(event=>Object.assign(event,links.get(event.dbId||event.id)||{}));
+      const {collection,getDocs}=backend.dataSdk,snapshot=await getDocs(collection(backend.db,'events')),links=new Map(snapshot.docs.map(item=>{const data=item.data();return[item.id,{parentEventId:data.parentEventId||'',recordKind:data.recordKind||'',active:data.active!==false}]}));
+      state.events.forEach(event=>Object.assign(event,links.get(event.dbId||event.id)||{}));state.events=state.events.filter(event=>event.active!==false);
       recalculateAllProgress();save()
     }catch(error){console.warn('Não foi possível carregar os vínculos das Sub-Etapas.',error)}
   };
