@@ -90,7 +90,7 @@
     eventModal(parent.objectId);const form=document.querySelector('.event-create-form'),heading=document.querySelector('.modal-head h2'),eyebrow=document.querySelector('.modal-head .eyebrow');if(!form)return;
     heading.textContent='Sub-Etapa';if(eyebrow)eyebrow.textContent='Vinculada à Etapa';form.setAttribute('onsubmit',`saveSubStage(event,'${parentId}')`);
     const objectSelect=form.elements.objectId,activity=form.elements.activity;if(objectSelect){objectSelect.value=parent.objectId;objectSelect.disabled=true;objectSelect.insertAdjacentHTML('afterend',`<input type="hidden" name="objectId" value="${esc(parent.objectId)}">`)}if(activity)activity.value=parent.activity||'';
-    const modalHead=document.querySelector('.modal-head');modalHead?.insertAdjacentHTML('afterend',`<div class="notice substage-parent-notice"><strong>Etapa vinculada:</strong> ${esc(parent.activity||parent.text||parent.type)}</div>`);
+    const modalHead=document.querySelector('.modal-head');modalHead?.insertAdjacentHTML('afterend',`<div class="notice substage-parent-notice"><strong>Etapa vinculada</strong><span>${esc(parent.activity||parent.text||parent.type)}</span></div>`);
     const progressLabel=form.elements.progress?.closest('.field')?.querySelector('label');if(progressLabel)progressLabel.textContent='Percentual de execução da Sub-Etapa';const dateLabel=form.querySelector('.event-date-control .section-label');if(dateLabel)dateLabel.textContent='Esta Sub-Etapa terá controle de datas?';const submit=form.querySelector('button[type="submit"], #registerHistoryBtn');if(submit)submit.textContent='Registrar Sub-Etapa'
   };
 
