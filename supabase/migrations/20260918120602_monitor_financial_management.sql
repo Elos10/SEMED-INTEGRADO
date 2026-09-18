@@ -2,7 +2,8 @@ begin;
 
 create table if not exists public.monitor_financial_sources (
   id uuid primary key default gen_random_uuid(),
-  object_record_id uuid not null references public.monitor_records(id) on delete restrict,
+  object_collection text not null default 'objects' check (object_collection = 'objects'),
+  object_record_id uuid not null,
   object_code text not null,
   source_type text not null check (source_type in ('Próprio','Vinculado','Convênio','Transferência','Outro')),
   source_code text not null,
@@ -12,12 +13,15 @@ create table if not exists public.monitor_financial_sources (
   created_by uuid not null default auth.uid() references auth.users(id),
   updated_by uuid not null default auth.uid() references auth.users(id),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  foreign key (object_collection, object_record_id)
+    references public.monitor_records(collection, id) on delete restrict
 );
 
 create table if not exists public.monitor_financial_annual_budgets (
   id uuid primary key default gen_random_uuid(),
-  object_record_id uuid not null references public.monitor_records(id) on delete restrict,
+  object_collection text not null default 'objects' check (object_collection = 'objects'),
+  object_record_id uuid not null,
   object_code text not null,
   source_id uuid references public.monitor_financial_sources(id) on delete restrict,
   fiscal_year integer not null check (fiscal_year between 2000 and 2200),
@@ -26,12 +30,15 @@ create table if not exists public.monitor_financial_annual_budgets (
   created_by uuid not null default auth.uid() references auth.users(id),
   updated_by uuid not null default auth.uid() references auth.users(id),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  foreign key (object_collection, object_record_id)
+    references public.monitor_records(collection, id) on delete restrict
 );
 
 create table if not exists public.monitor_financial_processes (
   id uuid primary key default gen_random_uuid(),
-  object_record_id uuid not null references public.monitor_records(id) on delete restrict,
+  object_collection text not null default 'objects' check (object_collection = 'objects'),
+  object_record_id uuid not null,
   object_code text not null,
   source_id uuid references public.monitor_financial_sources(id) on delete restrict,
   resource_type text not null,
@@ -45,12 +52,15 @@ create table if not exists public.monitor_financial_processes (
   created_by uuid not null default auth.uid() references auth.users(id),
   updated_by uuid not null default auth.uid() references auth.users(id),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  foreign key (object_collection, object_record_id)
+    references public.monitor_records(collection, id) on delete restrict
 );
 
 create table if not exists public.monitor_financial_entries (
   id uuid primary key default gen_random_uuid(),
-  object_record_id uuid not null references public.monitor_records(id) on delete restrict,
+  object_collection text not null default 'objects' check (object_collection = 'objects'),
+  object_record_id uuid not null,
   object_code text not null,
   source_id uuid references public.monitor_financial_sources(id) on delete restrict,
   process_id uuid references public.monitor_financial_processes(id) on delete restrict,
@@ -67,7 +77,9 @@ create table if not exists public.monitor_financial_entries (
   created_by uuid not null default auth.uid() references auth.users(id),
   updated_by uuid not null default auth.uid() references auth.users(id),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  foreign key (object_collection, object_record_id)
+    references public.monitor_records(collection, id) on delete restrict
 );
 
 create table if not exists public.monitor_financial_audit (
@@ -149,7 +161,7 @@ begin
   perform pg_advisory_xact_lock(hashtextextended(new.object_record_id::text, 0));
   select coalesce(nullif(sum(planned_amount) filter (where active), 0),
                   (select nullif(sum(planned_amount),0) from public.monitor_financial_sources where object_record_id=new.object_record_id and active),
-                  (select nullif((data->>'budget')::numeric,0) from public.monitor_records where id=new.object_record_id), 0)
+                  (select nullif((data->>'budget')::numeric,0) from public.monitor_records where collection='objects' and id=new.object_record_id), 0)
     into planned
   from public.monitor_financial_annual_budgets where object_record_id=new.object_record_id;
   select coalesce(sum(amount) filter (where entry_type='EMPENHO' and active and id<>new.id),0),
