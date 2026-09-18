@@ -3,7 +3,7 @@ begin;
 create table if not exists public.monitor_financial_sources (
   id uuid primary key default gen_random_uuid(),
   object_collection text not null default 'objects' check (object_collection = 'objects'),
-  object_record_id uuid not null,
+  object_record_id text not null,
   object_code text not null,
   source_type text not null check (source_type in ('Próprio','Vinculado','Convênio','Transferência','Outro')),
   source_code text not null,
@@ -21,7 +21,7 @@ create table if not exists public.monitor_financial_sources (
 create table if not exists public.monitor_financial_annual_budgets (
   id uuid primary key default gen_random_uuid(),
   object_collection text not null default 'objects' check (object_collection = 'objects'),
-  object_record_id uuid not null,
+  object_record_id text not null,
   object_code text not null,
   source_id uuid references public.monitor_financial_sources(id) on delete restrict,
   fiscal_year integer not null check (fiscal_year between 2000 and 2200),
@@ -38,7 +38,7 @@ create table if not exists public.monitor_financial_annual_budgets (
 create table if not exists public.monitor_financial_processes (
   id uuid primary key default gen_random_uuid(),
   object_collection text not null default 'objects' check (object_collection = 'objects'),
-  object_record_id uuid not null,
+  object_record_id text not null,
   object_code text not null,
   source_id uuid references public.monitor_financial_sources(id) on delete restrict,
   resource_type text not null,
@@ -60,7 +60,7 @@ create table if not exists public.monitor_financial_processes (
 create table if not exists public.monitor_financial_entries (
   id uuid primary key default gen_random_uuid(),
   object_collection text not null default 'objects' check (object_collection = 'objects'),
-  object_record_id uuid not null,
+  object_record_id text not null,
   object_code text not null,
   source_id uuid references public.monitor_financial_sources(id) on delete restrict,
   process_id uuid references public.monitor_financial_processes(id) on delete restrict,
@@ -86,7 +86,7 @@ create table if not exists public.monitor_financial_audit (
   id bigint generated always as identity primary key,
   table_name text not null,
   record_id uuid not null,
-  object_record_id uuid,
+  object_record_id text,
   action text not null check (action in ('INSERT','UPDATE','DELETE')),
   old_data jsonb,
   new_data jsonb,
