@@ -51,5 +51,11 @@ window.supabaseReady = (async () => {
     signOut: async () => { await client.auth.signOut(); auth.currentUser = null; },
   };
   const functionsSdk = { httpsCallable: (_functions, name) => async (payload) => { const functionName = name === 'manageUser' ? 'manage-semed-user' : name; const { data, error } = await client.functions.invoke(functionName, { body: payload }); if (error) throw error; if (data?.error) throw new Error(data.error); return { data }; } };
-  return { client, db, auth, functions: {}, authSdk, functionsSdk, dataSdk: { collection, doc, getDoc, getDocs, query, where, orderBy, setDoc, updateDoc, writeBatch, serverTimestamp } };
+  const financialTables = new Set(['monitor_financial_sources','monitor_financial_annual_budgets','monitor_financial_processes','monitor_financial_entries']);
+  const financialApi = {
+    load: async () => { const { data, error } = await client.rpc('get_monitor_financial_data'); if (error) throw error; return data || {}; },
+    save: async (table, record) => { if (!financialTables.has(table)) throw new Error('Tabela financeira inválida.'); const payload = { ...record }; const id = payload.id; delete payload.id; const query = id ? client.from(table).update(payload).eq('id', id) : client.from(table).insert(payload); const { data, error } = await query.select().single(); if (error) throw error; return data; },
+    archive: async (table, id) => { if (!financialTables.has(table)) throw new Error('Tabela financeira inválida.'); const { error } = await client.from(table).update({ active: false }).eq('id', id); if (error) throw error; },
+  };
+  return { client, db, auth, functions: {}, authSdk, functionsSdk, financialApi, dataSdk: { collection, doc, getDoc, getDocs, query, where, orderBy, setDoc, updateDoc, writeBatch, serverTimestamp } };
 })();
