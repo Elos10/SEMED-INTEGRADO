@@ -138,7 +138,7 @@ Não promover automaticamente `units`/escolas a `core.units`. Criar staging por 
 
 ## 10. Operação, migrations e ambientes
 
-- Um único repositório de migrations Supabase em `supabase/migrations`, versionadas e imutáveis após aplicadas. A pasta legada `migrations/` não deve ser recriada, pois o Supabase Preview não a considera ao reconciliar o histórico remoto.
+- Um único repositório de migrations Supabase em `supabase/migrations`, versionadas e imutáveis após aplicadas. Os nomes devem conservar exatamente a versão registrada em `supabase_migrations.schema_migrations`; migrations históricas sem arquivo original são representadas por um marcador local de baseline. A pasta legada `migrations/` não deve ser recriada, pois o Supabase Preview não a considera ao reconciliar o histórico remoto.
 - Ambientes separados: desenvolvimento, homologação e produção.
 - Backup/export antes de cada onda; scripts idempotentes; contagem, checksums e relatórios de rejeição.
 - Observabilidade por request ID, logs de erro sem PII e métricas de latência/falha.
