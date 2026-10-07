@@ -1,41 +1,41 @@
 :root {
   color-scheme: light;
 
-  /* Cores institucionais normalizadas a partir da referência aprovada. */
-  --semed-green-950: #10231d;
-  --semed-green-900: #12251f;
-  --semed-green-700: #28674f;
-  --semed-green-600: #317b60;
-  --semed-ivory-100: #f5f2ea;
-  --semed-white: #fafaf8;
-  --semed-navy-900: #071a58;
-  --semed-gold-600: #a88a5a;
-  --semed-neutral-900: #17211e;
-  --semed-neutral-700: #5f655f;
-  --semed-neutral-600: #6d6a64;
-  --semed-neutral-300: #d5d1c8;
-  --semed-danger-700: #9f2f2f;
+  /* Paleta institucional azul aprovada para o SEMED Integra. */
+  --semed-green-950: #102653;
+  --semed-green-900: #1d376f;
+  --semed-green-700: #3459aa;
+  --semed-green-600: #4168bd;
+  --semed-ivory-100: #f1f4fa;
+  --semed-white: #ffffff;
+  --semed-navy-900: #102653;
+  --semed-gold-600: #8aa8e8;
+  --semed-neutral-900: #101a33;
+  --semed-neutral-700: #526481;
+  --semed-neutral-600: #687792;
+  --semed-neutral-300: #d9e1ef;
+  --semed-danger-700: #b9323b;
 
   /* Tokens semânticos: os componentes devem consumir estes nomes. */
   --semed-color-page: var(--semed-white);
   --semed-color-surface: var(--semed-ivory-100);
-  --semed-color-surface-raised: #fffefa;
+  --semed-color-surface-raised: #ffffff;
   --semed-color-brand: var(--semed-green-950);
   --semed-color-action: var(--semed-green-700);
-  --semed-color-action-hover: #205740;
+  --semed-color-action-hover: #294990;
   --semed-color-title: var(--semed-navy-900);
   --semed-color-accent: var(--semed-gold-600);
   --semed-color-text: var(--semed-neutral-900);
   --semed-color-text-muted: var(--semed-neutral-700);
   --semed-color-border: var(--semed-neutral-300);
-  --semed-color-focus: #8fc8b1;
+  --semed-color-focus: #aabbe1;
   --semed-color-danger: var(--semed-danger-700);
 
   --semed-radius-sm: 10px;
   --semed-radius-md: 16px;
   --semed-radius-lg: 22px;
-  --semed-shadow-card: 0 12px 32px rgb(16 35 29 / 12%);
-  --semed-shadow-dialog: 0 28px 75px rgb(6 17 14 / 45%);
+  --semed-shadow-card: 0 12px 32px rgb(16 38 83 / 12%);
+  --semed-shadow-dialog: 0 28px 75px rgb(16 38 83 / 30%);
   --semed-transition: 160ms ease;
 }
 

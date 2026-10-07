@@ -13,20 +13,20 @@ const moduleByHref = {
 
 const style = document.createElement("style");
 style.textContent = `
-  body.portal-auth-pending .systems-section{visibility:hidden}
-  .portal-auth{--auth-cream:var(--semed-ivory-100);--auth-cream-deep:#eee6d4;--auth-green:var(--semed-green-950);--auth-green-soft:#18332b;--auth-action:var(--semed-green-700);--auth-navy:var(--semed-navy-900);--auth-gold:var(--semed-gold-600);position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:minmax(0,57.5fr) minmax(400px,42.5fr);padding:0;background:var(--auth-green);overflow:auto}
-  .portal-auth[hidden]{display:none}.portal-auth-brand{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(34px,5vh,66px) clamp(28px,4vw,70px) clamp(32px,5vh,60px);overflow:hidden;background:radial-gradient(circle at 0 0,var(--auth-cream-deep),transparent 40%),#fff}.portal-auth-brand::after{content:"";position:absolute;left:0;bottom:0;width:9px;height:34%;background:var(--auth-green)}
-  .portal-auth-logo-panel{flex:0 0 auto;width:min(790px,86%);height:clamp(240px,48vh,490px);min-height:0;display:grid;place-items:center;padding:clamp(20px,3vw,42px);background:#f7f7f7}.portal-auth-logo-panel img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}
-  .portal-auth-intro{max-width:690px}.portal-auth-kicker{display:block;margin-bottom:18px;color:#0c5147;font-size:12px;font-weight:900;letter-spacing:.25em;text-transform:uppercase}.portal-auth-intro h1{max-width:680px;margin:0;color:var(--auth-navy);font:800 clamp(38px,4vw,64px)/1.28 Inter,"Segoe UI",sans-serif;letter-spacing:-.025em}.portal-auth-intro p{margin:22px 0 0;color:#806a5d;font-size:clamp(15px,1.15vw,19px);line-height:1.6}
-  .portal-auth-access{min-height:100vh;display:grid;place-items:center;padding:40px;background:radial-gradient(circle at 50% 50%,var(--auth-green-soft),transparent 56%),var(--auth-green)}.portal-login{width:min(450px,100%);padding:34px 32px 30px;border:1px solid #fff4;border-radius:var(--semed-radius-lg);background:var(--auth-cream);box-shadow:var(--semed-shadow-dialog);color:var(--semed-color-text)}
-  .portal-login .auth-eyebrow{display:block;margin-bottom:14px;color:#175747;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.portal-login h2{margin:0 0 9px;color:#061e1a;font-size:29px;letter-spacing:-.02em}.portal-login p{margin:0 0 24px;color:#866e5e;font-size:13px;line-height:1.5}.portal-login label{display:grid;gap:8px;margin:16px 0;color:#071d19;font-weight:800;font-size:12px}
-  .portal-login input{width:100%;min-height:48px;border:1px solid #d2d0c9;border-radius:10px;padding:11px 13px;background:#fff;color:#10211d;font:inherit;outline:none;transition:border-color .16s,box-shadow .16s}.portal-login input:focus{border-color:var(--auth-action);box-shadow:0 0 0 3px #28694f1f}.portal-login button[type="submit"]{width:100%;min-height:46px;margin-top:8px;border:0;border-radius:10px;background:var(--auth-action);color:#fff;font-weight:900;cursor:pointer;transition:transform .16s,filter .16s}.portal-login button[type="submit"]:hover,.portal-login button[type="submit"]:focus-visible{transform:translateY(-1px);filter:brightness(1.08);outline:3px solid #9abdaf;outline-offset:2px}
-  .portal-login .auth-link{display:block;margin:12px auto 0;border:0;background:transparent;color:#28694f;font-weight:800;cursor:pointer}.portal-login .captcha-slot{display:grid;place-items:center;min-height:8px;margin:13px 0}.portal-login[hidden]{display:none}.portal-login .auth-error{min-height:20px;margin-top:7px;color:#9f2f2f;font-weight:700;font-size:12px}.portal-login .auth-signature{display:block;margin-top:22px;padding-top:18px;border-top:1px solid #d9d3c5;color:#9a8678;font-size:11px;text-align:center}
+  body.portal-auth-pending{overflow:hidden}body.portal-auth-pending .systems-section{visibility:hidden}
+  .portal-auth{--auth-navy:#1d376f;--auth-navy-deep:#102653;--auth-blue:#3459aa;--auth-blue-hover:#294990;--auth-page:#f1f4fa;--auth-line:#d9e1ef;--auth-muted:#526481;position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:minmax(520px,58.5fr) minmax(420px,41.5fr);gap:0;padding:16px 0 16px 16px;background:var(--auth-page);overflow:auto}
+  .portal-auth[hidden]{display:none}.portal-auth-brand{position:relative;min-height:calc(100vh - 32px);display:flex;flex-direction:column;align-items:center;padding:48px clamp(32px,5vw,80px) 42px;overflow:hidden;border-radius:32px;background:linear-gradient(145deg,#203b77 0%,var(--auth-navy) 52%,var(--auth-navy-deep) 100%);color:#fff}
+  .portal-auth-brand-head{display:flex;align-items:center;gap:14px}.portal-auth-brand-mark{width:50px;height:50px;display:grid;place-items:center;border-radius:15px;background:#eef3ff;color:var(--auth-navy);box-shadow:0 8px 24px #07173530}.portal-auth-brand-mark svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.8}.portal-auth-brand-name strong,.portal-auth-brand-name span{display:block}.portal-auth-brand-name strong{font-size:16px}.portal-auth-brand-name span{margin-top:3px;color:#b9c9eb;font-size:13px}
+  .portal-auth-intro{width:min(660px,100%);margin:auto;text-align:center}.portal-auth-kicker{display:block;margin-bottom:26px;color:#a8c3ff;font-size:13px;font-weight:900;letter-spacing:.24em;text-transform:uppercase}.portal-auth-intro h1{margin:0;color:#fff;font:800 clamp(42px,4.2vw,65px)/1.28 Inter,"Segoe UI",sans-serif;letter-spacing:-.035em}.portal-auth-intro p{max-width:610px;margin:26px auto 0;color:#ccd7ef;font-size:clamp(16px,1.2vw,20px);line-height:1.65}.portal-auth-trust{color:#adc0e6;font-size:12px;text-align:center}
+  .portal-auth-access{min-height:calc(100vh - 32px);display:grid;place-items:center;padding:40px clamp(28px,6vw,100px);background:var(--auth-page)}.portal-login{width:min(430px,100%);padding:36px 32px 30px;border:1px solid #fff;border-radius:28px;background:#fff;box-shadow:0 20px 55px #10265312;color:#101a33}
+  .portal-login .auth-eyebrow{display:block;margin-bottom:14px;color:#244da7;font-size:12px;font-weight:800}.portal-login h2{margin:0 0 9px;color:#101a33;font-size:31px;letter-spacing:-.025em}.portal-login p{margin:0 0 26px;color:var(--auth-muted);font-size:13px;line-height:1.55}.portal-login label{display:grid;gap:8px;margin:17px 0;color:#101a33;font-weight:800;font-size:12px}.auth-password{position:relative}.auth-password input{padding-right:48px}.auth-password-toggle{position:absolute;right:7px;bottom:6px;width:36px;height:36px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:#607193;cursor:pointer}.auth-password-toggle:hover{background:#eef3fb}.auth-password-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
+  .portal-login input{width:100%;min-height:48px;border:1px solid var(--auth-line);border-radius:13px;padding:11px 13px;background:#fff;color:#101a33;font:inherit;outline:none;transition:border-color .16s,box-shadow .16s}.portal-login input:focus{border-color:var(--auth-blue);box-shadow:0 0 0 3px #3459aa1c}.portal-login button[type="submit"]{width:100%;min-height:48px;margin-top:8px;border:0;border-radius:13px;background:var(--auth-blue);color:#fff;font-weight:900;cursor:pointer;transition:transform .16s,background .16s}.portal-login button[type="submit"]:hover,.portal-login button[type="submit"]:focus-visible{transform:translateY(-1px);background:var(--auth-blue-hover);outline:3px solid #aabbe1;outline-offset:2px}
+  .portal-login .auth-link{display:block;margin:14px auto 0;border:0;background:transparent;color:#244da7;font-weight:800;cursor:pointer}.portal-login .captcha-slot{display:grid;place-items:center;min-height:8px;margin:13px 0}.portal-login[hidden]{display:none}.portal-login .auth-error{min-height:20px;margin-top:7px;color:#b9323b;font-weight:700;font-size:12px}.portal-login .auth-signature{display:block;margin-top:22px;padding-top:18px;border-top:1px solid var(--auth-line);color:#7786a1;font-size:11px;text-align:center}
   .portal-user{display:flex;align-items:center;gap:12px;color:#fff;font-size:12px}.portal-user button{border:1px solid #ffffff80;border-radius:16px;padding:8px 14px;background:#ffffff14;color:#fff;font-weight:800;cursor:pointer}
   .system-card[hidden]{display:none!important}.systems-grid.filtered .system-card:nth-child(n){grid-column:auto}.systems-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
-  @media(min-width:761px) and (max-width:1050px){.portal-auth-brand{padding:32px 28px}.portal-auth-logo-panel{width:94%;height:min(38vh,360px)}.portal-auth-intro h1{font-size:clamp(34px,5vw,48px)}.portal-auth-intro p{margin-top:14px;font-size:15px}.portal-auth-access{padding:28px}.portal-login{padding:28px 24px}}
-  @media(max-width:760px){.portal-auth{display:block}.portal-auth-brand{min-height:0;padding:28px 24px 32px}.portal-auth-logo-panel{width:100%;height:210px}.portal-auth-intro{margin-top:28px}.portal-auth-intro h1{font-size:clamp(30px,8vw,38px)}.portal-auth-access{min-height:0;padding:38px 20px 54px}.portal-login{padding:28px 24px}}
-  @media(max-height:720px) and (min-width:901px){.portal-auth-brand{padding-top:30px;padding-bottom:28px}.portal-auth-logo-panel{min-height:270px;max-height:46vh}.portal-auth-intro h1{font-size:42px}.portal-auth-intro p{margin-top:12px}.portal-login{padding:25px 28px}.portal-login label{margin:11px 0}.portal-login p{margin-bottom:16px}.portal-login .auth-signature{margin-top:14px;padding-top:13px}}
+  @media(min-width:761px) and (max-width:1050px){.portal-auth{grid-template-columns:minmax(420px,1fr) minmax(380px,.82fr)}.portal-auth-brand{padding:36px 28px}.portal-auth-intro h1{font-size:clamp(38px,5vw,50px)}.portal-auth-intro p{font-size:15px}.portal-auth-access{padding:28px}.portal-login{padding:30px 26px}}
+  @media(max-width:760px){.portal-auth{display:block;padding:0}.portal-auth-brand{min-height:390px;border-radius:0 0 28px 28px;padding:28px 24px 38px}.portal-auth-brand-head{align-self:flex-start}.portal-auth-intro{margin:auto}.portal-auth-kicker{margin-bottom:14px}.portal-auth-intro h1{font-size:clamp(31px,8vw,42px)}.portal-auth-intro p{margin-top:16px;font-size:14px}.portal-auth-trust{display:none}.portal-auth-access{min-height:0;padding:32px 18px 50px}.portal-login{padding:28px 23px;border-radius:22px}}
+  @media(max-height:720px) and (min-width:901px){.portal-auth-brand{padding-top:28px;padding-bottom:26px}.portal-auth-intro h1{font-size:43px}.portal-auth-intro p{margin-top:14px;font-size:15px}.portal-login{padding:26px 28px}.portal-login label{margin:11px 0}.portal-login p{margin-bottom:16px}.portal-login .auth-signature{margin-top:14px;padding-top:13px}}
 `;
 document.head.append(style);
 document.body.classList.add("portal-auth-pending");
@@ -35,14 +35,15 @@ const overlay = document.createElement("section");
 overlay.className = "portal-auth";
 overlay.innerHTML = `
   <section class="portal-auth-brand" aria-label="Identidade da Secretaria Municipal de Educação">
-    <div class="portal-auth-logo-panel"><img src="./modules/votacao/assets/logo-municipal.png" alt="Secretaria de Educação · Uberaba Governo Municipal"></div>
-    <div class="portal-auth-intro"><span class="portal-auth-kicker">Secretaria de Educação</span><h1>Portal de Sistemas Unificados.</h1><p>Acesse, de forma segura e integrada, os sistemas institucionais da Secretaria Municipal de Educação de Uberaba.</p></div>
+    <div class="portal-auth-brand-head"><span class="portal-auth-brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 9.5A10 10 0 0 1 24.5 16 10 10 0 0 1 10 25l-5 2 1.7-5.2A10 10 0 0 1 7 9.5Z"/></svg></span><span class="portal-auth-brand-name"><strong>SEMED Integra</strong><span>Portal de Sistemas Unificados</span></span></div>
+    <div class="portal-auth-intro"><span class="portal-auth-kicker">Conecte. Acompanhe. Resolva.</span><h1>Gestão educacional integrada, segura e eficiente.</h1><p>Informações, serviços e decisões da Secretaria Municipal de Educação em um único ambiente protegido.</p></div>
+    <small class="portal-auth-trust">Dados protegidos por controle de acesso e rastreabilidade.</small>
   </section>
   <section class="portal-auth-access" aria-label="Autenticação do portal">
     <form class="portal-login" data-auth-view="login">
       <span class="auth-eyebrow">SEMED Integrado</span><h2>Acesse sua conta</h2><p>Use seu e-mail institucional e sua senha.</p>
       <label>E-mail<input name="email" type="email" autocomplete="username" required></label>
-      <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
+      <label class="auth-password">Senha<input name="password" type="password" autocomplete="current-password" required><button class="auth-password-toggle" type="button" data-toggle-password aria-label="Mostrar senha" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></label>
       <div class="captcha-slot" data-captcha="login"></div><div class="auth-error" role="alert"></div>
       <button type="submit">Entrar</button><button class="auth-link" type="button" data-forgot>Esqueceu sua senha?</button>
       <small class="auth-signature">Prefeitura Municipal de Uberaba · Secretaria de Educação</small>
@@ -56,13 +57,23 @@ overlay.innerHTML = `
     </form>
     <form class="portal-login" data-auth-view="update" hidden>
       <span class="auth-eyebrow">Segurança da conta</span><h2>Definir nova senha</h2><p>Use pelo menos 8 caracteres, com letras, número e símbolo.</p>
-      <label>Nova senha<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
-      <label>Confirmar senha<input name="confirmation" type="password" autocomplete="new-password" minlength="8" required></label>
+      <label class="auth-password">Nova senha<input name="password" type="password" autocomplete="new-password" minlength="8" required><button class="auth-password-toggle" type="button" data-toggle-password aria-label="Mostrar senha" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></label>
+      <label class="auth-password">Confirmar senha<input name="confirmation" type="password" autocomplete="new-password" minlength="8" required><button class="auth-password-toggle" type="button" data-toggle-password aria-label="Mostrar senha" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></label>
       <div class="auth-error" role="alert"></div><button type="submit">Atualizar senha</button>
       <small class="auth-signature">Prefeitura Municipal de Uberaba · Secretaria de Educação</small>
     </form>
   </section>`;
 document.body.append(overlay);
+
+overlay.querySelectorAll("[data-toggle-password]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const input = button.parentElement.querySelector("input");
+    const reveal = input.type === "password";
+    input.type = reveal ? "text" : "password";
+    button.setAttribute("aria-pressed", String(reveal));
+    button.setAttribute("aria-label", reveal ? "Ocultar senha" : "Mostrar senha");
+  });
+});
 
 const loginForm = overlay.querySelector('[data-auth-view="login"]');
 const recoveryForm = overlay.querySelector('[data-auth-view="recovery"]');
