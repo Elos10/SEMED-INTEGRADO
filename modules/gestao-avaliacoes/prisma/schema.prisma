@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  TEACHER
+  OPERATOR
+}
+
+enum Subject {
+  PORTUGUESE
+  MATHEMATICS
+  SINGLE
+}
+
+enum TimeMode {
+  PARTIAL
+  FULL
+  ALL
+}
+
+enum AssessmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum ProcessingStatus {
+  RECEIVED
+  PROCESSING
+  REVIEW_REQUIRED
+  READY
+  FINALIZED
+  FAILED
+}
+
+enum AnswerStatus {
+  MARKED
+  BLANK
+  MULTIPLE
+  REVIEW
+}
+
+model Organization {
+  id        String            @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime          @default(now()) @map("created_at")
+  units     EducationalUnit[]
+  profiles  Profile[]
+
+  @@map("organizations")
+}
+
+model Profile {
+  id                 String           @id @db.Uuid
+  organizationId     String           @map("organization_id") @db.Uuid
+  name               String
+  role               UserRole
+  active             Boolean          @default(true)
+  organization       Organization     @relation(fields: [organizationId], references: [id])
+  memberships        UnitMembership[]
+  createdAssessments Assessment[]     @relation("AssessmentCreator")
+
+  @@index([organizationId, active])
+  @@map("profiles")
+}
+
+model EducationalUnit {
+  id             String           @id @default(uuid()) @db.Uuid
+  organizationId String           @map("organization_id") @db.Uuid
+  name           String
+  code           String?
+  active         Boolean          @default(true)
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  memberships    UnitMembership[]
+  classes        SchoolClass[]
+  assessments    Assessment[]
+
+  @@unique([organizationId, name])
+  @@map("educational_units")
+}
+
+model UnitMembership {
+  profileId String          @map("profile_id") @db.Uuid
+  unitId    String          @map("unit_id") @db.Uuid
+  profile   Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  unit      EducationalUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, unitId])
+  @@map("unit_memberships")
+}
+
+model SchoolClass {
+  id          String          @id @default(uuid()) @db.Uuid
+  unitId      String          @map("unit_id") @db.Uuid
+  name        String
+  grade       Int
+  schoolYear  Int             @map("school_year")
+  timeMode    TimeMode        @map("time_mode")
+  unit        EducationalUnit @relation(fields: [unitId], references: [id])
+  students    Student[]
+  assessments Assessment[]
+
+  @@unique([unitId, grade, name, schoolYear, timeMode])
+  @@index([unitId, schoolYear, grade])
+  @@map("school_classes")
+}
+
+model Student {
+  id           String        @id @default(uuid()) @db.Uuid
+  classId      String        @map("class_id") @db.Uuid
+  registration String?
+  name         String
+  active       Boolean       @default(true)
+  schoolClass  SchoolClass   @relation(fields: [classId], references: [id])
+  sheets       AnswerSheet[]
+
+  @@index([classId, name])
+  @@map("students")
+}
+
+model Assessment {
+  id             String           @id @default(uuid()) @db.Uuid
+  unitId         String           @map("unit_id") @db.Uuid
+  classId        String?          @map("class_id") @db.Uuid
+  createdBy      String           @map("created_by") @db.Uuid
+  number         String
+  year           Int
+  grade          Int
+  subject        Subject
+  timeMode       TimeMode         @map("time_mode")
+  questionCount  Int              @map("question_count")
+  maxScore       Decimal          @default(10) @map("max_score") @db.Decimal(5, 2)
+  assessmentDate DateTime         @map("assessment_date") @db.Date
+  status         AssessmentStatus @default(DRAFT)
+  unit           EducationalUnit  @relation(fields: [unitId], references: [id])
+  schoolClass    SchoolClass?     @relation(fields: [classId], references: [id])
+  creator        Profile          @relation("AssessmentCreator", fields: [createdBy], references: [id])
+  key            OfficialAnswer[]
+  sheets         AnswerSheet[]
+
+  @@unique([unitId, year, number, subject, classId])
+  @@index([unitId, assessmentDate])
+  @@index([classId])
+  @@map("assessments")
+}
+
+model OfficialAnswer {
+  assessmentId String     @map("assessment_id") @db.Uuid
+  question     Int
+  choice       String     @db.Char(1)
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, question])
+  @@map("official_answers")
+}
+
+model AnswerSheet {
+  id              String              @id @default(uuid()) @db.Uuid
+  assessmentId    String              @map("assessment_id") @db.Uuid
+  studentId       String?             @map("student_id") @db.Uuid
+  publicCode      String              @unique @default(uuid()) @map("public_code") @db.Uuid
+  templateId      String              @map("template_id")
+  templateVersion Int                 @map("template_version")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  assessment      Assessment          @relation(fields: [assessmentId], references: [id])
+  student         Student?            @relation(fields: [studentId], references: [id])
+  processings     ReadingProcessing[]
+  results         Result[]
+
+  @@unique([assessmentId, studentId])
+  @@index([studentId])
+  @@map("answer_sheets")
+}
+
+model ReadingProcessing {
+  id               String           @id @default(uuid()) @db.Uuid
+  sheetId          String?          @map("sheet_id") @db.Uuid
+  uploadedBy       String           @map("uploaded_by") @db.Uuid
+  status           ProcessingStatus @default(RECEIVED)
+  storagePath      String           @map("storage_path")
+  mimeType         String           @map("mime_type")
+  sha256           String
+  algorithmVersion String           @map("algorithm_version")
+  quality          Json?
+  errorCode        String?          @map("error_code")
+  errorDetail      String?          @map("error_detail")
+  startedAt        DateTime?        @map("started_at")
+  finishedAt       DateTime?        @map("finished_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  sheet            AnswerSheet?     @relation(fields: [sheetId], references: [id])
+  answers          StudentAnswer[]
+
+  @@index([status, createdAt])
+  @@index([sheetId, createdAt])
+  @@map("reading_processings")
+}
+
+model StudentAnswer {
+  id             String            @id @default(uuid()) @db.Uuid
+  processingId   String            @map("processing_id") @db.Uuid
+  question       Int
+  detectedChoice String?           @map("detected_choice") @db.Char(1)
+  finalChoice    String?           @map("final_choice") @db.Char(1)
+  status         AnswerStatus
+  confidence     Decimal           @db.Decimal(5, 4)
+  fills          Json
+  reviewedBy     String?           @map("reviewed_by") @db.Uuid
+  reviewedAt     DateTime?         @map("reviewed_at")
+  processing     ReadingProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+
+  @@unique([processingId, question])
+  @@map("student_answers")
+}
+
+model Result {
+  id           String      @id @default(uuid()) @db.Uuid
+  sheetId      String      @map("sheet_id") @db.Uuid
+  processingId String      @unique @map("processing_id") @db.Uuid
+  total        Int
+  correct      Int
+  wrong        Int
+  blank        Int
+  invalid      Int
+  percentage   Decimal     @db.Decimal(5, 2)
+  score        Decimal     @db.Decimal(5, 2)
+  finalizedBy  String      @map("finalized_by") @db.Uuid
+  finalizedAt  DateTime    @default(now()) @map("finalized_at")
+  sheet        AnswerSheet @relation(fields: [sheetId], references: [id])
+
+  @@index([sheetId, finalizedAt])
+  @@map("results")
+}

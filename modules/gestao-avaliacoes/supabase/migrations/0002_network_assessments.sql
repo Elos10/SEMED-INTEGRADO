@@ -1,0 +1,4 @@
+ALTER TYPE public."TimeMode" ADD VALUE IF NOT EXISTS 'ALL';
+
+ALTER TABLE public.assessments
+ALTER COLUMN class_id DROP NOT NULL;

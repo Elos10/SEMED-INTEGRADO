@@ -1,0 +1,28 @@
+{
+  "name": "omr-escolar",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {"node": ">=22"},
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "postinstall": "prisma generate --schema prisma/schema.prisma",
+    "prebuild": "prisma generate --schema prisma/schema.prisma",
+    "build": "pnpm -r build && node scripts/prepare-vercel-output.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r typecheck && tsc -p api/tsconfig.json --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "generate:calibration": "tsx scripts/generate-calibration.ts",
+    "generate:synthetic": "python workers/omr/generate_synthetic.py"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "@prisma/client": "6.8.2",
+    "pdf-lib": "1.17.1",
+    "prisma": "6.8.2",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3",
+    "vitest": "3.1.4"
+  }
+}
