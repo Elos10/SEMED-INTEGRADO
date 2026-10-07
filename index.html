@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#11241f">
+  <meta name="theme-color" content="#102653">
   <meta name="description" content="Portal de Sistemas Unificados da Secretaria de Educação de Uberaba">
   <title>Portal de Sistemas Unificados · SEMED Uberaba</title>
   <link rel="stylesheet" href="./design-system.css?v=20261007-1">
@@ -41,28 +41,31 @@
     .footer{background:linear-gradient(100deg,#0b1d18,#1d4c3d)}.motto strong{color:#cfb072}
   </style>
   <link rel="stylesheet" href="./modules/institutional-theme.css?v=20261007-1">
+  <link rel="stylesheet" href="./portal-modern.css?v=20261007-1">
 </head>
 <body>
   <header class="hero">
     <svg class="building" viewBox="0 0 900 500" aria-hidden="true"><path fill="currentColor" d="M90 470V210h80v-55h75v-45h78v45h74v55h75v260h52V230h60V170h54v-60h64v60h55v60h64v240z"/><path fill="#002d83" d="M120 470V250h325v220zm42-178h52v70h-52zm84 0h52v70h-52zm84 0h52v70h-52zm228-27h42v78h-42zm70 0h42v78h-42zm70 0h42v78h-42z"/><path fill="none" stroke="currentColor" stroke-width="13" d="M70 470h790M132 208h300M545 229h258M221 109h104M623 110h65M245 109V65h55v44M641 110V63"/></svg>
     <div class="topbar">
-      <div class="identity"><img class="municipal-logo" src="./modules/votacao/assets/logo-municipal.png" alt="Uberaba Governo Municipal"><span class="identity-divider"></span><div class="education-brand"><span>Secretaria de</span><strong>EDUCAÇÃO</strong></div></div>
-      <a class="help" href="#contato"><span class="help-mark">?</span><span>Ajuda</span></a>
+      <div class="identity"><img class="municipal-logo" src="./modules/votacao/assets/logo-municipal.png" alt="Uberaba Governo Municipal"><span class="identity-divider"></span><div class="education-brand"><strong>SEMED Integra</strong><span>Secretaria Municipal de Educação</span></div></div>
+      <div class="top-actions"><a class="help" href="#contato"><span class="help-mark">?</span><span>Ajuda</span></a></div>
     </div>
-    <div class="hero-content"><p class="welcome">Bem-vindo ao</p><h1>Portal de Sistemas<br>Unificados</h1><p class="hero-copy">Acesse de forma integrada os principais sistemas<br>da Secretaria de Educação de Uberaba.</p><div class="hero-accent"></div></div>
-    <div class="slogan"><span>Educação que</span><strong>TRANSFORMA</strong><span>Uberaba que</span><strong>AVANÇA</strong></div>
+    <div class="hero-content"><p class="welcome" id="portalGreeting">Bem-vindo ao SEMED Integra</p><h1 id="portalWelcome">Portal de Sistemas Unificados</h1><p class="hero-copy" id="portalProfile">Acesse os aplicativos autorizados para seu perfil institucional.</p><div class="hero-accent"></div></div>
+    <div class="slogan"><span>Integração que</span><strong>SIMPLIFICA</strong><span>Gestão que</span><strong>AVANÇA</strong></div>
   </header>
 
-  <main class="systems-section" id="sistemas"><div class="systems-wrap"><h2 class="section-title">Acesse os sistemas</h2><section class="systems-grid" aria-label="Sistemas disponíveis">
-    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><rect x="15" y="12" width="34" height="43" rx="3"/><path d="M25 12V8h14v4M23 25l3 3 6-7m-9 18 3 3 6-7m5-9h7m-7 14h7"/></svg></div><h2>Avaliações</h2><p>Gerencie e acompanhe avaliações, resultados e desempenhos.</p><a class="access" href="./modules/avaliacoes/">Acessar <span>→</span></a></article>
-    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><path d="M12 53h43M17 49V36h8v13m7 0V27h8v22m7 0V17h8v32M18 28l12-10 10 5 14-14"/><circle cx="18" cy="28" r="2"/><circle cx="30" cy="18" r="2"/><circle cx="40" cy="23" r="2"/><circle cx="54" cy="9" r="2"/></svg></div><h2>Monitoramento</h2><p>Acompanhe indicadores, metas e resultados em tempo real.</p><a class="access" href="./modules/monitor/">Acessar <span>→</span></a></article>
-    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="19"/><path d="M32 6v8m0 36v8M6 32h8m36 0h8M14 14l6 6m24 24 6 6M50 14l-6 6M20 44l-6 6"/><circle cx="32" cy="32" r="7"/></svg></div><h2>Ordem de Serviço</h2><p>Abra, acompanhe e gerencie ordens de serviço.</p><a class="access" href="./modules/os-semed/">Acessar <span>→</span></a></article>
-    <article class="system-card"><div class="card-icon"><svg viewBox="0 0 64 64"><path d="M17 25h30l5 30H12zM22 25V13h20v12M20 39h24M20 47h15"/><path d="m29 18 4 4 8-9"/></svg></div><h2>Urna Eletrônica</h2><p>Acesse o sistema de votação eletrônica da educação.</p><a class="access" href="./modules/votacao/">Acessar <span>→</span></a></article>
+  <main class="systems-section" id="sistemas"><div class="systems-wrap">
+    <header class="systems-heading"><div><span class="section-kicker">Seu ambiente de trabalho</span><h2 class="section-title">Aplicativos disponíveis</h2><p>Selecione um sistema para continuar.</p></div><label class="system-search"><span>⌕</span><input id="systemSearch" type="search" placeholder="Buscar aplicativo" autocomplete="off" aria-label="Buscar aplicativo"></label></header>
+    <p class="systems-empty" id="systemsEmpty" hidden>Nenhum aplicativo encontrado para esta busca.</p>
+    <section class="systems-grid" aria-label="Sistemas disponíveis">
+    <article class="system-card" tabindex="0" role="link" data-system-name="Avaliações" data-href="./modules/avaliacoes/"><div class="card-head"><div class="card-icon"><svg viewBox="0 0 64 64"><rect x="15" y="12" width="34" height="43" rx="3"/><path d="M25 12V8h14v4M23 25l3 3 6-7m-9 18 3 3 6-7m5-9h7m-7 14h7"/></svg></div><span class="card-state">Disponível</span></div><div class="card-copy"><span class="card-label">Sistema educacional</span><h2>Avaliações</h2><p>Gerencie avaliações, importações, resultados e indicadores de desempenho.</p></div><a class="access" href="./modules/avaliacoes/">Abrir sistema <span>→</span></a></article>
+    <article class="system-card" tabindex="0" role="link" data-system-name="Monitoramento" data-href="./modules/monitor/"><div class="card-head"><div class="card-icon"><svg viewBox="0 0 64 64"><path d="M12 53h43M17 49V36h8v13m7 0V27h8v22m7 0V17h8v32M18 28l12-10 10 5 14-14"/><circle cx="18" cy="28" r="2"/><circle cx="30" cy="18" r="2"/><circle cx="40" cy="23" r="2"/><circle cx="54" cy="9" r="2"/></svg></div><span class="card-state">Disponível</span></div><div class="card-copy"><span class="card-label">Gestão estratégica</span><h2>Monitoramento</h2><p>Acompanhe objetos, etapas, prazos, responsáveis e execução financeira.</p></div><a class="access" href="./modules/monitor/">Abrir sistema <span>→</span></a></article>
+    <article class="system-card" tabindex="0" role="link" data-system-name="Ordem de Serviço" data-href="./modules/os-semed/"><div class="card-head"><div class="card-icon"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="19"/><path d="M32 6v8m0 36v8M6 32h8m36 0h8M14 14l6 6m24 24 6 6M50 14l-6 6M20 44l-6 6"/><circle cx="32" cy="32" r="7"/></svg></div><span class="card-state">Disponível</span></div><div class="card-copy"><span class="card-label">Atendimento interno</span><h2>Ordens de Serviço</h2><p>Abra, acompanhe e gerencie solicitações e ordens de serviço.</p></div><a class="access" href="./modules/os-semed/">Abrir sistema <span>→</span></a></article>
+    <article class="system-card" tabindex="0" role="link" data-system-name="Urna Eletrônica" data-href="./modules/votacao/"><div class="card-head"><div class="card-icon"><svg viewBox="0 0 64 64"><path d="M17 25h30l5 30H12zM22 25V13h20v12M20 39h24M20 47h15"/><path d="m29 18 4 4 8-9"/></svg></div><span class="card-state">Disponível</span></div><div class="card-copy"><span class="card-label">Processo eleitoral</span><h2>Urna Eletrônica</h2><p>Acesse e administre os processos de votação eletrônica da educação.</p></div><a class="access" href="./modules/votacao/">Abrir sistema <span>→</span></a></article>
   </section>
-  <aside class="news" id="comunicados"><div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M9.5 20h5a3 3 0 0 1-5 0"/></svg></div><div><h3>Fique por dentro!</h3><p>Acompanhe comunicados e novidades<br>da Secretaria de Educação.</p></div><span class="news-divider"></span><a class="news-link" href="#contato">Ver comunicados&nbsp; ↗</a></aside>
   </div></main>
 
   <footer class="footer" id="contato"><div class="footer-inner"><div class="footer-brand"><img src="./modules/votacao/assets/logo-municipal.png" alt="Brasão de Uberaba"><div><span>Secretaria de</span><strong>EDUCAÇÃO</strong><small>UBERABA · MG</small></div></div><div class="contact"><span>⌖ &nbsp;Av. Dom Luiz Maria de Santana, 141<br>&nbsp;&nbsp;&nbsp;&nbsp;Santa Marta · Uberaba/MG · CEP 38061-080</span><span>☎ &nbsp;(34) 3318-2000</span><span>◎ &nbsp;educacao.uberaba.mg.gov.br</span></div><div class="motto">Educação<br>é o futuro.<strong>É agora.</strong></div></div></footer>
-  <script type="module" src="./portal-auth.js?v=20261007-blue-login-2"></script>
+  <script type="module" src="./portal-auth.js?v=20261007-modern-dashboard-1"></script>
 </body>
 </html>

@@ -93,13 +93,71 @@ async function accessContext() {
   return data;
 }
 
-function renderUser(session) {
+function preferredName(context, session) {
+  const fullName = String(context?.user?.full_name || context?.user?.name || "").trim();
+  if (fullName) return fullName.split(/\s+/).slice(0, 2).join(" ");
+  return String(session?.user?.email || "usuário").split("@")[0];
+}
+
+function renderUser(session, context) {
   document.querySelector(".portal-user")?.remove();
   const area = document.createElement("div");
   area.className = "portal-user";
   area.innerHTML = `<span>${session.user.email}</span><button type="button">Sair</button>`;
   area.querySelector("button").addEventListener("click", async () => { await supabase.auth.signOut(); location.reload(); });
   document.querySelector(".topbar")?.append(area);
+
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const name = preferredName(context, session);
+  const profile = context?.user?.area || context?.user?.profile_name || "Perfil institucional autenticado";
+  const greetingNode = document.querySelector("#portalGreeting");
+  const welcomeNode = document.querySelector("#portalWelcome");
+  const profileNode = document.querySelector("#portalProfile");
+  if (greetingNode) greetingNode.textContent = `${greeting}, ${name}`;
+  if (welcomeNode) welcomeNode.textContent = "Escolha onde deseja trabalhar";
+  if (profileNode) profileNode.textContent = `${profile} · somente os aplicativos autorizados para seu perfil são exibidos.`;
+}
+
+function initPortalInteractions() {
+  const cards = [...document.querySelectorAll(".system-card")];
+  const search = document.querySelector("#systemSearch");
+  const empty = document.querySelector("#systemsEmpty");
+
+  const openCard = (card) => {
+    const href = card.dataset.href || card.querySelector(".access")?.getAttribute("href");
+    if (href) location.assign(href);
+  };
+
+  cards.forEach((card) => {
+    if (card.dataset.portalInteractive === "1") return;
+    card.dataset.portalInteractive = "1";
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("a,button,input")) return;
+      openCard(card);
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openCard(card);
+    });
+  });
+
+  const filterCards = () => {
+    const term = String(search?.value || "").trim().toLocaleLowerCase("pt-BR");
+    let visible = 0;
+    cards.forEach((card) => {
+      const authorized = card.dataset.authorized === "true";
+      const content = `${card.dataset.systemName || ""} ${card.textContent || ""}`.toLocaleLowerCase("pt-BR");
+      card.hidden = !authorized || (term && !content.includes(term));
+      if (!card.hidden) visible += 1;
+    });
+    if (empty) empty.hidden = visible > 0;
+  };
+
+  search?.addEventListener("input", filterCards);
+  filterCards();
 }
 
 async function revealPortal(session) {
@@ -113,11 +171,13 @@ async function revealPortal(session) {
   const codes = new Set((context.modules || []).filter((item) => item.permissions?.view).map((item) => item.code));
   document.querySelectorAll(".system-card").forEach((card) => {
     const href = card.querySelector(".access")?.getAttribute("href");
-    card.hidden = !codes.has(moduleByHref[href]);
+    card.dataset.authorized = String(codes.has(moduleByHref[href]));
+    card.hidden = card.dataset.authorized !== "true";
   });
   document.querySelector(".systems-grid")?.classList.add("filtered");
   if (!codes.size) throw new Error("Seu perfil não possui módulos autorizados.");
-  renderUser(session);
+  renderUser(session, context);
+  initPortalInteractions();
   window.SEMED_ACCESS_CONTEXT = context;
   initPortalAdmin({ supabase, context });
   overlay.hidden = true;
