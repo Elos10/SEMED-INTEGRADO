@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 300,
+      "memory": 1024
+    },
+    "api/omr-worker.py": {
+      "maxDuration": 300,
+      "memory": 1024
+    }
+  },
+  "routes": [
+    {"handle": "filesystem"},
+    {"src": "/api/(.*)", "dest": "/api/[...path]"},
+    {"src": "/(.*)", "dest": "/index.html"}
+  ]
+}

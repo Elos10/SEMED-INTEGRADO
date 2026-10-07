@@ -1,0 +1,4 @@
+ALTER TYPE "TimeMode" ADD VALUE IF NOT EXISTS 'ALL';
+
+ALTER TABLE "assessments"
+ALTER COLUMN "class_id" DROP NOT NULL;

@@ -1,0 +1,2 @@
+export const MAX_STUDENT_IMPORT_ROWS = 30_000;
+export const STUDENT_IMPORT_BATCH_SIZE = 1_000;

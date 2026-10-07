@@ -1,0 +1,17 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+@layer base{body{@apply m-0 bg-paper text-ink antialiased;font-family:Calibri,"Segoe UI",sans-serif}button,input,select{font:inherit}}
+@layer components{.card{@apply rounded-2xl border border-[#dce3f0] bg-white p-5 shadow-[0_8px_28px_rgba(29,55,111,.07)]}.btn{@apply rounded-xl bg-forest px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-ink disabled:cursor-not-allowed disabled:opacity-50}.field{@apply w-full rounded-xl border border-[#d7dfef] bg-white px-3 py-2.5 text-ink outline-none transition focus:border-forest focus:ring-2 focus:ring-mint}.label{@apply mb-1 block text-sm font-semibold}.eyebrow{@apply text-xs font-bold uppercase tracking-[.18em] text-forest}}
+
+@page{size:A4 landscape;margin:10mm}
+@media print{
+ body.report-printing{background:#fff;color:#000;font-family:Arial,sans-serif;font-size:11pt}
+ body.report-printing aside,body.report-printing main>div:first-child,body.report-printing main>header,body.report-printing .report-controls{display:none!important}
+ body.report-printing main{margin:0!important;padding:0!important}
+ body.report-printing .report-sheet{border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+ body.report-printing .report-title{break-after:avoid}
+ body.report-printing .report-table{font-family:Arial,sans-serif;font-size:11pt}
+ body.report-printing .report-table thead{display:table-header-group}
+ body.report-printing .report-table tr{break-inside:avoid}
+ body.report-printing .report-footer{display:block!important}
+}
+
