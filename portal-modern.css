@@ -15,3 +15,25 @@ body{min-height:100vh!important;height:auto!important;overflow-x:hidden!importan
 .portal-user{margin-left:auto}.portal-user span{max-width:220px;overflow:hidden;text-overflow:ellipsis}.portal-user button{min-height:38px!important;border-radius:11px!important;padding:8px 12px!important}.portal-user button[data-user-admin]{background:#fff!important;color:var(--portal-navy)!important;border-color:#fff!important}
 @media(max-width:1050px){.systems-grid,.systems-grid.filtered{grid-template-columns:repeat(2,minmax(0,1fr))!important}.slogan{display:none!important}.topbar{flex-wrap:wrap}.portal-user span{display:none}}
 @media(max-width:700px){.hero{min-height:345px!important}.topbar{height:auto!important;min-height:76px!important;padding:12px 18px!important}.municipal-logo{width:96px!important}.identity-divider{display:none}.education-brand strong{font-size:14px!important}.education-brand span{font-size:9px!important}.help{padding:8px!important}.help span:last-child{display:none}.hero-content{width:calc(100% - 36px)!important;padding:38px 0 88px!important}.hero h1{font-size:35px!important}.systems-section{margin-top:-30px!important;padding:30px 16px 38px!important;border-radius:28px 28px 0 0!important}.systems-heading{align-items:stretch;flex-direction:column;gap:16px}.system-search{width:100%}.systems-grid,.systems-grid.filtered{grid-template-columns:1fr!important}.system-card{min-height:245px!important}.footer-inner{grid-template-columns:1fr!important}.contact,.motto{padding:14px 0 0!important;border-left:0!important;border-top:1px solid #ffffff24}.portal-user{width:100%;justify-content:flex-end}.portal-user button[data-user-admin]{margin-right:auto}}
+
+/* Painel desktop compacto: todos os aplicativos ficam visíveis em uma única tela. */
+@media(min-width:1280px) and (min-height:720px){
+ body{height:100vh!important;min-height:720px!important;overflow-y:hidden!important}
+ .hero{min-height:250px!important}
+ .topbar{height:64px!important;min-height:64px!important;padding-inline:clamp(24px,3vw,48px)!important}
+ .municipal-logo{width:106px!important;height:44px!important}.identity-divider{height:32px!important}.education-brand strong{font-size:16px!important}
+ .hero-content{width:min(1248px,calc(100% - 56px))!important;padding:28px 0 64px!important}
+ .welcome{font-size:12px!important}.hero h1{font-size:clamp(34px,3.2vw,46px)!important;max-width:760px!important}.hero-copy{margin-top:12px!important;font-size:13px!important}.hero-accent{margin-top:15px!important}
+ .building{height:238px!important}.slogan{bottom:54px!important}
+ .systems-section{min-height:0!important;margin-top:-24px!important;padding:25px 24px 24px!important;border-radius:32px 32px 0 0!important;overflow:hidden!important}
+ .systems-wrap{width:min(1248px,100%)!important;margin:auto!important}
+ .systems-heading{align-items:center!important;margin-bottom:16px!important}.systems-heading .section-title{font-size:24px!important}.systems-heading p{font-size:12px!important}.system-search{min-height:42px!important}
+ .systems-grid,.systems-grid.filtered{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:14px!important}
+ .system-card,.systems-grid.filtered .system-card:nth-child(n){min-height:226px!important;padding:17px!important;border-radius:18px!important}
+ .card-icon{width:46px!important;height:46px!important;border-radius:14px!important}.card-icon svg{width:25px!important;height:25px!important}.card-copy{padding:13px 0 10px!important}.card-label{font-size:9px!important}.system-card h2{margin:5px 0 6px!important;font-size:18px!important}.system-card p{font-size:11px!important;line-height:1.42!important}.access{min-height:38px!important}
+ .footer{padding:11px 24px!important}.footer-brand img{width:58px!important;height:40px!important}.footer-inner{gap:22px!important}.contact{font-size:9px!important}.motto{font-size:12px!important}
+}
+
+@media(min-width:1280px) and (max-height:719px){
+ .hero{min-height:220px!important}.topbar{height:60px!important;min-height:60px!important}.hero-content{padding:22px 0 54px!important}.hero h1{font-size:36px!important}.hero-copy{margin-top:9px!important}.hero-accent{margin-top:10px!important}.building{height:205px!important}.systems-section{margin-top:-20px!important;padding:20px 22px!important}.systems-heading{margin-bottom:12px!important}.systems-grid,.systems-grid.filtered{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:12px!important}.system-card,.systems-grid.filtered .system-card:nth-child(n){min-height:210px!important;padding:15px!important}.card-icon{width:42px!important;height:42px!important}.card-copy{padding:10px 0 8px!important}.system-card h2{font-size:17px!important}.footer{padding:8px 22px!important}
+}
