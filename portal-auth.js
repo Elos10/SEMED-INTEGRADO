@@ -1,14 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 import { createCaptcha } from "./captcha.js";
-import { initPortalAdmin } from "./portal-admin.js?v=20260825-password-8-1";
+import { initPortalAdmin } from "./portal-admin.js?v=20261008-access-governance-1";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",
   "https://gest-o-de-avalia-es-api.vercel.app/?portal=integra": "avaliacoes",
   "./modules/monitor/": "monitor",
-  "./modules/os-semed/": "os_semed",
   "./modules/votacao/": "votacao",
   "https://semed-comunicacao.vercel.app/?portal=integra": "comunicacao",
 };
@@ -26,6 +25,7 @@ style.textContent = `
   .portal-login .auth-link{display:block;margin:14px auto 0;border:0;background:transparent;color:#244da7;font-weight:800;cursor:pointer}.portal-login .captcha-slot{display:grid;place-items:center;min-height:8px;margin:13px 0}.portal-login[hidden]{display:none}.portal-login .auth-error{min-height:20px;margin-top:7px;color:#b9323b;font-weight:700;font-size:12px}.portal-login .auth-signature{display:block;margin-top:22px;padding-top:18px;border-top:1px solid var(--auth-line);color:#7786a1;font-size:11px;text-align:center}
   .portal-user{display:flex;align-items:center;gap:12px;color:#fff;font-size:12px}.portal-user button{border:1px solid #ffffff80;border-radius:16px;padding:8px 14px;background:#ffffff14;color:#fff;font-weight:800;cursor:pointer}
   .system-card[hidden]{display:none!important}.systems-grid.filtered .system-card:nth-child(n){grid-column:auto}.systems-grid.filtered{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .card-access-summary{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.card-access-chip{padding:3px 7px;border:1px solid #d8e1f1;border-radius:999px;background:#f4f7fc;color:#526481;font-size:9px;font-weight:800}.card-access-expiry{width:100%;margin-top:2px;color:#9a5b17;font-size:9px;font-weight:800}
   @media(min-width:761px) and (max-width:1050px){.portal-auth{grid-template-columns:minmax(420px,1fr) minmax(380px,.82fr)}.portal-auth-brand{padding:36px 28px}.portal-auth-intro h1{font-size:clamp(38px,5vw,50px)}.portal-auth-intro p{font-size:15px}.portal-auth-access{padding:28px}.portal-login{padding:30px 26px}}
   @media(max-width:760px){.portal-auth{display:block;padding:0}.portal-auth-brand{min-height:390px;border-radius:0 0 28px 28px;padding:28px 24px 38px}.portal-auth-brand-head{align-self:flex-start}.portal-auth-intro{margin:auto}.portal-auth-kicker{margin-bottom:14px}.portal-auth-intro h1{font-size:clamp(31px,8vw,42px)}.portal-auth-intro p{margin-top:16px;font-size:14px}.portal-auth-trust{display:none}.portal-auth-access{min-height:0;padding:32px 18px 50px}.portal-login{padding:28px 23px;border-radius:22px}}
   @media(max-height:720px) and (min-width:901px){.portal-auth-brand{padding-top:28px;padding-bottom:26px}.portal-auth-intro h1{font-size:43px}.portal-auth-intro p{margin-top:14px;font-size:15px}.portal-login{padding:26px 28px}.portal-login label{margin:11px 0}.portal-login p{margin-bottom:16px}.portal-login .auth-signature{margin-top:14px;padding-top:13px}}
@@ -122,6 +122,22 @@ function renderUser(session, context) {
   if (profileNode) profileNode.textContent = `${profile} · somente os aplicativos autorizados para seu perfil são exibidos.`;
 }
 
+function renderAccessSummary(card, moduleAccess) {
+  card.querySelector(".card-access-summary")?.remove();
+  const permissions = moduleAccess?.permissions || {};
+  const labels = [["create", "Criar"], ["edit", "Editar"], ["delete", "Excluir"], ["approve", "Aprovar"], ["admin", "Administrar"]]
+    .filter(([key]) => permissions[key]).map(([, label]) => label);
+  const summary = document.createElement("div");
+  summary.className = "card-access-summary";
+  summary.setAttribute("aria-label", "Permissões disponíveis neste aplicativo");
+  summary.innerHTML = (labels.length ? labels : ["Consulta"]).map((label) => `<span class="card-access-chip">${label}</span>`).join("");
+  if (moduleAccess?.expires_at) {
+    const expires = new Date(`${String(moduleAccess.expires_at).slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");
+    summary.insertAdjacentHTML("beforeend", `<span class="card-access-expiry">Acesso válido até ${expires}</span>`);
+  }
+  card.querySelector(".card-copy")?.append(summary);
+}
+
 function initPortalInteractions() {
   const cards = [...document.querySelectorAll(".system-card")];
   const search = document.querySelector("#systemSearch");
@@ -170,11 +186,14 @@ async function revealPortal(session) {
     showAuthView("update");
     return;
   }
-  const codes = new Set((context.modules || []).filter((item) => item.permissions?.view).map((item) => item.code));
+  const availableModules = new Map((context.modules || []).filter((item) => item.permissions?.view).map((item) => [item.code, item]));
+  const codes = new Set(availableModules.keys());
   document.querySelectorAll(".system-card").forEach((card) => {
     const href = card.querySelector(".access")?.getAttribute("href");
-    card.dataset.authorized = String(codes.has(moduleByHref[href]));
+    const moduleAccess = availableModules.get(moduleByHref[href]);
+    card.dataset.authorized = String(Boolean(moduleAccess));
     card.hidden = card.dataset.authorized !== "true";
+    if (moduleAccess) renderAccessSummary(card, moduleAccess);
   });
   document.querySelector(".systems-grid")?.classList.add("filtered");
   if (!codes.size) throw new Error("Seu perfil não possui módulos autorizados.");

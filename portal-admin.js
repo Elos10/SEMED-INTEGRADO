@@ -1,7 +1,6 @@
 const MODULE_ROLES = {
   avaliacoes: ["GESTOR SEMED", "GESTOR UNIDADE", "CONSULTA"],
   monitor: ["gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
-  os_semed: ["Solicitante", "Responsável", "Gestor/Consulta"],
   votacao: ["MESARIO"],
 };
 
@@ -47,9 +46,10 @@ export function initPortalAdmin({ supabase, context }) {
     .access-admin-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}.access-admin-form label{display:grid;gap:6px;font-size:12px;font-weight:800}
     .access-admin-wide{grid-column:1/-1}.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.profile-option{display:flex!important;grid-template-columns:auto 1fr!important;align-items:start;padding:9px;border:1px solid #d6e1f2;border-radius:8px;background:#fff}
     .module-role-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.module-role{padding:10px;border:1px solid #d6e1f2;border-radius:9px;background:#fff}.module-role label{margin-top:7px}
+    .permission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}.permission-option{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center!important;gap:7px!important;padding:7px;border:1px solid #e0e7f3;border-radius:7px;font-weight:700!important}.permission-option input{min-height:auto!important}.access-expiry{margin-top:9px!important}
     .access-actions{display:flex;justify-content:flex-end;gap:10px}.access-primary{border:0;border-radius:8px;padding:11px 16px;background:#0758d0;color:#fff;font-weight:800}.access-secondary{border:1px solid #aabbd8;border-radius:8px;padding:10px 15px;background:#fff;color:#092766;font-weight:800}
     .access-notice{min-height:22px;color:#9b1c1c;font-weight:700}.access-pill{padding:4px 8px;border-radius:12px;background:#e4eefc}.access-pill.pending{background:#fff0c7;color:#805900}
-    @media(max-width:760px){.access-admin{padding:8px}.access-admin-form,.profile-grid,.module-role-grid{grid-template-columns:1fr}.access-admin table{display:block;overflow:auto}}
+    @media(max-width:760px){.access-admin{padding:8px}.access-admin-form,.profile-grid,.module-role-grid{grid-template-columns:1fr}.permission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.access-admin table{display:block;overflow:auto}}
   `;
   document.head.append(style);
 
@@ -97,7 +97,9 @@ export function initPortalAdmin({ supabase, context }) {
   function renderForm(user) {
     selectedUser = user;
     const assigned = new Set(user ? userProfiles(user.user_id).map((profile) => profile.code) : []);
+    const assignedProfileIds = new Set(user ? userProfiles(user.user_id).map((profile) => profile.id) : []);
     const roleByModule = new Map((catalog.moduleRoles || []).filter((item) => item.user_id === user?.user_id).map((item) => [item.module_id, item]));
+    const overrideByModule = new Map((catalog.accessOverrides || []).filter((item) => item.user_id === user?.user_id).map((item) => [item.module_id, item]));
     const isDetic = user?.email?.toLowerCase() === "detic@uberabadigital.com.br";
     panel.querySelector("[data-content]").innerHTML = `
       <form class="access-admin-form" data-form>
@@ -116,9 +118,15 @@ export function initPortalAdmin({ supabase, context }) {
         <fieldset class="access-admin-wide"><legend>Papel e campo de atuação em cada sistema</legend><div class="module-role-grid">
           ${(catalog.modules || []).map((module) => {
             const current = roleByModule.get(module.id);
+            const override = overrideByModule.get(module.id);
             const roles = MODULE_ROLES[module.code] || [];
-            const scopeValue = current?.scope?.unit_id || current?.scope?.unit_name || "";
-            return `<div class="module-role"><strong>${esc(module.name)}</strong><label>Papel local<select name="role:${module.code}"><option value="">Automático/sem vínculo</option>${roles.map((role) => `<option value="${esc(role)}" ${current?.role_code === role ? "selected" : ""}>${esc(role)}</option>`).join("")}</select></label><label>Unidade/área de atuação<input name="scope:${module.code}" value="${esc(scopeValue)}" placeholder="Opcional"></label></div>`;
+            const scopeValue = override?.scope?.unit_id || override?.scope?.unidade || override?.scope?.area || current?.scope?.unit_id || current?.scope?.unidade || current?.scope?.area || "";
+            const baseline = (catalog.profilePermissions || []).filter((permission) => permission.module_id === module.id && assignedProfileIds.has(permission.profile_id));
+            const allowed = (key) => override && typeof override[key] === "boolean" ? override[key] : baseline.some((permission) => permission[key]);
+            const permissionOptions = [["can_view","Acessar"],["can_create","Criar"],["can_edit","Editar"],["can_delete","Excluir"],["can_approve","Aprovar"],["can_admin","Administrar"]];
+            const expiry = override?.expires_at ? String(override.expires_at).slice(0,10) : "";
+            const governance = module.code === "votacao" ? '<small>As regras existentes da Urna Eletrônica foram preservadas.</small>' : `<div class="permission-grid">${permissionOptions.map(([key,label]) => `<label class="permission-option"><input type="checkbox" name="access:${module.code}:${key}" ${allowed(key)?"checked":""}><span>${label}</span></label>`).join("")}</div><label class="access-expiry">Expiração do acesso<input type="date" name="expires:${module.code}" value="${esc(expiry)}"><small>Opcional para acessos temporários.</small></label>`;
+            return `<div class="module-role"><strong>${esc(module.name)}</strong><label>Papel local<select name="role:${module.code}"><option value="">Automático/sem vínculo</option>${roles.map((role) => `<option value="${esc(role)}" ${current?.role_code === role ? "selected" : ""}>${esc(role)}</option>`).join("")}</select></label><label>Unidade/área de atuação<input name="scope:${module.code}" value="${esc(scopeValue)}" placeholder="Toda a área permitida"></label>${governance}</div>`;
           }).join("")}
         </div></fieldset>
         <div class="access-notice access-admin-wide" data-notice></div>
@@ -135,15 +143,25 @@ export function initPortalAdmin({ supabase, context }) {
     const notice = form.querySelector("[data-notice]");
     const values = new FormData(form);
     const moduleRoles = {};
+    const accessOverrides = {};
     for (const module of catalog.modules || []) {
       const roleCode = String(values.get(`role:${module.code}`) || "");
       const scopeValue = String(values.get(`scope:${module.code}`) || "").trim();
       if (roleCode) moduleRoles[module.code] = {
         roleCode,
         scope: module.code === "votacao" ? { unit_id: scopeValue || null }
-          : module.code === "os_semed" ? { unit_name: scopeValue }
           : module.code === "avaliacoes" ? { unidade: scopeValue }
           : scopeValue ? { area: scopeValue } : {},
+      };
+      if (module.code !== "votacao") accessOverrides[module.code] = {
+        can_view: values.get(`access:${module.code}:can_view`) === "on",
+        can_create: values.get(`access:${module.code}:can_create`) === "on",
+        can_edit: values.get(`access:${module.code}:can_edit`) === "on",
+        can_delete: values.get(`access:${module.code}:can_delete`) === "on",
+        can_approve: values.get(`access:${module.code}:can_approve`) === "on",
+        can_admin: values.get(`access:${module.code}:can_admin`) === "on",
+        scope: scopeValue ? (module.code === "votacao" ? { unit_id: scopeValue } : module.code === "avaliacoes" ? { unidade: scopeValue } : { area: scopeValue }) : {},
+        expiresAt: String(values.get(`expires:${module.code}`) || "") || null,
       };
     }
     const payload = {
@@ -155,6 +173,7 @@ export function initPortalAdmin({ supabase, context }) {
       active: selectedUser?.email?.toLowerCase() === "detic@uberabadigital.com.br" ? true : values.get("active") === "true",
       profileCodes: values.getAll("profiles"),
       moduleRoles,
+      accessOverrides,
     };
     if (!payload.profileCodes.length) {
       notice.textContent = "Selecione ao menos um perfil corporativo.";

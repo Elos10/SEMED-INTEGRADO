@@ -37,15 +37,17 @@ Deno.serve(async (req) => {
     const action = String(input.action || "list");
 
     if (action === "list") {
-      const [people, profiles, modules, assignments, roles] = await Promise.all([
+      const [people, profiles, modules, assignments, permissions, roles, overrides] = await Promise.all([
         admin.from("semed_people").select("user_id,email,full_name,area,active,must_change_password,password_changed_at,created_at").order("full_name"),
         admin.from("semed_profiles").select("id,code,name,description,active").eq("active", true).order("name"),
         admin.from("semed_modules").select("id,code,name,description,display_order").eq("active", true).order("display_order"),
         admin.from("semed_user_profiles").select("user_id,profile_id,active").eq("active", true),
+        admin.from("semed_profile_module_permissions").select("profile_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin"),
         admin.from("semed_user_module_roles").select("user_id,module_id,role_code,scope,active").eq("active", true),
+        admin.from("semed_user_module_overrides").select("user_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin,scope,expires_at,active").eq("active", true),
       ]);
-      for (const result of [people, profiles, modules, assignments, roles]) if (result.error) throw result.error;
-      return respond({ users: people.data, profiles: profiles.data, modules: modules.data, assignments: assignments.data, moduleRoles: roles.data });
+      for (const result of [people, profiles, modules, assignments, permissions, roles, overrides]) if (result.error) throw result.error;
+      return respond({ users: people.data, profiles: profiles.data, modules: modules.data, assignments: assignments.data, profilePermissions: permissions.data, moduleRoles: roles.data, accessOverrides: overrides.data });
     }
 
     if (action !== "save") return respond({ error: "Ação inválida." }, 400);
@@ -57,6 +59,7 @@ Deno.serve(async (req) => {
     const active = input.active !== false;
     const requestedProfiles = [...new Set((Array.isArray(input.profileCodes) ? input.profileCodes : []).map(String))];
     const requestedRoles = input.moduleRoles && typeof input.moduleRoles === "object" ? input.moduleRoles : {};
+    const requestedOverrides = input.accessOverrides && typeof input.accessOverrides === "object" ? input.accessOverrides : {};
 
     if (!email || !fullName || !area || !requestedProfiles.length) throw new Error("Nome, e-mail, área e ao menos um perfil são obrigatórios.");
     if (!USER_AREAS.includes(area as typeof USER_AREAS[number])) throw new Error("Área de atuação inválida.");
@@ -107,7 +110,7 @@ Deno.serve(async (req) => {
       .from("semed_profile_module_permissions").select("module_id").in("profile_id", (allowedProfiles || []).map((profile) => profile.id)).eq("can_view", true);
     if (permissionsError) throw permissionsError;
     const moduleIds = [...new Set((permittedModules || []).map((item) => item.module_id))];
-    const { data: moduleRows, error: moduleError } = await admin.from("semed_modules").select("id,code").in("id", moduleIds);
+    const { data: moduleRows, error: moduleError } = await admin.from("semed_modules").select("id,code").in("id", moduleIds).eq("active", true);
     if (moduleError) throw moduleError;
 
     await admin.from("semed_user_module_roles").delete().eq("user_id", target.id);
@@ -120,6 +123,26 @@ Deno.serve(async (req) => {
       if (error) throw error;
     }
 
+    const { error: deleteOverridesError } = await admin.from("semed_user_module_overrides").delete().eq("user_id", target.id);
+    if (deleteOverridesError) throw deleteOverridesError;
+    const permissionKeys = ["can_view", "can_create", "can_edit", "can_delete", "can_approve", "can_admin"] as const;
+    const overrideRows = (moduleRows || []).map((module) => {
+      if (module.code === "votacao") return null;
+      const configured = requestedOverrides[module.code];
+      if (!configured || typeof configured !== "object") return null;
+      const row: Record<string, unknown> = {
+        user_id: target.id, module_id: module.id, active: true, managed_by: user.id,
+        scope: configured.scope && typeof configured.scope === "object" ? configured.scope : {},
+        expires_at: configured.expiresAt || null,
+      };
+      for (const key of permissionKeys) row[key] = typeof configured[key] === "boolean" ? configured[key] : null;
+      return row;
+    }).filter(Boolean);
+    if (overrideRows.length) {
+      const { error } = await admin.from("semed_user_module_overrides").insert(overrideRows);
+      if (error) throw error;
+    }
+
     const roleFor = (code: string, fallback: string) => String(requestedRoles[code]?.roleCode || fallback);
     const scopeFor = (code: string) => requestedRoles[code]?.scope || {};
     const allowedCodes = new Set((moduleRows || []).map((module) => module.code));
@@ -129,11 +152,6 @@ Deno.serve(async (req) => {
       if (error) throw error;
     } else await admin.from("monitor_profiles").update({ active: false, updated_by: user.id }).eq("user_id", target.id);
 
-    if (allowedCodes.has("os_semed")) {
-      const { error } = await admin.from("os_profiles").upsert({ user_id: target.id, full_name: fullName, email, role: roleFor("os_semed", "Solicitante"), unit_name: String(scopeFor("os_semed").unit_name || ""), active, updated_at: new Date().toISOString() });
-      if (error) throw error;
-    } else await admin.from("os_profiles").update({ active: false }).eq("user_id", target.id);
-
     if (allowedCodes.has("votacao")) {
       const { error } = await admin.from("votacao_accounts").upsert({ user_id: target.id, access_kind: roleFor("votacao", "MESARIO"), unit_id: scopeFor("votacao").unit_id || null, active, updated_at: new Date().toISOString() });
       if (error) throw error;
@@ -142,7 +160,7 @@ Deno.serve(async (req) => {
     await admin.from("semed_audit").insert({
       user_id: user.id, module_code: "portal", action: uid ? "UPDATE_USER_ACCESS" : "CREATE_USER_ACCESS",
       entity_type: "auth.users", entity_id: target.id,
-      metadata: { email, fullName, area, active, profileCodes: requestedProfiles, passwordReset: Boolean(temporaryPassword) },
+      metadata: { email, fullName, area, active, profileCodes: requestedProfiles, moduleOverrides: Object.keys(requestedOverrides), passwordReset: Boolean(temporaryPassword) },
     });
 
     return respond({ user: { user_id: target.id, email, full_name: fullName, area, active, must_change_password: mustChange } });
