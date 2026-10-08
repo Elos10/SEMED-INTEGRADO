@@ -1,19 +1,37 @@
 const MONITOR_AREAS=['Gestão SEMED','Diretoria de Ensino','Diretoria de Apoio à Educação Básica','Diretoria de Logística','Diretoria de Planejamento Gestão e Finanças','Arte e Cultura','Formação - Casa do Educador','Formação - Polo UAB','Inclusão','Infraestrutura','Planejamento Financeiro','Tecnologia','Transporte'];
 const monitorAreaOptions=(selected='')=>MONITOR_AREAS.map(area=>`<option value="${area}" ${selected===area?'selected':''}>${area}</option>`).join('');
+const monitorDeferred={costs:false,documents:false};
+
+async function loadMonitorDeferred(name){
+  if(!backend||monitorDeferred[name])return;
+  const {collection,getDocs}=backend.dataSdk,snapshot=await getDocs(collection(backend.db,name));
+  if(name==='costs')state.costs=snapshot.docs.map(d=>{const c=d.data();return{id:d.id,objectId:c.objectCode||'',date:c.occurredOn||'',category:c.category||'',supplier:c.supplier||'',value:Number(c.amount||0)}}).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  if(name==='documents')state.documents=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+  monitorDeferred[name]=true;
+}
 
 loadRemoteState=async function(){
   if(!backend)return;
   try{
     const {collection,getDocs}=backend.dataSdk;
-    const [usersSnap,eventsSnap,objectsSnap,activitiesSnap,costsSnap,documentsSnap]=await Promise.all([getDocs(collection(backend.db,'users')),getDocs(collection(backend.db,'events')),getDocs(collection(backend.db,'objects')),getDocs(collection(backend.db,'activities')),getDocs(collection(backend.db,'costs')),getDocs(collection(backend.db,'documents'))]);
+    const [usersSnap,eventsSnap,objectsSnap,activitiesSnap]=await Promise.all([getDocs(collection(backend.db,'users')),getDocs(collection(backend.db,'events')),getDocs(collection(backend.db,'objects')),getDocs(collection(backend.db,'activities'))]);
     state.users=usersSnap.docs.map(d=>({id:d.id,...d.data()}));
-    state.documents=documentsSnap.docs.map(d=>({id:d.id,...d.data()}));
     state.objects=objectsSnap.docs.map(d=>({dbId:d.id,...d.data()})).filter(o=>o.active!==false).map(o=>({id:o.code,dbId:o.dbId,title:o.title||'',product:o.product||'',objectType:o.objectType||'',priority:o.priority||'Média',budget:Number(o.budget||0),spent:Number(o.spent||0),start:o.plannedStart||'',due:o.plannedEnd||'',duration:Number(o.duration||0),status:o.status||'À iniciar',interventionType:o.interventionType||'',owner:o.ownerName||'',area:o.primaryArea||o.area||'',primaryArea:o.primaryArea||o.area||'',secondaryArea:o.secondaryArea||'',observation:o.observation||'',description:o.description||o.observation||'',progress:Number(o.progress||0)}));
     state.events=eventsSnap.docs.map(d=>{const e=d.data();return{id:d.id,dbId:d.id,objectId:e.objectCode||'',date:supabaseDateTime(e.eventAt),type:e.eventType||'',status:e.status||'',priority:e.priority||'',progress:normalizeEventProgress(e.status,e.progress),text:e.description||'',user:e.createdByName||'',createdBy:e.createdBy||'',productDelivery:e.productDelivery||'',responsible:e.responsible||'',area:e.area||'',observation:e.observation||'',assignedTo:e.assignedTo||'',assignedToName:e.assignedToName||'',assignedBy:e.assignedBy||e.createdBy||'',assignedByName:e.assignedByName||e.createdByName||'',receivedAt:e.receivedAt?.toDate?.().toISOString()||e.receivedAt||'',receivedBy:e.receivedBy||'',receivedByName:e.receivedByName||'',assigneeNote:e.assigneeNote||'',initialSnapshot:e.initialSnapshot&&typeof e.initialSnapshot==='object'?e.initialSnapshot:null,movementHistory:Array.isArray(e.movementHistory)?e.movementHistory:[],assignmentHistory:Array.isArray(e.assignmentHistory)?e.assignmentHistory:[],hasForecast:!!e.hasForecast,forecastStart:e.forecastStart||'',forecastEnd:e.forecastEnd||'',forecastDays:e.forecastDays??null,hasExecution:!!e.hasExecution,executionStart:e.executionStart||'',executionEnd:e.executionEnd||'',executionDays:e.executionDays??null,activity:e.activity||'',parentEventId:e.parentEventId||'',recordKind:e.recordKind||'',active:e.active!==false}}).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
     state.activities=activitiesSnap.docs.map(d=>{const a=d.data();return{id:d.id,objectId:a.objectCode||'',title:a.title||'',owner:a.ownerName||'',status:a.status||'',progress:Number(a.progress||0)}});
-    state.costs=costsSnap.docs.map(d=>{const c=d.data();return{id:d.id,objectId:c.objectCode||'',date:c.occurredOn||'',category:c.category||'',supplier:c.supplier||'',value:Number(c.amount||0)}}).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
     recalculateAllProgress();save();
   }catch(error){toast('Falha ao carregar os dados do Supabase: '+error.message);throw error}
+};
+
+const monitorBaseGo=go;
+go=async function(nextView){
+  if(nextView==='financial'||nextView==='reports')await loadMonitorDeferred('costs').catch(error=>toast('Não foi possível carregar os dados financeiros: '+error.message));
+  return monitorBaseGo(nextView);
+};
+const monitorBaseOpenObject=openObject;
+openObject=async function(objectId){
+  await Promise.all([loadMonitorDeferred('costs'),loadMonitorDeferred('documents')]).catch(error=>toast('Algumas informações complementares não puderam ser carregadas: '+error.message));
+  return monitorBaseOpenObject(objectId);
 };
 
 function supabaseDateTime(value){const dateValue=value?.toDate?.()||value;if(!dateValue)return'';const parsed=dateValue instanceof Date?dateValue:new Date(dateValue);return Number.isNaN(parsed.getTime())?'':parsed.toLocaleString('sv-SE').slice(0,16)}

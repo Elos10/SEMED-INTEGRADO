@@ -66,6 +66,7 @@ overlay.innerHTML = `
     </form>
   </section>`;
 document.body.append(overlay);
+document.getElementById("portalAuthBoot")?.remove();
 
 overlay.querySelectorAll("[data-toggle-password]").forEach((button) => {
   button.addEventListener("click", () => {

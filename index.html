@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#102653">
   <meta name="description" content="Portal de Sistemas Unificados da Secretaria de Educação de Uberaba">
   <title>Portal de Sistemas Unificados · SEMED Uberaba</title>
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://mqzaaelyiskwshqjwaxy.supabase.co" crossorigin>
+  <link rel="stylesheet" href="./portal-auth-critical.css?v=20261008-no-flash-1">
   <link rel="stylesheet" href="./design-system.css?v=20261007-1">
   <style>
     :root{--navy:#002164;--royal:#0046c7;--blue:#0868e6;--cyan:#10a8ff;--ink:#062b78;--muted:#425f98;--line:#dbe5f5;--pale:#f4f8ff}
@@ -43,7 +46,15 @@
   <link rel="stylesheet" href="./modules/institutional-theme.css?v=20261007-1">
   <link rel="stylesheet" href="./portal-modern.css?v=20261008-compact-1">
 </head>
-<body>
+<body class="portal-auth-pending">
+  <section class="portal-auth-boot" id="portalAuthBoot" aria-label="Acesso ao SEMED Integra">
+    <section class="portal-auth-boot-brand">
+      <div class="portal-auth-boot-head"><span class="portal-auth-boot-mark" aria-hidden="true">◯</span><div><strong>SEMED Integra</strong><span>Portal de Sistemas Unificados</span></div></div>
+      <div class="portal-auth-boot-copy"><small>Conecte. Acompanhe. Resolva.</small><h1>Gestão educacional integrada, segura e eficiente.</h1><p>Informações, serviços e decisões da Secretaria Municipal de Educação em um único ambiente protegido.</p></div>
+      <span class="portal-auth-boot-trust">Dados protegidos por controle de acesso e rastreabilidade.</span>
+    </section>
+    <section class="portal-auth-boot-access"><div class="portal-auth-boot-card"><small>SEMED Integrado</small><h2>Acesse sua conta</h2><p>Use seu e-mail institucional e sua senha.</p><span class="portal-auth-boot-field">E-mail<i></i></span><span class="portal-auth-boot-field">Senha<i></i></span><span class="portal-auth-boot-button">Entrar</span><span class="portal-auth-boot-link">Esqueceu sua senha?</span><small class="portal-auth-boot-signature">Prefeitura Municipal de Uberaba · Secretaria de Educação</small></div></section>
+  </section>
   <header class="hero">
     <svg class="building" viewBox="0 0 900 500" aria-hidden="true"><path fill="currentColor" d="M90 470V210h80v-55h75v-45h78v45h74v55h75v260h52V230h60V170h54v-60h64v60h55v60h64v240z"/><path fill="#002d83" d="M120 470V250h325v220zm42-178h52v70h-52zm84 0h52v70h-52zm84 0h52v70h-52zm228-27h42v78h-42zm70 0h42v78h-42zm70 0h42v78h-42z"/><path fill="none" stroke="currentColor" stroke-width="13" d="M70 470h790M132 208h300M545 229h258M221 109h104M623 110h65M245 109V65h55v44M641 110V63"/></svg>
     <div class="topbar">

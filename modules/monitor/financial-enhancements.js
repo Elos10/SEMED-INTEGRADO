@@ -2,8 +2,9 @@
   Object.assign(state,{financialSources:state.financialSources||[],financialAnnualBudgets:state.financialAnnualBudgets||[],financialProcesses:state.financialProcesses||[],financialEntries:state.financialEntries||[]});
   const TABLES={source:'monitor_financial_sources',budget:'monitor_financial_annual_budgets',process:'monitor_financial_processes',entry:'monitor_financial_entries'};
   const RESOURCE_TYPES=['Próprio','Vinculado','Convênio','Transferência','Outro'];
+  let financialLoaded=false,financialRequest=null;
   const financeBaseLoad=loadRemoteState;
-  loadRemoteState=async function(){await financeBaseLoad();await refreshFinancialData(false)};
+  loadRemoteState=async function(){await financeBaseLoad()};
 
   function normalizeFinancialData(data={}){
     state.financialSources=(data.sources||[]).map(row=>({...row,objectId:row.object_code,objectRecordId:row.object_record_id,sourceType:row.source_type,sourceCode:row.source_code,description:row.source_description,planned:Number(row.planned_amount||0)}));
@@ -13,9 +14,16 @@
   }
   async function refreshFinancialData(showError=true){
     if(!backend?.financialApi)return;
-    try{normalizeFinancialData(await backend.financialApi.load())}
+    try{normalizeFinancialData(await backend.financialApi.load());financialLoaded=true}
     catch(error){console.error(error);if(showError)toast(error.code==='PGRST202'||error.code==='42P01'?'A estrutura financeira ainda não foi aplicada no Supabase. Execute a migração financeira.':'Não foi possível carregar o demonstrativo financeiro: '+(error.message||error))}
   }
+  async function ensureFinancialData(){
+    if(financialLoaded)return;
+    if(!financialRequest)financialRequest=refreshFinancialData(false).finally(()=>financialRequest=null);
+    await financialRequest;
+  }
+  const financeBaseGo=go;
+  go=async function(nextView){if(nextView==='financial'||nextView==='reports')await ensureFinancialData();return financeBaseGo(nextView)};
   function canManageFinance(){return session?.role==='administrador'}
   function objectFinanceRows(objectId){return{sources:state.financialSources.filter(row=>row.objectId===objectId),budgets:state.financialAnnualBudgets.filter(row=>row.objectId===objectId),processes:state.financialProcesses.filter(row=>row.objectId===objectId),entries:state.financialEntries.filter(row=>row.objectId===objectId)}}
   function sum(rows,field='value'){return rows.reduce((total,row)=>total+Number(row[field]||0),0)}
@@ -34,7 +42,8 @@
     return head('Controle financeiro','Execução Financeira','Acompanhamento orçamentário integrado aos Objetos ativos.',`<button class="btn secondary" onclick="openReport('financial')">Relatório</button>${canManageFinance()?'<button class="btn" onclick="financialEntryModal()">+ Novo lançamento</button>':''}`)+`<section class="panel financial-total-panel"><div class="panel-head"><div><h2>Total geral</h2><small>Consolidação dos Objetos ativos</small></div><span class="pill blue">${items.length} objeto${items.length===1?'':'s'}</span></div><div class="kpis financial-kpis financial-kpis-six"><article class="kpi"><span class="label">Orçamento previsto</span><strong>${money(totals.planned)}</strong></article><article class="kpi"><span class="label">Empenhado</span><strong>${money(totals.committed)}</strong></article><article class="kpi"><span class="label">Liquidado</span><strong>${money(totals.liquidated)}</strong></article><article class="kpi"><span class="label">Pago</span><strong>${money(totals.paid)}</strong></article><article class="kpi"><span class="label">Saldo a empenhar</span><strong>${money(totals.planned-totals.committed)}</strong></article><article class="kpi"><span class="label">Saldo a pagar</span><strong>${money(totals.liquidated-totals.paid)}</strong></article></div></section><section class="panel financial-by-object"><div class="panel-head"><div><h2>Demonstrativo por Objeto</h2><small>Selecione um Objeto para consultar fontes, exercícios, processos e lançamentos.</small></div></div><div class="table-wrap"><table><thead><tr><th>Objeto</th><th>Previsto</th><th>Empenhado</th><th>Liquidado</th><th>Pago</th><th>Saldo</th><th>Execução</th><th></th></tr></thead><tbody>${items.map(({object,summary})=>`<tr><td><button class="link" onclick="openObjectFinancial('${object.id}')">${esc(object.id)}</button><br><strong>${esc(object.title)}</strong></td><td>${money(summary.planned)}</td><td>${money(summary.committed)}</td><td>${money(summary.liquidated)}</td><td>${money(summary.paid)}</td><td><strong>${money(summary.balance)}</strong></td><td>${financeProgress('Pago',summary.paymentPct)}</td><td><button class="btn secondary financial-view-btn" onclick="openObjectFinancial('${object.id}')">Demonstrativo</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">NENHUM OBJETO ATIVO.</td></tr>'}</tbody></table></div></section>`
   };
 
-  window.openObjectFinancial=function(objectId,tab='overview'){
+  window.openObjectFinancial=async function(objectId,tab='overview'){
+    await Promise.all([ensureFinancialData(),typeof loadMonitorDeferred==='function'?loadMonitorDeferred('costs'):Promise.resolve()]);
     const object=state.objects.find(item=>item.id===objectId);if(!object)return toast('O Objeto não está ativo.');const summary=financeSummary(object),tabs=[['overview','Visão geral'],['sources','Fontes'],['years','Por ano'],['entries','Lançamentos'],['processes','Processos']],admin=canManageFinance();
     modal(`<div class="modal-head"><div><span class="eyebrow">Demonstrativo financeiro</span><h2>${esc(object.id)}</h2></div><button class="icon-btn" onclick="closeModal()">✕</button></div><section class="financial-statement financial-statement-expanded"><header><div><span>OBJETO ATIVO</span><strong>${esc(object.title)}</strong><small>${esc(object.owner||'Responsável não informado')} · ${date(object.start)} a ${date(object.due)}</small></div><div><span class="pill ${statusClass(object.status)}">${esc(object.status)}</span>${financeStatus(summary)}</div></header><div class="financial-statement-kpis financial-kpis-six"><div><span>ORÇAMENTO PREVISTO</span><strong>${money(summary.planned)}</strong></div><div><span>EMPENHADO</span><strong>${money(summary.committed)}</strong></div><div><span>LIQUIDADO</span><strong>${money(summary.liquidated)}</strong></div><div><span>PAGO</span><strong>${money(summary.paid)}</strong></div><div><span>SALDO A EMPENHAR</span><strong>${money(summary.balance)}</strong></div><div><span>SALDO A PAGAR</span><strong>${money(summary.payable)}</strong></div></div><div class="financial-progress-grid">${financeProgress('Empenhado',summary.commitmentPct)}${financeProgress('Liquidado',summary.liquidationPct)}${financeProgress('Pago',summary.paymentPct)}</div>${admin?`<div class="financial-admin-actions"><button class="btn secondary" onclick="financialSourceModal('${objectId}')">+ Fonte</button><button class="btn secondary" onclick="financialBudgetModal('${objectId}')">+ Orçamento anual</button><button class="btn secondary" onclick="financialProcessModal('${objectId}')">+ Processo</button><button class="btn" onclick="financialEntryModal('${objectId}')">+ Lançamento</button></div>`:''}<nav class="financial-tabs">${tabs.map(item=>`<button class="${tab===item[0]?'active':''}" onclick="openObjectFinancial('${objectId}','${item[0]}')">${item[1]}</button>`).join('')}</nav><div class="financial-tab-content">${financialTabContent(object,summary,tab)}</div></section><div class="actions financial-statement-actions"><button class="btn secondary" onclick="closeModal()">Fechar</button></div>`)
   };
