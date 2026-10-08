@@ -6,9 +6,11 @@ import { initPortalAdmin } from "./portal-admin.js?v=20260825-password-8-1";
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",
+  "./modules/gestao-avaliacoes/": "avaliacoes",
   "./modules/monitor/": "monitor",
   "./modules/os-semed/": "os_semed",
   "./modules/votacao/": "votacao",
+  "https://semed-comunicacao.vercel.app/": "comunicacao",
 };
 
 const style = document.createElement("style");
