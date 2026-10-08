@@ -10,7 +10,7 @@ const moduleByHref = {
   "./modules/monitor/": "monitor",
   "./modules/os-semed/": "os_semed",
   "./modules/votacao/": "votacao",
-  "https://semed-comunicacao.vercel.app/": "comunicacao",
+  "https://semed-comunicacao.vercel.app/?portal=integra": "comunicacao",
 };
 
 const style = document.createElement("style");
