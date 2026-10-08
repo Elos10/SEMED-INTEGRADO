@@ -13,24 +13,32 @@ enum UserRole {
   MANAGER
   TEACHER
   OPERATOR
+
+  @@map("AvaliaUserRole")
 }
 
 enum Subject {
   PORTUGUESE
   MATHEMATICS
   SINGLE
+
+  @@map("AvaliaSubject")
 }
 
 enum TimeMode {
   PARTIAL
   FULL
   ALL
+
+  @@map("AvaliaTimeMode")
 }
 
 enum AssessmentStatus {
   DRAFT
   PUBLISHED
   CLOSED
+
+  @@map("AvaliaAssessmentStatus")
 }
 
 enum ProcessingStatus {
@@ -40,6 +48,8 @@ enum ProcessingStatus {
   READY
   FINALIZED
   FAILED
+
+  @@map("AvaliaProcessingStatus")
 }
 
 enum AnswerStatus {
@@ -47,6 +57,8 @@ enum AnswerStatus {
   BLANK
   MULTIPLE
   REVIEW
+
+  @@map("AvaliaAnswerStatus")
 }
 
 model Organization {
@@ -56,7 +68,7 @@ model Organization {
   units     EducationalUnit[]
   profiles  Profile[]
 
-  @@map("organizations")
+  @@map("avalia_organizations")
 }
 
 model Profile {
@@ -70,7 +82,7 @@ model Profile {
   createdAssessments Assessment[]     @relation("AssessmentCreator")
 
   @@index([organizationId, active])
-  @@map("profiles")
+  @@map("avalia_profiles")
 }
 
 model EducationalUnit {
@@ -85,7 +97,7 @@ model EducationalUnit {
   assessments    Assessment[]
 
   @@unique([organizationId, name])
-  @@map("educational_units")
+  @@map("avalia_educational_units")
 }
 
 model UnitMembership {
@@ -95,7 +107,7 @@ model UnitMembership {
   unit      EducationalUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
   @@id([profileId, unitId])
-  @@map("unit_memberships")
+  @@map("avalia_unit_memberships")
 }
 
 model SchoolClass {
@@ -111,7 +123,7 @@ model SchoolClass {
 
   @@unique([unitId, grade, name, schoolYear, timeMode])
   @@index([unitId, schoolYear, grade])
-  @@map("school_classes")
+  @@map("avalia_school_classes")
 }
 
 model Student {
@@ -124,7 +136,7 @@ model Student {
   sheets       AnswerSheet[]
 
   @@index([classId, name])
-  @@map("students")
+  @@map("avalia_students")
 }
 
 model Assessment {
@@ -150,7 +162,7 @@ model Assessment {
   @@unique([unitId, year, number, subject, classId])
   @@index([unitId, assessmentDate])
   @@index([classId])
-  @@map("assessments")
+  @@map("avalia_assessments")
 }
 
 model OfficialAnswer {
@@ -160,7 +172,7 @@ model OfficialAnswer {
   assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
   @@id([assessmentId, question])
-  @@map("official_answers")
+  @@map("avalia_official_answers")
 }
 
 model AnswerSheet {
@@ -178,7 +190,7 @@ model AnswerSheet {
 
   @@unique([assessmentId, studentId])
   @@index([studentId])
-  @@map("answer_sheets")
+  @@map("avalia_answer_sheets")
 }
 
 model ReadingProcessing {
@@ -201,7 +213,7 @@ model ReadingProcessing {
 
   @@index([status, createdAt])
   @@index([sheetId, createdAt])
-  @@map("reading_processings")
+  @@map("avalia_reading_processings")
 }
 
 model StudentAnswer {
@@ -218,7 +230,7 @@ model StudentAnswer {
   processing     ReadingProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
 
   @@unique([processingId, question])
-  @@map("student_answers")
+  @@map("avalia_student_answers")
 }
 
 model Result {
@@ -237,5 +249,5 @@ model Result {
   sheet        AnswerSheet @relation(fields: [sheetId], references: [id])
 
   @@index([sheetId, finalizedAt])
-  @@map("results")
+  @@map("avalia_results")
 }
