@@ -10,6 +10,12 @@ const respond = (body: unknown, status = 200) => new Response(JSON.stringify(bod
 const strongPassword = (value: string) => /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/.test(value);
 const DETIC_EMAIL = "detic@uberabadigital.com.br";
 const USER_AREAS = ["Gestão SEMED", "Diretoria de Ensino", "Diretoria de Apoio à Educação Básica", "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças", "Arte e Cultura", "Formação - Casa do Educador", "Formação - Polo UAB", "Inclusão", "Infraestrutura", "Planejamento Financeiro", "Tecnologia", "Transporte"] as const;
+const MODULE_ROLES: Record<string, readonly string[]> = {
+  avaliacoes: ["ADMINISTRADOR", "GESTOR DA REDE", "GESTOR DE UNIDADE", "PROFESSOR", "OPERADOR", "CONSULTA"],
+  monitor: ["administrador", "gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
+  comunicacao: ["administrador", "gestor", "emissor", "destinatario", "auditoria", "publicador"],
+  votacao: ["MESARIO"],
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -30,21 +36,24 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-    const { data: actor } = await admin.from("semed_people").select("active").eq("user_id", user.id).maybeSingle();
-    if (!actor?.active) return respond({ error: "Administrador corporativo inativo." }, 403);
+    const { data: actor } = await admin.from("semed_people").select("active,account_status,access_starts_at,access_ends_at").eq("user_id", user.id).maybeSingle();
+    const today = new Date().toISOString().slice(0, 10);
+    if (!actor?.active || actor.account_status !== "ACTIVE" || (actor.access_starts_at && actor.access_starts_at > today) || (actor.access_ends_at && actor.access_ends_at < today)) {
+      return respond({ error: "Administrador corporativo sem acesso vigente." }, 403);
+    }
 
     const input = await req.json().catch(() => ({}));
     const action = String(input.action || "list");
 
     if (action === "list") {
       const [people, profiles, modules, assignments, permissions, roles, overrides] = await Promise.all([
-        admin.from("semed_people").select("user_id,email,full_name,area,active,must_change_password,password_changed_at,created_at").order("full_name"),
+        admin.from("semed_people").select("user_id,email,full_name,area,directorate,unit_name,job_title,manager_name,account_status,access_starts_at,access_ends_at,active,must_change_password,password_changed_at,created_at").order("full_name"),
         admin.from("semed_profiles").select("id,code,name,description,active").eq("active", true).order("name"),
         admin.from("semed_modules").select("id,code,name,description,display_order").eq("active", true).order("display_order"),
         admin.from("semed_user_profiles").select("user_id,profile_id,active").eq("active", true),
-        admin.from("semed_profile_module_permissions").select("profile_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin"),
+        admin.from("semed_profile_module_permissions").select("profile_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin,can_assign,can_export,can_view_sensitive"),
         admin.from("semed_user_module_roles").select("user_id,module_id,role_code,scope,active").eq("active", true),
-        admin.from("semed_user_module_overrides").select("user_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin,scope,expires_at,active").eq("active", true),
+        admin.from("semed_user_module_overrides").select("user_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin,can_assign,can_export,can_view_sensitive,scope,expires_at,active").eq("active", true),
       ]);
       for (const result of [people, profiles, modules, assignments, permissions, roles, overrides]) if (result.error) throw result.error;
       return respond({ users: people.data, profiles: profiles.data, modules: modules.data, assignments: assignments.data, profilePermissions: permissions.data, moduleRoles: roles.data, accessOverrides: overrides.data });
@@ -55,14 +64,23 @@ Deno.serve(async (req) => {
     const email = String(input.email || "").trim().toLowerCase();
     const fullName = String(input.fullName || "").trim();
     const area = String(input.area || "").trim();
+    const directorate = String(input.directorate || "").trim();
+    const unitName = String(input.unitName || "").trim();
+    const jobTitle = String(input.jobTitle || "").trim();
+    const managerName = String(input.managerName || "").trim();
+    const accountStatus = String(input.accountStatus || (input.active === false ? "INACTIVE" : "ACTIVE")).toUpperCase();
+    const accessStartsAt = input.accessStartsAt ? String(input.accessStartsAt) : null;
+    const accessEndsAt = input.accessEndsAt ? String(input.accessEndsAt) : null;
     const temporaryPassword = String(input.temporaryPassword || "");
-    const active = input.active !== false;
+    const active = input.active !== false && accountStatus === "ACTIVE";
     const requestedProfiles = [...new Set((Array.isArray(input.profileCodes) ? input.profileCodes : []).map(String))];
     const requestedRoles = input.moduleRoles && typeof input.moduleRoles === "object" ? input.moduleRoles : {};
     const requestedOverrides = input.accessOverrides && typeof input.accessOverrides === "object" ? input.accessOverrides : {};
 
     if (!email || !fullName || !area || !requestedProfiles.length) throw new Error("Nome, e-mail, área e ao menos um perfil são obrigatórios.");
     if (!USER_AREAS.includes(area as typeof USER_AREAS[number])) throw new Error("Área de atuação inválida.");
+    if (!['ACTIVE', 'SUSPENDED', 'INACTIVE'].includes(accountStatus)) throw new Error("Situação da conta inválida.");
+    if (accessStartsAt && accessEndsAt && accessEndsAt < accessStartsAt) throw new Error("O fim da vigência não pode ser anterior ao início.");
     if (!uid && !strongPassword(temporaryPassword)) throw new Error("A senha temporária deve ter 8 caracteres, letra, número e símbolo.");
     if (uid && temporaryPassword && !strongPassword(temporaryPassword)) throw new Error("A nova senha temporária não atende aos requisitos de segurança.");
     if (email !== DETIC_EMAIL && requestedProfiles.includes("ADMIN_GERAL")) throw new Error("O perfil Administrador Geral é exclusivo do usuário DETIC.");
@@ -92,7 +110,9 @@ Deno.serve(async (req) => {
 
     const mustChange = !uid || Boolean(temporaryPassword);
     const { error: personError } = await admin.from("semed_people").upsert({
-      user_id: target.id, email, full_name: fullName, area, active,
+      user_id: target.id, email, full_name: fullName, area, directorate: directorate || null,
+      unit_name: unitName || null, job_title: jobTitle || null, manager_name: managerName || null,
+      account_status: accountStatus, access_starts_at: accessStartsAt, access_ends_at: accessEndsAt, active,
       must_change_password: mustChange,
       password_changed_at: mustChange ? null : undefined,
       updated_at: new Date().toISOString(),
@@ -116,7 +136,9 @@ Deno.serve(async (req) => {
     await admin.from("semed_user_module_roles").delete().eq("user_id", target.id);
     const roleRows = (moduleRows || []).map((module) => {
       const configured = requestedRoles[module.code] || {};
-      return { user_id: target.id, module_id: module.id, role_code: String(configured.roleCode || ""), scope: configured.scope || {}, active: true, managed_by: user.id };
+      const roleCode = String(configured.roleCode || "");
+      if (roleCode && !(MODULE_ROLES[module.code] || []).includes(roleCode)) throw new Error(`Papel inválido para o sistema ${module.code}.`);
+      return { user_id: target.id, module_id: module.id, role_code: roleCode, scope: configured.scope || {}, active: true, managed_by: user.id };
     }).filter((row) => row.role_code);
     if (roleRows.length) {
       const { error } = await admin.from("semed_user_module_roles").insert(roleRows);
@@ -125,7 +147,7 @@ Deno.serve(async (req) => {
 
     const { error: deleteOverridesError } = await admin.from("semed_user_module_overrides").delete().eq("user_id", target.id);
     if (deleteOverridesError) throw deleteOverridesError;
-    const permissionKeys = ["can_view", "can_create", "can_edit", "can_delete", "can_approve", "can_admin"] as const;
+    const permissionKeys = ["can_view", "can_create", "can_edit", "can_delete", "can_approve", "can_admin", "can_assign", "can_export", "can_view_sensitive"] as const;
     const overrideRows = (moduleRows || []).map((module) => {
       if (module.code === "votacao") return null;
       const configured = requestedOverrides[module.code];
@@ -160,10 +182,10 @@ Deno.serve(async (req) => {
     await admin.from("semed_audit").insert({
       user_id: user.id, module_code: "portal", action: uid ? "UPDATE_USER_ACCESS" : "CREATE_USER_ACCESS",
       entity_type: "auth.users", entity_id: target.id,
-      metadata: { email, fullName, area, active, profileCodes: requestedProfiles, moduleOverrides: Object.keys(requestedOverrides), passwordReset: Boolean(temporaryPassword) },
+      metadata: { email, fullName, area, directorate, unitName, jobTitle, managerName, accountStatus, accessStartsAt, accessEndsAt, active, profileCodes: requestedProfiles, moduleOverrides: Object.keys(requestedOverrides), passwordReset: Boolean(temporaryPassword) },
     });
 
-    return respond({ user: { user_id: target.id, email, full_name: fullName, area, active, must_change_password: mustChange } });
+    return respond({ user: { user_id: target.id, email, full_name: fullName, area, directorate, unit_name: unitName, job_title: jobTitle, manager_name: managerName, account_status: accountStatus, access_starts_at: accessStartsAt, access_ends_at: accessEndsAt, active, must_change_password: mustChange } });
   } catch (error) {
     return respond({ error: error instanceof Error ? error.message : String(error) }, 400);
   }

@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 import { createCaptcha } from "./captcha.js";
-import { initPortalAdmin } from "./portal-admin.js?v=20261008-access-governance-1";
+import { initPortalAdmin } from "./portal-admin.js?v=20261008-access-governance-2";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
@@ -126,7 +126,7 @@ function renderUser(session, context) {
 function renderAccessSummary(card, moduleAccess) {
   card.querySelector(".card-access-summary")?.remove();
   const permissions = moduleAccess?.permissions || {};
-  const labels = [["create", "Criar"], ["edit", "Editar"], ["delete", "Excluir"], ["approve", "Aprovar"], ["admin", "Administrar"]]
+  const labels = [["create", "Criar"], ["edit", "Editar"], ["delete", "Excluir"], ["approve", "Aprovar/publicar"], ["assign", "Direcionar"], ["export", "Exportar"], ["view_sensitive", "Dados sensíveis"], ["admin", "Administrar"]]
     .filter(([key]) => permissions[key]).map(([, label]) => label);
   const summary = document.createElement("div");
   summary.className = "card-access-summary";
