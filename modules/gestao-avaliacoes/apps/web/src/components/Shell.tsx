@@ -7,7 +7,7 @@ const links=[['/','Visão geral',LayoutDashboard],['/avaliacoes','Avaliações',
 
 export function Shell(){
  const navigate=useNavigate(),[open,setOpen]=useState(false),logo=`${import.meta.env.BASE_URL}logo_semed.webp`,deticLogo=`${import.meta.env.BASE_URL}logo_detic.webp`;
- const portalUrl=new URL('../../../',window.location.href).toString();
+ const portalUrl=new URL('/',window.location.href).toString();
  async function logout(){await supabase.auth.signOut();window.location.assign(portalUrl)}
  return <div className="min-h-screen">
   <button className="fixed right-4 top-4 z-30 rounded-xl bg-ink p-2 text-white md:hidden" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button>

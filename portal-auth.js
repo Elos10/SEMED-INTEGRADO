@@ -6,10 +6,10 @@ import { initPortalAdmin } from "./portal-admin.js?v=20261008-access-governance-
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",
-  "https://gest-o-de-avalia-es-api.vercel.app/?portal=integra": "avaliacoes",
+  "./avaliacoes/": "avaliacoes",
   "./modules/monitor/": "monitor",
   "./modules/votacao/": "votacao",
-  "https://semed-comunicacao.vercel.app/?portal=integra": "comunicacao",
+  "./comunicacao/": "comunicacao",
 };
 
 const style = document.createElement("style");

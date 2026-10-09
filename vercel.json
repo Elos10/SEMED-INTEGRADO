@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/avaliacoes", "destination": "https://gest-o-de-avalia-es-api.vercel.app/" },
+    { "source": "/avaliacoes/:path*", "destination": "https://gest-o-de-avalia-es-api.vercel.app/:path*" },
+    { "source": "/assets/:path*", "destination": "https://gest-o-de-avalia-es-api.vercel.app/assets/:path*" },
+    { "source": "/api/:path*", "destination": "https://gest-o-de-avalia-es-api.vercel.app/api/:path*" },
+    { "source": "/logo_semed.webp", "destination": "https://gest-o-de-avalia-es-api.vercel.app/logo_semed.webp" },
+    { "source": "/logo_detic.webp", "destination": "https://gest-o-de-avalia-es-api.vercel.app/logo_detic.webp" },
+
+    { "source": "/comunicacao", "destination": "https://semed-comunicacao.vercel.app/" },
+    { "source": "/comunicacao/:path*", "destination": "https://semed-comunicacao.vercel.app/:path*" },
+    { "source": "/_next/:path*", "destination": "https://semed-comunicacao.vercel.app/_next/:path*" },
+    { "source": "/favicon.svg", "destination": "https://semed-comunicacao.vercel.app/favicon.svg" }
+  ]
+}
