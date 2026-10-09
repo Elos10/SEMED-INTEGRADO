@@ -4,6 +4,6 @@
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "scripts": {
-    "build": "node -e \"console.log('Portal estático pronto para publicação.')\""
+    "build": "node scripts/build-portal.mjs"
   }
 }
