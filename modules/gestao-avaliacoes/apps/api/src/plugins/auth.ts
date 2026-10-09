@@ -9,7 +9,7 @@ declare module 'fastify' {
  interface FastifyRequest { auth:{userId:string;organizationId:string;role:UserRole} }
 }
 
-const supabaseAuth=createClient(config.SUPABASE_URL,config.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+const supabaseAuth=createClient(config.AUTH_SUPABASE_URL??config.SUPABASE_URL,config.AUTH_SUPABASE_PUBLISHABLE_KEY??config.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 type AuthContext=FastifyRequest['auth'];
 type PortalAccess={full_name:string|null;can_admin:boolean;can_manage:boolean;role_code:string|null};
 const authCache=new Map<string,{expiresAt:number;auth:AuthContext}>(),AUTH_CACHE_MS=15_000,AUTH_CACHE_MAX=500;
