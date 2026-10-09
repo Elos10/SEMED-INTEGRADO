@@ -46,10 +46,11 @@ export function initPortalAdmin({ supabase, context }) {
   const style = document.createElement("style");
   style.textContent = `
     .access-admin{position:fixed;inset:0;z-index:200;background:#031a49cc;padding:24px;overflow:auto}.access-admin[hidden]{display:none}
-    .access-admin-shell{width:min(1180px,100%);margin:auto;background:#f5f8fe;border-radius:20px;padding:24px;color:#092766;box-shadow:0 30px 90px #00113388}
+    .access-admin-shell{width:min(1280px,100%);margin:auto;background:#f5f8fe;border-radius:20px;padding:24px;color:#092766;box-shadow:0 30px 90px #00113388}
     .access-admin-head{display:flex;justify-content:space-between;gap:16px;align-items:center}.access-admin-head h2{margin:0}.access-admin button{cursor:pointer}
-    .access-admin-toolbar{display:flex;gap:10px;margin:20px 0}.access-admin-toolbar input{flex:1}.access-admin input,.access-admin select{min-height:42px;border:1px solid #c8d6ee;border-radius:8px;padding:9px;background:#fff}
-    .access-admin table{width:100%;border-collapse:collapse;background:#fff}.access-admin th,.access-admin td{padding:11px;border-bottom:1px solid #dce5f4;text-align:left;font-size:13px}
+    .access-admin-head{position:sticky;top:-24px;z-index:5;background:#f5f8fe;padding:24px 0 14px}.access-admin-toolbar{display:grid;grid-template-columns:minmax(280px,1fr) 190px 180px auto;gap:10px;margin:16px 0}.access-admin input,.access-admin select{min-height:42px;border:1px solid #c8d6ee;border-radius:8px;padding:9px;background:#fff}
+    .access-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:10px 0 16px}.access-metric{padding:13px 15px;border:1px solid #d5e0f1;border-radius:12px;background:#fff;text-align:left;color:#092766}.access-metric:hover,.access-metric.active{border-color:#315bb4;box-shadow:0 5px 16px #173d8918;transform:translateY(-1px)}.access-metric strong{display:block;font-size:22px}.access-metric span{font-size:12px;color:#52698f}.access-metric.attention{background:#fff8e3;border-color:#f2d98b}.access-metric.danger{background:#fff0f0;border-color:#efc2c2}
+    .access-table-wrap{overflow:auto;border:1px solid #d8e2f2;border-radius:12px;background:#fff}.access-admin table{width:100%;border-collapse:collapse;background:#fff}.access-admin th,.access-admin td{padding:12px;border-bottom:1px solid #e1e8f4;text-align:left;font-size:13px;vertical-align:middle}.access-admin th{position:sticky;top:0;background:#eaf0fb;z-index:2}.access-sort{border:0;background:transparent;color:#102b68;font:inherit;font-weight:800;padding:0}.access-user{min-width:210px}.access-user strong{font-size:13px}.access-user small{color:#52698f}.access-incomplete{display:inline-flex;margin-top:5px;padding:3px 7px;border-radius:999px;background:#fff2d8;color:#805b00;font-size:10px;font-weight:800}.access-profiles{display:flex;align-items:center;gap:5px;flex-wrap:wrap;max-width:390px}.access-profile-group{display:inline-flex;padding:5px 8px;border-radius:999px;background:#e8effc;color:#244887;font-size:11px;white-space:nowrap}.access-count{background:#173d89;color:#fff}.access-security{min-width:145px}.access-status{display:inline-flex;padding:5px 9px;border-radius:999px;background:#e6f5ed;color:#17623d;font-weight:800}.access-status.warning{background:#fff2d2;color:#805900}.access-status.danger{background:#fde7e7;color:#9c2626}.access-detail td{background:#f6f9fe;padding:14px 20px}.access-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.access-detail-grid span{display:block;color:#617393;font-size:11px}.access-detail-grid strong{display:block;margin-top:3px}.access-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.access-pager-actions{display:flex;gap:8px}.access-empty{text-align:center;padding:36px!important;color:#607294}
     .access-admin-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.access-admin-form label{display:grid;gap:6px;font-size:12px;font-weight:800}
     .access-admin-wide{grid-column:1/-1}.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.profile-option{display:flex!important;grid-template-columns:auto 1fr!important;align-items:start;padding:9px;border:1px solid #d6e1f2;border-radius:8px;background:#fff}
     .module-role-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.module-role{padding:10px;border:1px solid #d6e1f2;border-radius:9px;background:#fff}.module-role label{margin-top:7px}
@@ -57,7 +58,8 @@ export function initPortalAdmin({ supabase, context }) {
     .access-actions{display:flex;justify-content:flex-end;gap:10px}.access-primary{border:0;border-radius:8px;padding:11px 16px;background:#0758d0;color:#fff;font-weight:800}.access-secondary{border:1px solid #aabbd8;border-radius:8px;padding:10px 15px;background:#fff;color:#092766;font-weight:800}
     .access-notice{min-height:22px;color:#9b1c1c;font-weight:700}.access-pill{padding:4px 8px;border-radius:12px;background:#e4eefc}.access-pill.pending{background:#fff0c7;color:#805900}
     .access-summary{border:1px solid #b9c9e7;border-radius:12px;background:#eaf1fd;padding:14px}.access-summary h4{margin:0 0 8px}.access-summary ul{margin:0;padding-left:20px}.access-origin{display:block;margin-top:8px;color:#53698e;font-weight:500}.access-danger{background:#fde8e8!important;color:#8d1717!important}
-    @media(max-width:760px){.access-admin{padding:8px}.access-admin-form,.profile-grid,.module-role-grid{grid-template-columns:1fr}.permission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.access-admin table{display:block;overflow:auto}}
+    @media(max-width:900px){.access-admin{padding:8px}.access-admin-shell{padding:16px}.access-admin-head{top:-16px}.access-admin-toolbar{grid-template-columns:1fr 1fr}.access-admin-toolbar [data-search],.access-admin-toolbar [data-new]{grid-column:1/-1}.access-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.access-admin-form,.profile-grid,.module-role-grid{grid-template-columns:1fr}.permission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.access-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:600px){.access-admin-toolbar{grid-template-columns:1fr}.access-admin-toolbar>*{grid-column:1!important}.access-metrics{grid-template-columns:1fr 1fr}.access-admin table,.access-admin thead,.access-admin tbody{display:block}.access-admin thead{display:none}.access-admin tr[data-user-row]{display:grid;grid-template-columns:1fr auto;padding:12px;border-bottom:1px solid #dfe7f4}.access-admin tr[data-user-row] td{display:block;border:0;padding:5px 2px}.access-admin tr[data-user-row] td:nth-child(2),.access-admin tr[data-user-row] td:nth-child(3),.access-admin tr[data-user-row] td:nth-child(4){grid-column:1}.access-admin tr[data-user-row] td:last-child{grid-column:2;grid-row:1/4}.access-detail{display:block}.access-detail td{display:block}.access-detail-grid{grid-template-columns:1fr}.access-pager{align-items:flex-start;flex-direction:column}}
   `;
   document.head.append(style);
 
@@ -70,6 +72,12 @@ export function initPortalAdmin({ supabase, context }) {
   let catalog = null;
   let selectedUser = null;
   let search = "";
+  let statusFilter = "ALL";
+  let profileFilter = "ALL";
+  let sortKey = "full_name";
+  let sortDirection = 1;
+  let page = 1;
+  const pageSize = 8;
 
   async function invoke(body) {
     const { data, error } = await supabase.functions.invoke("manage-semed-user", { body });
@@ -89,15 +97,54 @@ export function initPortalAdmin({ supabase, context }) {
     return (catalog.profiles || []).filter((profile) => profileIds.has(profile.id));
   }
 
+  function accountState(user) {
+    const today = new Date().toISOString().slice(0, 10);
+    const inThirtyDays = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    if (user.account_status === "SUSPENDED") return { key: "SUSPENDED", label: "Suspenso", tone: "warning" };
+    if (user.account_status === "INACTIVE" || user.active === false) return { key: "INACTIVE", label: "Inativo", tone: "danger" };
+    if (user.access_ends_at && user.access_ends_at < today) return { key: "EXPIRED", label: "Vencido", tone: "danger" };
+    if (user.access_ends_at && user.access_ends_at <= inThirtyDays) return { key: "EXPIRING", label: "Vence em breve", tone: "warning" };
+    return { key: "ACTIVE", label: "Ativo", tone: "" };
+  }
+
+  function profileGroups(userId) {
+    const groups = new Map();
+    userProfiles(userId).forEach((profile) => {
+      const group = String(profile.name || "Perfil").split(" — ")[0];
+      groups.set(group, (groups.get(group) || 0) + 1);
+    });
+    return [...groups.entries()];
+  }
+
   function renderList() {
-    const users = (catalog.users || []).filter((user) => !search || `${user.full_name} ${user.email} ${user.area || ""}`.toLowerCase().includes(search));
+    const allUsers = catalog.users || [];
+    const profiles = catalog.profiles || [];
+    const metrics = allUsers.reduce((result, user) => { const state = accountState(user); result[state.key] = (result[state.key] || 0) + 1; if (user.must_change_password) result.PASSWORD += 1; return result; }, { ACTIVE: 0, SUSPENDED: 0, INACTIVE: 0, EXPIRED: 0, EXPIRING: 0, PASSWORD: 0 });
+    const valueFor = (user) => sortKey === "security" ? accountState(user).label : sortKey === "profiles" ? userProfiles(user.user_id).map((item) => item.name).join(" ") : sortKey === "link" ? `${user.job_title || ""} ${user.unit_name || user.area || ""}` : user[sortKey] || "";
+    const users = allUsers.filter((user) => {
+      const haystack = `${user.full_name} ${user.email} ${user.area || ""} ${user.unit_name || ""} ${user.job_title || ""}`.toLowerCase();
+      const state = accountState(user).key;
+      const statusMatches = statusFilter === "ALL" || state === statusFilter || statusFilter === "ATTENTION" && ["SUSPENDED","EXPIRING"].includes(state) || statusFilter === "BLOCKED" && ["INACTIVE","EXPIRED"].includes(state) || statusFilter === "PASSWORD" && user.must_change_password;
+      return (!search || haystack.includes(search)) && statusMatches && (profileFilter === "ALL" || userProfiles(user.user_id).some((item) => item.code === profileFilter));
+    }).sort((a, b) => String(valueFor(a)).localeCompare(String(valueFor(b)), "pt-BR", { sensitivity: "base" }) * sortDirection);
+    const totalPages = Math.max(1, Math.ceil(users.length / pageSize));
+    page = Math.min(page, totalPages);
+    const visibleUsers = users.slice((page - 1) * pageSize, page * pageSize);
+    const sortButton = (key, label) => `<button class="access-sort" type="button" data-sort="${key}">${label}${sortKey === key ? (sortDirection === 1 ? " ↑" : " ↓") : " ↕"}</button>`;
     panel.querySelector("[data-content]").innerHTML = `
-      <div class="access-admin-toolbar"><input type="search" data-search placeholder="Pesquisar usuário…" value="${esc(search)}"><button class="access-primary" type="button" data-new>Novo usuário</button></div>
+      <section class="access-metrics" aria-label="Indicadores de usuários"><button type="button" data-metric="ALL" class="access-metric ${statusFilter==="ALL"?"active":""}"><strong>${allUsers.length}</strong><span>Total de usuários</span></button><button type="button" data-metric="ACTIVE" class="access-metric ${statusFilter==="ACTIVE"?"active":""}"><strong>${metrics.ACTIVE}</strong><span>Ativos e vigentes</span></button><button type="button" data-metric="ATTENTION" class="access-metric attention ${statusFilter==="ATTENTION"?"active":""}"><strong>${metrics.SUSPENDED + metrics.EXPIRING}</strong><span>Suspensos ou vencendo</span></button><button type="button" data-metric="BLOCKED" class="access-metric danger ${statusFilter==="BLOCKED"?"active":""}"><strong>${metrics.INACTIVE + metrics.EXPIRED}</strong><span>Inativos ou vencidos</span></button><button type="button" data-metric="PASSWORD" class="access-metric attention ${statusFilter==="PASSWORD"?"active":""}"><strong>${metrics.PASSWORD}</strong><span>Troca de senha pendente</span></button></section>
+      <div class="access-admin-toolbar"><input type="search" data-search placeholder="Pesquisar por nome, e-mail, área, unidade ou função…" value="${esc(search)}"><select data-status aria-label="Filtrar situação"><option value="ALL">Todas as situações</option>${[["ACTIVE","Ativos"],["ATTENTION","Suspensos ou vencendo"],["BLOCKED","Inativos ou vencidos"],["PASSWORD","Troca de senha pendente"],["SUSPENDED","Somente suspensos"],["EXPIRING","Somente vencendo"],["EXPIRED","Somente vencidos"],["INACTIVE","Somente inativos"]].map(([value,label])=>`<option value="${value}" ${statusFilter===value?"selected":""}>${label}</option>`).join("")}</select><select data-profile aria-label="Filtrar perfil"><option value="ALL">Todos os perfis</option>${profiles.map((profile)=>`<option value="${esc(profile.code)}" ${profileFilter===profile.code?"selected":""}>${esc(profile.name)}</option>`).join("")}</select><button class="access-primary" type="button" data-new>Novo usuário</button></div>
       <div class="access-notice" data-notice></div>
-      <table><thead><tr><th>Usuário</th><th>Vínculo</th><th>Perfis</th><th>Situação/Vigência</th><th>Senha</th><th></th></tr></thead><tbody>
-      ${users.map((user) => `<tr><td><strong>${esc(user.full_name)}</strong><br><small>${esc(user.email)}</small></td><td>${esc(user.job_title || "Função não informada")}<br><small>${esc(user.unit_name || user.area || "Vínculo não informado")}</small></td><td>${userProfiles(user.user_id).map((profile) => `<span class="access-pill">${esc(profile.name)}</span>`).join(" ") || "Sem perfil"}</td><td><span class="access-pill ${user.account_status !== "ACTIVE" ? "access-danger" : ""}">${esc(({ACTIVE:"Ativo",SUSPENDED:"Suspenso",INACTIVE:"Inativo"})[user.account_status] || (user.active ? "Ativo" : "Inativo"))}</span><br><small>${user.access_ends_at ? `até ${esc(new Date(`${user.access_ends_at}T12:00:00`).toLocaleDateString("pt-BR"))}` : "sem expiração global"}</small></td><td>${user.must_change_password ? '<span class="access-pill pending">Troca obrigatória</span>' : "Regular"}</td><td><button class="access-secondary" type="button" data-edit="${user.user_id}">Editar</button></td></tr>`).join("")}
-      </tbody></table>`;
-    panel.querySelector("[data-search]").addEventListener("input", (event) => { search = event.target.value.trim().toLowerCase(); renderList(); });
+      <div class="access-table-wrap"><table><thead><tr><th>${sortButton("full_name","Usuário")}</th><th>${sortButton("link","Vínculo institucional")}</th><th>${sortButton("profiles","Acessos")}</th><th>${sortButton("security","Segurança")}</th><th>Ações</th></tr></thead><tbody>
+      ${visibleUsers.length ? visibleUsers.map((user) => { const state = accountState(user); const groups = profileGroups(user.user_id); const incomplete = !user.job_title || !(user.unit_name || user.area); return `<tr data-user-row="${user.user_id}"><td class="access-user"><strong>${esc(user.full_name)}</strong><br><small>${esc(user.email)}</small>${incomplete?'<br><span class="access-incomplete">CADASTRO INCOMPLETO</span>':""}</td><td><strong>${esc(user.job_title || "Não informado")}</strong><br><small>${esc(user.unit_name || user.area || "Vínculo não informado")}</small></td><td><div class="access-profiles">${groups.slice(0,3).map(([name,count])=>`<span class="access-profile-group">${esc(name)}${count>1?` · ${count}`:""}</span>`).join("") || '<span class="access-incomplete">SEM PERFIL</span>'}${groups.length>3?`<span class="access-profile-group access-count">+${groups.length-3}</span>`:""}</div></td><td class="access-security"><span class="access-status ${state.tone}">${state.label}</span><br><small>${user.access_ends_at?`até ${esc(new Date(`${user.access_ends_at}T12:00:00`).toLocaleDateString("pt-BR"))}`:"sem expiração"}</small><br><small>${user.must_change_password?"Senha: troca pendente":"Senha: regular"}</small></td><td><button class="access-secondary" type="button" data-expand="${user.user_id}" aria-expanded="false">Detalhes</button></td></tr><tr class="access-detail" data-detail="${user.user_id}" hidden><td colspan="5"><div class="access-detail-grid"><div><span>Diretoria</span><strong>${esc(user.directorate || "Não informada")}</strong></div><div><span>Área</span><strong>${esc(user.area || "Não informada")}</strong></div><div><span>Gestor imediato</span><strong>${esc(user.manager_name || "Não informado")}</strong></div><div><span>Perfis atribuídos</span><strong>${esc(userProfiles(user.user_id).map((item)=>item.name).join(", ") || "Nenhum")}</strong></div></div><div class="access-actions"><button class="access-primary" type="button" data-edit="${user.user_id}">Editar usuário e acessos</button></div></td></tr>`; }).join("") : '<tr><td class="access-empty" colspan="5">Nenhum usuário corresponde aos filtros selecionados.</td></tr>'}
+      </tbody></table></div><footer class="access-pager"><span>Exibindo ${users.length ? (page-1)*pageSize+1 : 0}–${Math.min(page*pageSize,users.length)} de ${users.length} usuários</span><div class="access-pager-actions"><button class="access-secondary" type="button" data-page="prev" ${page===1?"disabled":""}>Anterior</button><button class="access-secondary" type="button" data-page="next" ${page===totalPages?"disabled":""}>Próxima</button></div></footer>`;
+    panel.querySelector("[data-search]").addEventListener("input", (event) => { search = event.target.value.trim().toLowerCase(); page=1; renderList(); const input=panel.querySelector("[data-search]"); input.focus(); input.setSelectionRange(input.value.length,input.value.length); });
+    panel.querySelector("[data-status]").addEventListener("change", (event) => { statusFilter=event.target.value; page=1; renderList(); });
+    panel.querySelectorAll("[data-metric]").forEach((button)=>button.addEventListener("click",()=>{ statusFilter=button.dataset.metric; page=1; renderList(); }));
+    panel.querySelector("[data-profile]").addEventListener("change", (event) => { profileFilter=event.target.value; page=1; renderList(); });
+    panel.querySelectorAll("[data-sort]").forEach((button)=>button.addEventListener("click",()=>{ if(sortKey===button.dataset.sort) sortDirection*=-1; else {sortKey=button.dataset.sort;sortDirection=1;} renderList(); }));
+    panel.querySelectorAll("[data-page]").forEach((button)=>button.addEventListener("click",()=>{ page += button.dataset.page==="next"?1:-1; renderList(); }));
+    panel.querySelectorAll("[data-expand]").forEach((button)=>button.addEventListener("click",()=>{ const detail=panel.querySelector(`[data-detail="${button.dataset.expand}"]`); detail.hidden=!detail.hidden; button.setAttribute("aria-expanded",String(!detail.hidden)); button.textContent=detail.hidden?"Detalhes":"Recolher"; }));
     panel.querySelector("[data-new]").addEventListener("click", () => renderForm(null));
     panel.querySelectorAll("[data-edit]").forEach((button) => button.addEventListener("click", () => renderForm(catalog.users.find((user) => user.user_id === button.dataset.edit))));
   }

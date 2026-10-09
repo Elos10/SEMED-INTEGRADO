@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 import { createCaptcha } from "./captcha.js";
-import { initPortalAdmin } from "./portal-admin.js?v=20261008-access-governance-2";
+import { initPortalAdmin } from "./portal-admin.js?v=20261008-access-governance-3";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const moduleByHref = {
