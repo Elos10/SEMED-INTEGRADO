@@ -247,19 +247,15 @@ async function persistNotificationRead(eventId){
 }
 
 accessView=function(){
-  if(session.role!=='administrador')return head('Acesso restrito','Perfis de acesso','Somente administradores podem gerenciar perfis.')+'<div class="notice">Seu perfil não possui permissão para acessar este módulo.</div>';
-  return head('Administração','Perfis de acesso','Crie usuários, altere dados, redefina senhas e enquadre cada pessoa no perfil correto.',`<button class="btn" onclick="userEditor()">+ Criar usuário</button>`)+`<section class="role-grid">${accessRoles.map(r=>`<article class="role-card"><span class="role-icon">${r[1][0]}</span><div><h3>${r[1]}</h3><p>${r[2]}</p></div></article>`).join('')}</section><section class="panel" style="margin-top:15px"><div class="panel-head"><h2>Usuários do sistema</h2><span class="pill blue">${state.users.length} usuário${state.users.length===1?'':'s'}</span></div><div class="table-wrap"><table><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th></th></tr></thead><tbody>${state.users.map(u=>`<tr><td><strong>${esc(u.fullName)}</strong></td><td>${esc(u.email)}</td><td><span class="pill blue">${roleLabel(u.role)}</span></td><td><span class="pill ${u.active?'green':'red'}">${u.active?'Ativo':'Inativo'}</span></td><td><button class="btn secondary" onclick="userEditor('${u.id}')">Editar</button></td></tr>`).join('')}</tbody></table></div></section>`
+  return head('Governança','Pessoas e acessos centralizados','Cadastros, senhas, perfis e vigências são administrados exclusivamente no Portal SEMED Integra.')+'<section class="panel"><div class="notice"><strong>Neste módulo permanecem apenas vínculos operacionais.</strong><br>Responsáveis e destinatários são selecionados entre as pessoas previamente autorizadas no Portal.</div></section>'
 };
 
 function userEditor(uid=''){
-  const u=state.users.find(x=>x.id===uid)||{};modal(`<div class="modal-head"><h2>${uid?'Editar vínculo':'Vincular usuário'}</h2><button class="icon-btn" onclick="closeModal()">✕</button></div><form class="form-grid" onsubmit="manageAccessUser(event)"><input type="hidden" name="uid" value="${esc(uid)}"><div class="field"><label>Nome completo</label><input name="fullName" value="${esc(u.fullName||'')}" required></div><div class="field"><label>E-mail institucional</label><input name="email" type="email" value="${esc(u.email||'')}" required></div><div class="field span2"><small>A conta e a senha são administradas exclusivamente no Supabase Auth. Este formulário altera apenas o perfil do módulo.</small></div><div class="field"><label>Perfil de acesso</label><select name="role">${accessRoles.map(r=>`<option value="${r[0]}" ${u.role===r[0]?'selected':''}>${r[1]}</option>`).join('')}</select></div><div class="field span2"><label class="date-toggle"><input type="checkbox" name="active" ${u.active!==false?'checked':''}><span>Usuário ativo</span></label></div><div class="span2 actions"><button type="button" class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn">${uid?'Salvar alterações':'Vincular usuário'}</button></div></form>`)
+  toast('Pessoas e acessos são administrados exclusivamente no Portal SEMED Integra.')
 }
 
 async function manageAccessUser(ev){
-  ev.preventDefault();const data=Object.fromEntries(new FormData(ev.target)),payload={uid:data.uid||undefined,fullName:data.fullName,email:data.email,role:data.role,active:data.active==='on',authManaged:true};
-  if(backend){try{const callable=backend.functionsSdk.httpsCallable(backend.functions,'manageUser'),result=await callable(payload),user={id:result.data.uid,...result.data},index=state.users.findIndex(u=>u.id===user.id);index>=0?state.users.splice(index,1,user):state.users.push(user)}catch(error){const code=String(error?.code||'');if(code.includes('not-found'))return toast('Serviço de usuários não publicado no Supabase. Publique a função manageUser.');if(code.includes('already-exists'))return toast('Já existe um usuário com este e-mail.');if(code.includes('permission-denied'))return toast('Seu perfil não possui permissão para gerenciar usuários.');return toast('Erro ao salvar usuário: '+(error.message||error))}}
-  else return toast('Supabase não configurado. Não é possível gerenciar usuários.');
-  save();closeModal();toast(payload.uid?'Usuário atualizado com sucesso.':'Usuário criado com sucesso.');render()
+  ev?.preventDefault?.();toast('Pessoas e acessos são administrados exclusivamente no Portal SEMED Integra.')
 }
 
 function setupEditObjectButton(){

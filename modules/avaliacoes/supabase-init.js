@@ -1280,6 +1280,10 @@ async function request(method, path, data = undefined, options = {}) {
     await writeDb(db);
     return { ok: true };
   }
+  if (route === 'admin/users' || p[0] === 'admin' && p[1] === 'users' || route === 'admin/permissions') {
+    throw { status: 410, error: 'Pessoas, senhas, perfis e acessos são administrados exclusivamente no Portal SEMED Integra.' };
+  }
+  /* Rotas históricas desativadas após a centralização corporativa.
   if (method === 'GET' && route === 'admin/users') return db.users.map(publicUser);
   if (method === 'POST' && route === 'admin/users') {
     const item = { id: id('usr_'), unidadeEscolar: data.unidadeEscolar, email: normalizeEmail(data.email), perfil: data.perfil, ativo: data.ativo !== false, criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString() };
@@ -1303,6 +1307,7 @@ async function request(method, path, data = undefined, options = {}) {
     await writeDb(db);
     return { ok: true };
   }
+  */
   if (method === 'GET' && route === 'logs') return db.logs.slice(0, 500);
   if (method === 'GET' && route === 'imports') return db.imports || [];
   if (method === 'DELETE' && p[0] === 'imports' && p[1]) {
