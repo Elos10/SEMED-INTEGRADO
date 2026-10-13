@@ -1,6 +1,6 @@
 @tailwind base;@tailwind components;@tailwind utilities;
-@layer base{body{@apply m-0 bg-paper text-ink antialiased;font-family:Calibri,"Segoe UI",sans-serif}button,input,select{font:inherit}}
-@layer components{.card{@apply rounded-2xl border border-[#dce3f0] bg-white p-5 shadow-[0_8px_28px_rgba(29,55,111,.07)]}.btn{@apply rounded-xl bg-forest px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-ink disabled:cursor-not-allowed disabled:opacity-50}.field{@apply w-full rounded-xl border border-[#d7dfef] bg-white px-3 py-2.5 text-ink outline-none transition focus:border-forest focus:ring-2 focus:ring-mint}.label{@apply mb-1 block text-sm font-semibold}.eyebrow{@apply text-xs font-bold uppercase tracking-[.18em] text-forest}}
+@layer base{body{@apply m-0 bg-[#f6f7fa] text-[#111827] antialiased;font-family:Inter,Calibri,"Segoe UI",sans-serif}button,input,select{font:inherit}}
+@layer components{.card{@apply rounded-2xl border border-[#e2e6ef] bg-white p-5 shadow-[0_8px_24px_rgba(17,24,39,.055)]}.btn{@apply rounded-xl bg-[#233f8f] px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-[#172f73] disabled:cursor-not-allowed disabled:opacity-50}.field{@apply w-full rounded-xl border border-[#d8deea] bg-white px-3 py-2.5 text-[#111827] outline-none transition focus:border-[#7590d2] focus:ring-2 focus:ring-[#e8edfb]}.label{@apply mb-1 block text-sm font-semibold text-[#38435b]}.eyebrow{@apply text-xs font-bold uppercase tracking-[.16em] text-[#233f8f]}}
 
 @page{size:A4 landscape;margin:10mm}
 @media print{
