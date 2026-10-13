@@ -14,6 +14,16 @@ const SCOPE_MODES = [
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const STRONG_PASSWORD = /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/;
 const USER_AREAS = ["Gestão SEMED", "Diretoria de Ensino", "Diretoria de Apoio à Educação Básica", "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças", "Arte e Cultura", "Formação - Casa do Educador", "Formação - Polo UAB", "Inclusão", "Infraestrutura", "Planejamento Financeiro", "Tecnologia", "Transporte"];
+const ACCESS_KITS = [
+  { code: "PROFESSOR_UNIDADE", name: "Professor de unidade", description: "Avaliações somente no contexto da unidade vinculada.", profiles: ["AVALIACOES_PROFESSOR"], roles: { avaliacoes: "PROFESSOR" }, scope: "UNIT" },
+  { code: "GESTOR_UNIDADE", name: "Gestor de unidade", description: "Avaliações e Monitoramento limitados à unidade de lotação.", profiles: ["AVALIACOES_GESTOR_UNIDADE", "MONITOR_GESTOR_AREA"], roles: { avaliacoes: "GESTOR DE UNIDADE", monitor: "diretoria" }, scope: "UNIT" },
+  { code: "RESPONSAVEL_ETAPAS", name: "Responsável por etapas", description: "Movimenta somente itens que estejam sob sua responsabilidade.", profiles: ["MONITOR_RESPONSAVEL"], roles: { monitor: "servidor" }, scope: "ASSIGNED" },
+  { code: "FINANCEIRO", name: "Execução financeira", description: "Consulta e registra informações financeiras autorizadas.", profiles: ["MONITOR_FINANCEIRO"], roles: { monitor: "assessoria" }, scope: "AREA" },
+  { code: "COMUNICADOR", name: "Comunicador institucional", description: "Cria, encaminha e acompanha comunicações da área.", profiles: ["COMUNICACAO_EMISSOR"], roles: { comunicacao: "emissor" }, scope: "AREA" },
+  { code: "PUBLICADOR", name: "Publicador institucional", description: "Revisa, aprova e publica comunicações autorizadas.", profiles: ["COMUNICACAO_PUBLICADOR"], roles: { comunicacao: "publicador" }, scope: "ALL" },
+  { code: "AUDITOR", name: "Auditoria", description: "Consulta histórico e exporta dados sem alterar registros.", profiles: ["COMUNICACAO_AUDITOR"], roles: { comunicacao: "auditoria" }, scope: "READ_ONLY" },
+  { code: "TEMPORARIO", name: "Acesso temporário", description: "Modelo sem sistemas pré-liberados e com vigência obrigatória.", profiles: [], roles: {}, scope: "OWN", temporary: true },
+];
 
 async function functionErrorMessage(error, data) {
   if (data?.error) return data.error;
@@ -58,8 +68,9 @@ export function initPortalAdmin({ supabase, context }) {
     .access-actions{display:flex;justify-content:flex-end;gap:10px}.access-primary{border:0;border-radius:8px;padding:11px 16px;background:#0758d0;color:#fff;font-weight:800}.access-secondary{border:1px solid #aabbd8;border-radius:8px;padding:10px 15px;background:#fff;color:#092766;font-weight:800}
     .access-notice{min-height:22px;color:#9b1c1c;font-weight:700}.access-pill{padding:4px 8px;border-radius:12px;background:#e4eefc}.access-pill.pending{background:#fff0c7;color:#805900}
     .access-summary{border:1px solid #b9c9e7;border-radius:12px;background:#eaf1fd;padding:14px}.access-summary h4{margin:0 0 8px}.access-summary ul{margin:0;padding-left:20px}.access-origin{display:block;margin-top:8px;color:#53698e;font-weight:500}.access-danger{background:#fde8e8!important;color:#8d1717!important}
-    @media(max-width:900px){.access-admin{padding:8px}.access-admin-shell{padding:16px}.access-admin-head{top:-16px}.access-admin-toolbar{grid-template-columns:1fr 1fr}.access-admin-toolbar [data-search],.access-admin-toolbar [data-new]{grid-column:1/-1}.access-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.access-admin-form,.profile-grid,.module-role-grid{grid-template-columns:1fr}.permission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.access-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:600px){.access-admin-toolbar{grid-template-columns:1fr}.access-admin-toolbar>*{grid-column:1!important}.access-metrics{grid-template-columns:1fr 1fr}.access-admin table,.access-admin thead,.access-admin tbody{display:block}.access-admin thead{display:none}.access-admin tr[data-user-row]{display:grid;grid-template-columns:1fr auto;padding:12px;border-bottom:1px solid #dfe7f4}.access-admin tr[data-user-row] td{display:block;border:0;padding:5px 2px}.access-admin tr[data-user-row] td:nth-child(2),.access-admin tr[data-user-row] td:nth-child(3),.access-admin tr[data-user-row] td:nth-child(4){grid-column:1}.access-admin tr[data-user-row] td:last-child{grid-column:2;grid-row:1/4}.access-detail{display:block}.access-detail td{display:block}.access-detail-grid{grid-template-columns:1fr}.access-pager{align-items:flex-start;flex-direction:column}}
+    .access-wizard{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:4px}.access-step{border:1px solid #cfdaed;border-radius:12px;background:#fff;padding:11px 13px;text-align:left;color:#53698e;font-weight:800}.access-step span{display:grid;place-items:center;width:23px;height:23px;margin-bottom:5px;border-radius:50%;background:#e8eef9;color:#234f9b;font-size:11px}.access-step.active{border-color:#315bb4;background:#eaf1fd;color:#123477}.access-step.active span,.access-step.done span{background:#315bb4;color:#fff}.access-step-panel{display:none;grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.access-step-panel.active{display:grid}.access-section-intro{grid-column:1/-1;margin:0;padding:14px 16px;border-left:4px solid #315bb4;border-radius:0 12px 12px 0;background:#eef3fd}.access-section-intro h3{margin:0 0 4px}.access-section-intro p{margin:0;color:#52698f;font-size:13px}.access-kit-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.access-kit{border:1px solid #d4deef;border-radius:13px;background:#fff;padding:13px;text-align:left;color:#17346e}.access-kit:hover,.access-kit.selected{border-color:#315bb4;background:#edf3ff;box-shadow:0 5px 15px #173d8918}.access-kit strong{display:block}.access-kit small{display:block;margin-top:5px;color:#607294;line-height:1.4}.access-kit-note{grid-column:1/-1;padding:11px 13px;border-radius:10px;background:#fff7dc;color:#715400;font-size:12px}.access-module-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.access-module-state{padding:4px 8px;border-radius:999px;background:#e8f5ed;color:#17623d;font-size:10px}.access-advanced{margin-top:10px;border-top:1px solid #e1e8f4;padding-top:9px}.access-advanced summary{cursor:pointer;color:#31549a;font-size:12px;font-weight:800}.access-wizard-actions{grid-column:1/-1;display:flex;justify-content:space-between;gap:10px;padding-top:8px;border-top:1px solid #dbe4f2}.access-risk-warning{grid-column:1/-1;padding:12px;border:1px solid #f0c8c8;border-radius:10px;background:#fff1f1;color:#8f2424;font-size:12px;font-weight:700}.access-confirmation{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.access-confirmation article{padding:12px;border:1px solid #d8e2f2;border-radius:12px;background:#fff}.access-confirmation span{display:block;color:#617393;font-size:11px}.access-confirmation strong{display:block;margin-top:4px}
+    @media(max-width:900px){.access-admin{padding:8px}.access-admin-shell{padding:16px}.access-admin-head{top:-16px}.access-admin-toolbar{grid-template-columns:1fr 1fr}.access-admin-toolbar [data-search],.access-admin-toolbar [data-new]{grid-column:1/-1}.access-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.access-admin-form,.profile-grid,.module-role-grid,.access-step-panel{grid-template-columns:1fr}.access-kit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.permission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.access-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:600px){.access-wizard{grid-template-columns:1fr 1fr}.access-kit-grid,.access-confirmation{grid-template-columns:1fr}.access-admin-toolbar{grid-template-columns:1fr}.access-admin-toolbar>*{grid-column:1!important}.access-metrics{grid-template-columns:1fr 1fr}.access-admin table,.access-admin thead,.access-admin tbody{display:block}.access-admin thead{display:none}.access-admin tr[data-user-row]{display:grid;grid-template-columns:1fr auto;padding:12px;border-bottom:1px solid #dfe7f4}.access-admin tr[data-user-row] td{display:block;border:0;padding:5px 2px}.access-admin tr[data-user-row] td:nth-child(2),.access-admin tr[data-user-row] td:nth-child(3),.access-admin tr[data-user-row] td:nth-child(4){grid-column:1}.access-admin tr[data-user-row] td:last-child{grid-column:2;grid-row:1/4}.access-detail{display:block}.access-detail td{display:block}.access-detail-grid{grid-template-columns:1fr}.access-pager{align-items:flex-start;flex-direction:column}}
   `;
   document.head.append(style);
 
@@ -158,7 +169,9 @@ export function initPortalAdmin({ supabase, context }) {
     const isDetic = user?.email?.toLowerCase() === "detic@uberabadigital.com.br";
     panel.querySelector("[data-content]").innerHTML = `
       <form class="access-admin-form" data-form>
-        <h3 class="access-admin-wide">${user ? "Editar usuário" : "Cadastrar usuário"}</h3>
+        <div class="access-wizard"><button type="button" class="access-step active" data-go-step="1"><span>1</span>Identificação</button><button type="button" class="access-step" data-go-step="2"><span>2</span>Kit e sistemas</button><button type="button" class="access-step" data-go-step="3"><span>3</span>Alcance e regras</button><button type="button" class="access-step" data-go-step="4"><span>4</span>Conferência</button></div>
+        <section class="access-step-panel active" data-step-panel="1">
+        <div class="access-section-intro"><h3>${user ? "Editar identificação" : "Cadastrar usuário"}</h3><p>Informe o vínculo institucional. Os acessos serão configurados nas próximas etapas.</p></div>
         <label>Nome completo<input name="fullName" value="${esc(user?.full_name)}" required></label>
         <label>E-mail institucional<input name="email" type="email" value="${esc(user?.email)}" ${isDetic ? "readonly" : ""} required></label>
         <label>Área de atuação<select name="area" required><option value="">Selecione a área</option>${USER_AREAS.map((area) => `<option value="${esc(area)}" ${user?.area === area ? "selected" : ""}>${esc(area)}</option>`).join("")}</select><small>Área institucional utilizada também no módulo Monitoramento.</small></label>
@@ -170,12 +183,20 @@ export function initPortalAdmin({ supabase, context }) {
         <label>Situação da conta<select name="accountStatus" ${isDetic ? "disabled" : ""}><option value="ACTIVE" ${!user || user?.account_status === "ACTIVE" || (!user?.account_status && user?.active) ? "selected" : ""}>Ativa</option><option value="SUSPENDED" ${user?.account_status === "SUSPENDED" ? "selected" : ""}>Suspensa temporariamente</option><option value="INACTIVE" ${user?.account_status === "INACTIVE" || user?.active === false ? "selected" : ""}>Inativa</option></select></label>
         <label>Início da vigência<input name="accessStartsAt" type="date" value="${esc(user?.access_starts_at || "")}"></label>
         <label>Fim da vigência<input name="accessEndsAt" type="date" value="${esc(user?.access_ends_at || "")}"><small>Ao vencer, o portal bloqueia os sistemas automaticamente.</small></label>
+        </section>
+        <section class="access-step-panel" data-step-panel="2">
+        <div class="access-section-intro"><h3>Escolha um kit de acesso</h3><p>Use uma configuração pronta e ajuste somente quando necessário.</p></div>
+        <div class="access-kit-grid">${ACCESS_KITS.map((kit) => `<button type="button" class="access-kit" data-access-kit="${kit.code}"><strong>${esc(kit.name)}</strong><small>${esc(kit.description)}</small></button>`).join("")}</div>
+        <p class="access-kit-note">Comunicação Protegida nunca é liberada globalmente por um kit. Cada caso continua exigindo autorização individual.</p>
         <fieldset class="access-admin-wide"><legend>Perfis corporativos</legend><div class="profile-grid">
           ${(catalog.profiles || []).map((profile) => {
             const protectedAdmin = profile.code === "ADMIN_GERAL" && !isDetic;
             return `<label class="profile-option"><input type="checkbox" name="profiles" value="${profile.code}" ${assigned.has(profile.code) || (!user && false) ? "checked" : ""} ${protectedAdmin ? "disabled" : ""}><span><strong>${esc(profile.name)}</strong><br><small>${esc(profile.description)}</small></span></label>`;
           }).join("")}
         </div></fieldset>
+        </section>
+        <section class="access-step-panel" data-step-panel="3">
+        <div class="access-section-intro"><h3>Defina o alcance em cada sistema</h3><p>O perfil determina o que a pessoa faz; o alcance determina onde ela pode atuar.</p></div>
         <fieldset class="access-admin-wide"><legend>Papel e campo de atuação em cada sistema</legend><div class="module-role-grid">
           ${(catalog.modules || []).map((module) => {
             const current = roleByModule.get(module.id);
@@ -189,17 +210,66 @@ export function initPortalAdmin({ supabase, context }) {
             const permissionOptions = [["can_view","Acessar"],["can_create","Criar"],["can_edit","Editar"],["can_delete","Excluir"],["can_approve","Aprovar/publicar"],["can_assign","Direcionar"],["can_export","Exportar"],["can_view_sensitive","Ver dados sensíveis"],["can_admin","Administrar"]];
             const expiry = override?.expires_at ? String(override.expires_at).slice(0,10) : "";
             const profileNames = baseline.map((permission) => catalog.profiles.find((profile) => profile.id === permission.profile_id)?.name).filter(Boolean).join(", ");
-            const governance = module.code === "votacao" ? '<small>As regras existentes da Urna Eletrônica foram preservadas.</small>' : `<div class="permission-grid">${permissionOptions.map(([key,label]) => `<label class="permission-option"><input type="checkbox" name="access:${module.code}:${key}" ${allowed(key)?"checked":""}><span>${label}</span></label>`).join("")}</div><label class="access-expiry">Expiração do acesso<input type="date" name="expires:${module.code}" value="${esc(expiry)}"><small>Opcional para acessos temporários.</small></label><small class="access-origin">Origem atual: ${esc(profileNames || "nenhum perfil com acesso")}${override ? " + ajuste individual" : ""}.</small>`;
-            return `<div class="module-role" data-module-card="${esc(module.code)}"><strong>${esc(module.name)}</strong><label>Papel funcional<select name="role:${module.code}"><option value="">Automático/sem vínculo</option>${roles.map((role) => `<option value="${esc(role)}" ${current?.role_code === role ? "selected" : ""}>${esc(role)}</option>`).join("")}</select></label><label>Alcance dos dados<select name="scopeMode:${module.code}">${SCOPE_MODES.map(([value,label]) => `<option value="${value}" ${scopeMode === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><label>Referência do alcance<input name="scope:${module.code}" value="${esc(scopeValue)}" placeholder="Nome da diretoria, área ou unidade"></label>${governance}</div>`;
+            const governance = module.code === "votacao" ? '<p class="access-kit-note">As regras existentes da Urna Eletrônica foram preservadas. O vínculo continua obrigatório por unidade e processo eleitoral.</p>' : `<details class="access-advanced"><summary>Ajustes avançados de permissões</summary><div class="permission-grid">${permissionOptions.map(([key,label]) => `<label class="permission-option"><input type="checkbox" name="access:${module.code}:${key}" ${allowed(key)?"checked":""}><span>${label}</span></label>`).join("")}</div><label class="access-expiry">Expiração específica do sistema<input type="date" name="expires:${module.code}" value="${esc(expiry)}"><small>Opcional para acessos temporários.</small></label><small class="access-origin">Origem atual: ${esc(profileNames || "nenhum perfil com acesso")}${override ? " + ajuste individual" : ""}.</small></details>`;
+            return `<div class="module-role" data-module-card="${esc(module.code)}"><div class="access-module-title"><strong>${esc(module.name)}</strong><span class="access-module-state" data-module-state>Configuração do perfil</span></div><label>Papel funcional<select name="role:${module.code}"><option value="">Automático/sem vínculo</option>${roles.map((role) => `<option value="${esc(role)}" ${current?.role_code === role ? "selected" : ""}>${esc(role)}</option>`).join("")}</select></label><label>Alcance dos dados<select name="scopeMode:${module.code}">${SCOPE_MODES.map(([value,label]) => `<option value="${value}" ${scopeMode === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><label>Referência do alcance<input name="scope:${module.code}" value="${esc(scopeValue)}" placeholder="Diretoria, área ou unidade vinculada"></label>${governance}</div>`;
           }).join("")}
         </div></fieldset>
+        </section>
+        <section class="access-step-panel" data-step-panel="4">
+        <div class="access-section-intro"><h3>Conferência antes de salvar</h3><p>Revise em linguagem simples exatamente o que será liberado.</p></div>
+        <div class="access-confirmation"><article><span>Usuário</span><strong data-confirm-name>—</strong></article><article><span>Vínculo</span><strong data-confirm-link>—</strong></article><article><span>Vigência</span><strong data-confirm-expiry>Sem expiração</strong></article></div>
         <section class="access-summary access-admin-wide" data-access-summary><h4>Resumo efetivo do acesso</h4><p>Selecione os perfis e permissões para visualizar a conferência.</p></section>
+        <div class="access-risk-warning" data-risk-warning hidden></div>
         <div class="access-notice access-admin-wide" data-notice></div>
-        <div class="access-actions access-admin-wide"><button class="access-secondary" type="button" data-cancel>Cancelar</button><button class="access-primary" type="submit">Salvar usuário e acessos</button></div>
+        </section>
+        <div class="access-wizard-actions"><button class="access-secondary" type="button" data-cancel>Cancelar</button><div><button class="access-secondary" type="button" data-previous hidden>Voltar</button> <button class="access-primary" type="button" data-next>Continuar</button><button class="access-primary" type="submit" data-submit hidden>Salvar usuário e acessos</button></div></div>
       </form>`;
     const form = panel.querySelector("[data-form]");
+    let currentStep = 1;
+    const showStep = (step) => {
+      currentStep = Math.max(1, Math.min(4, Number(step)));
+      form.querySelectorAll("[data-step-panel]").forEach((item) => item.classList.toggle("active", Number(item.dataset.stepPanel) === currentStep));
+      form.querySelectorAll("[data-go-step]").forEach((item) => { const value = Number(item.dataset.goStep); item.classList.toggle("active", value === currentStep); item.classList.toggle("done", value < currentStep); });
+      form.querySelector("[data-previous]").hidden = currentStep === 1;
+      form.querySelector("[data-next]").hidden = currentStep === 4;
+      form.querySelector("[data-submit]").hidden = currentStep !== 4;
+      if (currentStep === 4) updateAccessSummary(form);
+      panel.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    const applyKit = (kit) => {
+      form.querySelectorAll('[name="profiles"]').forEach((input) => { if (input.value !== "ADMIN_GERAL" || !input.disabled) input.checked = kit.profiles.includes(input.value); });
+      form.querySelectorAll("[data-access-kit]").forEach((button) => button.classList.toggle("selected", button.dataset.accessKit === kit.code));
+      for (const module of catalog.modules || []) {
+        const role = form.elements[`role:${module.code}`];
+        const scopeMode = form.elements[`scopeMode:${module.code}`];
+        const scopeValue = form.elements[`scope:${module.code}`];
+        if (role && kit.roles[module.code]) role.value = kit.roles[module.code];
+        if (scopeMode && module.code !== "votacao") scopeMode.value = kit.scope;
+        if (scopeValue && ["UNIT","AREA","DIRECTORATE"].includes(kit.scope)) scopeValue.value = kit.scope === "UNIT" ? form.elements.unitName.value : kit.scope === "AREA" ? form.elements.area.value : form.elements.directorate.value;
+        const selectedProfileIds = new Set((catalog.profiles || []).filter((profile) => kit.profiles.includes(profile.code)).map((profile) => profile.id));
+        const grants = (catalog.profilePermissions || []).filter((permission) => permission.module_id === module.id && selectedProfileIds.has(permission.profile_id));
+        ["can_view","can_create","can_edit","can_delete","can_approve","can_assign","can_export","can_view_sensitive","can_admin"].forEach((key) => { const input = form.elements[`access:${module.code}:${key}`]; if (input) input.checked = grants.some((grant) => grant[key]); });
+      }
+      if (kit.temporary && !form.elements.accessEndsAt.value) { const date = new Date(); date.setDate(date.getDate() + 30); form.elements.accessEndsAt.value = date.toISOString().slice(0, 10); }
+      updateAccessSummary(form);
+    };
+    const syncPermissionsFromProfiles = () => {
+      const selectedCodes = new Set([...form.querySelectorAll('[name="profiles"]:checked')].map((input) => input.value));
+      const selectedIds = new Set((catalog.profiles || []).filter((profile) => selectedCodes.has(profile.code)).map((profile) => profile.id));
+      for (const module of catalog.modules || []) {
+        if (module.code === "votacao") continue;
+        const grants = (catalog.profilePermissions || []).filter((permission) => permission.module_id === module.id && selectedIds.has(permission.profile_id));
+        ["can_view","can_create","can_edit","can_delete","can_approve","can_assign","can_export","can_view_sensitive","can_admin"].forEach((key) => { const input = form.elements[`access:${module.code}:${key}`]; if (input) input.checked = grants.some((grant) => grant[key]); });
+        const state = form.querySelector(`[data-module-card="${module.code}"] [data-module-state]`);
+        if (state) state.textContent = grants.some((grant) => grant.can_view) ? "Sistema liberado" : "Sem acesso";
+      }
+    };
     form.querySelector("[data-cancel]").addEventListener("click", renderList);
-    form.addEventListener("change", () => updateAccessSummary(form));
+    form.querySelector("[data-next]").addEventListener("click", () => { if (currentStep === 1 && !form.reportValidity()) return; showStep(currentStep + 1); });
+    form.querySelector("[data-previous]").addEventListener("click", () => showStep(currentStep - 1));
+    form.querySelectorAll("[data-go-step]").forEach((button) => button.addEventListener("click", () => { if (Number(button.dataset.goStep) === 1 || form.reportValidity()) showStep(button.dataset.goStep); }));
+    form.querySelectorAll("[data-access-kit]").forEach((button) => button.addEventListener("click", () => applyKit(ACCESS_KITS.find((kit) => kit.code === button.dataset.accessKit))));
+    form.addEventListener("change", (event) => { if (event.target.name === "profiles") syncPermissionsFromProfiles(); updateAccessSummary(form); });
     updateAccessSummary(form);
     form.addEventListener("submit", save);
   }
@@ -211,6 +281,21 @@ export function initPortalAdmin({ supabase, context }) {
       return `<li><strong>${esc(module.name)}</strong>: ${esc(permissions.length ? permissions.join(", ") : "somente consultar")} · ${esc(scopeLabel.toLowerCase())}</li>`;
     });
     form.querySelector("[data-access-summary]").innerHTML = `<h4>Resumo efetivo do acesso</h4>${items.length ? `<ul>${items.join("")}</ul>` : "<p>Nenhum sistema foi liberado pelas opções atuais.</p>"}`;
+    const name = form.elements.fullName?.value.trim() || "Usuário não informado";
+    const link = [form.elements.jobTitle?.value.trim(), form.elements.unitName?.value.trim() || form.elements.area?.value].filter(Boolean).join(" · ") || "Vínculo ainda não informado";
+    const expiry = form.elements.accessEndsAt?.value ? `Até ${new Date(`${form.elements.accessEndsAt.value}T12:00:00`).toLocaleDateString("pt-BR")}` : "Sem expiração";
+    if (form.querySelector("[data-confirm-name]")) form.querySelector("[data-confirm-name]").textContent = name;
+    if (form.querySelector("[data-confirm-link]")) form.querySelector("[data-confirm-link]").textContent = link;
+    if (form.querySelector("[data-confirm-expiry]")) form.querySelector("[data-confirm-expiry]").textContent = expiry;
+    const risks = [];
+    for (const module of catalog.modules || []) {
+      if (form.elements[`access:${module.code}:can_admin`]?.checked) risks.push(`${module.name}: administração completa`);
+      if (form.elements[`access:${module.code}:can_delete`]?.checked) risks.push(`${module.name}: permissão para excluir`);
+      if (form.elements[`access:${module.code}:can_view_sensitive`]?.checked) risks.push(`${module.name}: visualização de dados sensíveis`);
+      if (form.elements[`scopeMode:${module.code}`]?.value === "ALL" && form.elements[`access:${module.code}:can_view`]?.checked) risks.push(`${module.name}: alcance em todo o sistema`);
+    }
+    const warning = form.querySelector("[data-risk-warning]");
+    if (warning) { warning.hidden = !risks.length; warning.innerHTML = risks.length ? `<strong>Atenção às permissões ampliadas:</strong><br>${risks.map(esc).join("<br>")}` : ""; }
   }
 
   async function save(event) {
@@ -268,6 +353,19 @@ export function initPortalAdmin({ supabase, context }) {
     if ((!selectedUser || payload.temporaryPassword) && !STRONG_PASSWORD.test(payload.temporaryPassword)) {
       notice.textContent = "A senha temporária deve ter ao menos 8 caracteres, incluindo letra, número e símbolo.";
       return;
+    }
+    if (payload.accessStartsAt && payload.accessEndsAt && payload.accessEndsAt < payload.accessStartsAt) {
+      notice.textContent = "A data final da vigência não pode ser anterior à data inicial.";
+      return;
+    }
+    for (const module of catalog.modules || []) {
+      const access = accessOverrides[module.code];
+      if (access) {
+        const elevated = ["can_create","can_edit","can_delete","can_approve","can_assign","can_export","can_view_sensitive","can_admin"].some((key) => access[key]);
+        if (elevated && !access.can_view) { notice.textContent = `${module.name}: libere “Acessar” antes das demais operações.`; return; }
+        if (access.can_view && ["DIRECTORATE","AREA","UNIT"].includes(access.scope.mode) && !access.scope.value) { notice.textContent = `${module.name}: informe a referência do alcance selecionado.`; return; }
+      }
+      if (module.code === "votacao" && moduleRoles.votacao?.roleCode && !moduleRoles.votacao.scope?.unit_id) { notice.textContent = "Urna Eletrônica: informe a unidade vinculada ao mesário."; return; }
     }
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;

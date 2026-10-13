@@ -16,6 +16,8 @@ const MODULE_ROLES: Record<string, readonly string[]> = {
   comunicacao: ["administrador", "gestor", "emissor", "destinatario", "auditoria", "publicador"],
   votacao: ["MESARIO"],
 };
+const SCOPE_MODES = new Set(["ALL", "DIRECTORATE", "AREA", "UNIT", "TEAM", "OWN", "ASSIGNED", "READ_ONLY"]);
+const SCOPES_REQUIRING_REFERENCE = new Set(["DIRECTORATE", "AREA", "UNIT"]);
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -87,6 +89,21 @@ Deno.serve(async (req) => {
     if (uid === user.id && (!active || email !== DETIC_EMAIL || !requestedProfiles.includes("ADMIN_GERAL"))) {
       throw new Error("O administrador DETIC não pode remover o próprio acesso administrativo.");
     }
+    for (const [moduleCode, configuredValue] of Object.entries(requestedRoles)) {
+      const configured = configuredValue && typeof configuredValue === "object" ? configuredValue as Record<string, any> : {};
+      const roleCode = String(configured.roleCode || "");
+      if (roleCode && !(MODULE_ROLES[moduleCode] || []).includes(roleCode)) throw new Error(`Papel inválido para o sistema ${moduleCode}.`);
+      if (moduleCode === "votacao" && roleCode && !configured.scope?.unit_id) throw new Error("Informe a unidade vinculada ao acesso da Urna Eletrônica.");
+    }
+    for (const [moduleCode, configuredValue] of Object.entries(requestedOverrides)) {
+      const configured = configuredValue && typeof configuredValue === "object" ? configuredValue as Record<string, any> : {};
+      const scope = configured.scope && typeof configured.scope === "object" ? configured.scope : {};
+      const scopeMode = String(scope.mode || "ALL");
+      if (!SCOPE_MODES.has(scopeMode)) throw new Error(`Alcance inválido para o sistema ${moduleCode}.`);
+      if (configured.can_view && SCOPES_REQUIRING_REFERENCE.has(scopeMode) && !String(scope.value || "").trim()) throw new Error(`Informe a referência do alcance para o sistema ${moduleCode}.`);
+      const elevated = ["can_create", "can_edit", "can_delete", "can_approve", "can_admin", "can_assign", "can_export", "can_view_sensitive"].some((key) => configured[key] === true);
+      if (elevated && configured.can_view !== true) throw new Error(`O sistema ${moduleCode} possui operações liberadas sem permissão de acesso.`);
+    }
 
     const { data: allowedProfiles, error: profileError } = await admin.from("semed_profiles").select("id,code").in("code", requestedProfiles).eq("active", true);
     if (profileError) throw profileError;
@@ -138,6 +155,7 @@ Deno.serve(async (req) => {
       const configured = requestedRoles[module.code] || {};
       const roleCode = String(configured.roleCode || "");
       if (roleCode && !(MODULE_ROLES[module.code] || []).includes(roleCode)) throw new Error(`Papel inválido para o sistema ${module.code}.`);
+      if (module.code === "votacao" && roleCode && !configured.scope?.unit_id) throw new Error("Informe a unidade vinculada ao acesso da Urna Eletrônica.");
       return { user_id: target.id, module_id: module.id, role_code: roleCode, scope: configured.scope || {}, active: true, managed_by: user.id };
     }).filter((row) => row.role_code);
     if (roleRows.length) {
@@ -152,9 +170,16 @@ Deno.serve(async (req) => {
       if (module.code === "votacao") return null;
       const configured = requestedOverrides[module.code];
       if (!configured || typeof configured !== "object") return null;
+      const scope = configured.scope && typeof configured.scope === "object" ? configured.scope : {};
+      const scopeMode = String(scope.mode || "ALL");
+      const scopeValue = String(scope.value || "").trim();
+      if (!SCOPE_MODES.has(scopeMode)) throw new Error(`Alcance inválido para o sistema ${module.code}.`);
+      if (configured.can_view && SCOPES_REQUIRING_REFERENCE.has(scopeMode) && !scopeValue) throw new Error(`Informe a referência do alcance para o sistema ${module.code}.`);
+      const elevated = permissionKeys.some((key) => key !== "can_view" && configured[key] === true);
+      if (elevated && configured.can_view !== true) throw new Error(`O sistema ${module.code} possui operações liberadas sem permissão de acesso.`);
       const row: Record<string, unknown> = {
         user_id: target.id, module_id: module.id, active: true, managed_by: user.id,
-        scope: configured.scope && typeof configured.scope === "object" ? configured.scope : {},
+        scope,
         expires_at: configured.expiresAt || null,
       };
       for (const key of permissionKeys) row[key] = typeof configured[key] === "boolean" ? configured[key] : null;
