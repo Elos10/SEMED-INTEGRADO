@@ -9,7 +9,15 @@ const headers = { ...corsHeaders, "Content-Type": "application/json" };
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers });
 const strongPassword = (value: string) => /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/.test(value);
 const DETIC_EMAIL = "detic@uberabadigital.com.br";
-const USER_AREAS = ["Gestão SEMED", "Diretoria de Ensino", "Diretoria de Apoio à Educação Básica", "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças", "Arte e Cultura", "Formação - Casa do Educador", "Formação - Polo UAB", "Inclusão", "Infraestrutura", "Planejamento Financeiro", "Tecnologia", "Transporte"] as const;
+const INSTITUTIONAL_STRUCTURE: Record<string, readonly string[]> = {
+  "Gabinete": ["GABINETE DO(A) SECRETÁRIO(A)", "SECRETÁRIO(A) ADJUNTO(A)", "ASSESSORIA DE COMUNICAÇÃO", "ASSESSORIA JURÍDICA", "NÚCLEOS DE TRABALHO"],
+  "Diretoria de Ensino": ["DIRETORIA DE ENSINO", "DEPARTAMENTO DE EDUCAÇÃO FÍSICA ESCOLAR", "DEPARTAMENTO DE EDUCAÇÃO INFANTIL", "DEPARTAMENTO DE EDUCAÇÃO TECNOLÓGICA", "DEPARTAMENTO DE ENSINO FUNDAMENTAL", "DEPARTAMENTO DE INSPEÇÃO ESCOLAR", "DEPARTAMENTO DE FORMAÇÃO PROFISSIONAL", "SEÇÃO DE MANUTENÇÃO DE COMPUTADORES", "SEÇÃO DE PARADESPORTO EDUCACIONAL", "CASA DO EDUCADOR", "POLO UAB"],
+  "Diretoria de Apoio à Educação Básica": ["DIRETORIA DE APOIO À EDUCAÇÃO BÁSICA", "DEPARTAMENTO DE ARTE E CULTURA", "DEPARTAMENTO DE BIBLIOTECAS", "DEPARTAMENTO DE EDUCAÇÃO INCLUSIVA", "CEMEA ABADIA", "CEU DAS ARTES", "SEÇÃO DE ASSISTÊNCIA AO EDUCANDO", "SEÇÃO DE ATENDIMENTO ESPECIALIZADO", "SEÇÃO DE BIBLIOTECAS ESCOLARES", "SEÇÃO DE REFERÊNCIA, PROCESSAMENTO TÉCNICO E DESENVOLVIMENTO DE ACERVOS"],
+  "Diretoria de Logística": ["DIRETORIA DE LOGÍSTICA", "DEPARTAMENTO DE GESTÃO DE PESSOAL", "DEPARTAMENTO DE MANUTENÇÃO E INFRAESTRUTURA ESCOLAR", "DEPARTAMENTO DE TRANSPORTE", "SEÇÃO DE ALIMENTAÇÃO ESCOLAR", "SEÇÃO DE PATRIMÔNIO", "SEÇÃO DE PROVIMENTO DE PESSOAL", "SEÇÃO DE ACOMPANHAMENTO E SUPORTE DE PESSOAL", "SEÇÃO DE TRANSPORTE ESCOLAR URBANO"],
+  "Diretoria de Planejamento, Gestão e Finanças": ["DIRETORIA DE PLANEJAMENTO, GESTÃO E FINANÇAS", "DEPARTAMENTO DE PLANEJAMENTO, GESTÃO, PROJETOS E CONVÊNIOS", "DEPARTAMENTO DE PROJETOS ESPECIAIS", "SEÇÃO DE CONTROLE DE CONTRATOS", "SEÇÃO DE CONVÊNIOS E RECURSOS", "SEÇÃO DE PLANEJAMENTO FINANCEIRO E ORÇAMENTÁRIO", "SEÇÃO DE MONITORAMENTO DE PROCESSOS LICITATÓRIOS"],
+};
+const USER_AREAS = Object.keys(INSTITUTIONAL_STRUCTURE);
+const JOB_TITLES = ["Secretário(a)", "Secretário(a) Adjunto(a)", "Assessor(a)", "Diretor(a) de Diretoria", "Chefe de Departamento", "Chefe de Seção", "Diretor(a) de Unidade", "Vice-Diretor(a) de Unidade", "Coordenador(a) Pedagógico(a)", "Coordenador(a) Administrativo(a)"];
 const MODULE_ROLES: Record<string, readonly string[]> = {
   avaliacoes: ["ADMINISTRADOR", "GESTOR DA REDE", "GESTOR DE UNIDADE", "PROFESSOR", "OPERADOR", "CONSULTA"],
   monitor: ["administrador", "gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
@@ -80,7 +88,15 @@ Deno.serve(async (req) => {
     const requestedOverrides = input.accessOverrides && typeof input.accessOverrides === "object" ? input.accessOverrides : {};
 
     if (!email || !fullName || !area || !requestedProfiles.length) throw new Error("Nome, e-mail, área e ao menos um perfil são obrigatórios.");
-    if (!USER_AREAS.includes(area as typeof USER_AREAS[number])) throw new Error("Área de atuação inválida.");
+    if (!USER_AREAS.includes(area)) throw new Error("Área de atuação inválida.");
+    if (directorate !== area) throw new Error("Área de atuação e Diretoria devem representar o mesmo vínculo institucional.");
+    if (!(INSTITUTIONAL_STRUCTURE[directorate] || []).includes(unitName)) throw new Error("Unidade/Estabelecimento incompatível com a diretoria selecionada.");
+    if (!JOB_TITLES.includes(jobTitle) && !uid) throw new Error("Cargo ou função inválido.");
+    if (managerName) {
+      const { data: manager, error: managerError } = await admin.from("semed_people").select("user_id").eq("full_name", managerName).eq("active", true).limit(1).maybeSingle();
+      if (managerError) throw managerError;
+      if (!manager || manager.user_id === uid) throw new Error("Gestor imediato inválido ou inativo.");
+    }
     if (!['ACTIVE', 'SUSPENDED', 'INACTIVE'].includes(accountStatus)) throw new Error("Situação da conta inválida.");
     if (accessStartsAt && accessEndsAt && accessEndsAt < accessStartsAt) throw new Error("O fim da vigência não pode ser anterior ao início.");
     if (!uid && !strongPassword(temporaryPassword)) throw new Error("A senha temporária deve ter 8 caracteres, letra, número e símbolo.");

@@ -13,7 +13,17 @@ const SCOPE_MODES = [
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const STRONG_PASSWORD = /(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}/;
-const USER_AREAS = ["Gestão SEMED", "Diretoria de Ensino", "Diretoria de Apoio à Educação Básica", "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças", "Arte e Cultura", "Formação - Casa do Educador", "Formação - Polo UAB", "Inclusão", "Infraestrutura", "Planejamento Financeiro", "Tecnologia", "Transporte"];
+const INSTITUTIONAL_STRUCTURE = {
+  "Gabinete": ["GABINETE DO(A) SECRETÁRIO(A)", "SECRETÁRIO(A) ADJUNTO(A)", "ASSESSORIA DE COMUNICAÇÃO", "ASSESSORIA JURÍDICA", "NÚCLEOS DE TRABALHO"],
+  "Diretoria de Ensino": ["DIRETORIA DE ENSINO", "DEPARTAMENTO DE EDUCAÇÃO FÍSICA ESCOLAR", "DEPARTAMENTO DE EDUCAÇÃO INFANTIL", "DEPARTAMENTO DE EDUCAÇÃO TECNOLÓGICA", "DEPARTAMENTO DE ENSINO FUNDAMENTAL", "DEPARTAMENTO DE INSPEÇÃO ESCOLAR", "DEPARTAMENTO DE FORMAÇÃO PROFISSIONAL", "SEÇÃO DE MANUTENÇÃO DE COMPUTADORES", "SEÇÃO DE PARADESPORTO EDUCACIONAL", "CASA DO EDUCADOR", "POLO UAB"],
+  "Diretoria de Apoio à Educação Básica": ["DIRETORIA DE APOIO À EDUCAÇÃO BÁSICA", "DEPARTAMENTO DE ARTE E CULTURA", "DEPARTAMENTO DE BIBLIOTECAS", "DEPARTAMENTO DE EDUCAÇÃO INCLUSIVA", "CEMEA ABADIA", "CEU DAS ARTES", "SEÇÃO DE ASSISTÊNCIA AO EDUCANDO", "SEÇÃO DE ATENDIMENTO ESPECIALIZADO", "SEÇÃO DE BIBLIOTECAS ESCOLARES", "SEÇÃO DE REFERÊNCIA, PROCESSAMENTO TÉCNICO E DESENVOLVIMENTO DE ACERVOS"],
+  "Diretoria de Logística": ["DIRETORIA DE LOGÍSTICA", "DEPARTAMENTO DE GESTÃO DE PESSOAL", "DEPARTAMENTO DE MANUTENÇÃO E INFRAESTRUTURA ESCOLAR", "DEPARTAMENTO DE TRANSPORTE", "SEÇÃO DE ALIMENTAÇÃO ESCOLAR", "SEÇÃO DE PATRIMÔNIO", "SEÇÃO DE PROVIMENTO DE PESSOAL", "SEÇÃO DE ACOMPANHAMENTO E SUPORTE DE PESSOAL", "SEÇÃO DE TRANSPORTE ESCOLAR URBANO"],
+  "Diretoria de Planejamento, Gestão e Finanças": ["DIRETORIA DE PLANEJAMENTO, GESTÃO E FINANÇAS", "DEPARTAMENTO DE PLANEJAMENTO, GESTÃO, PROJETOS E CONVÊNIOS", "DEPARTAMENTO DE PROJETOS ESPECIAIS", "SEÇÃO DE CONTROLE DE CONTRATOS", "SEÇÃO DE CONVÊNIOS E RECURSOS", "SEÇÃO DE PLANEJAMENTO FINANCEIRO E ORÇAMENTÁRIO", "SEÇÃO DE MONITORAMENTO DE PROCESSOS LICITATÓRIOS"],
+};
+const USER_AREAS = Object.keys(INSTITUTIONAL_STRUCTURE);
+const JOB_TITLES = ["Secretário(a)", "Secretário(a) Adjunto(a)", "Assessor(a)", "Diretor(a) de Diretoria", "Chefe de Departamento", "Chefe de Seção", "Diretor(a) de Unidade", "Vice-Diretor(a) de Unidade", "Coordenador(a) Pedagógico(a)", "Coordenador(a) Administrativo(a)"];
+const LEGACY_AREA_MAP = { "Gestão SEMED": "Gabinete", "Arte e Cultura": "Diretoria de Apoio à Educação Básica", "Formação - Casa do Educador": "Diretoria de Ensino", "Formação - Polo UAB": "Diretoria de Ensino", "Inclusão": "Diretoria de Apoio à Educação Básica", "Infraestrutura": "Diretoria de Logística", "Planejamento Financeiro": "Diretoria de Planejamento, Gestão e Finanças", "Tecnologia": "Diretoria de Ensino", "Transporte": "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças": "Diretoria de Planejamento, Gestão e Finanças" };
+const normalizedArea = (value) => USER_AREAS.includes(value) ? value : LEGACY_AREA_MAP[value] || "";
 const ACCESS_KITS = [
   { code: "PROFESSOR_UNIDADE", name: "Professor de unidade", description: "Avaliações somente no contexto da unidade vinculada.", profiles: ["AVALIACOES_PROFESSOR"], roles: { avaliacoes: "PROFESSOR" }, scope: "UNIT" },
   { code: "GESTOR_UNIDADE", name: "Gestor de unidade", description: "Avaliações e Monitoramento limitados à unidade de lotação.", profiles: ["AVALIACOES_GESTOR_UNIDADE", "MONITOR_GESTOR_AREA"], roles: { avaliacoes: "GESTOR DE UNIDADE", monitor: "diretoria" }, scope: "UNIT" },
@@ -61,7 +71,7 @@ export function initPortalAdmin({ supabase, context }) {
     .access-admin-head{position:sticky;top:-24px;z-index:5;background:#f5f8fe;padding:24px 0 14px}.access-admin-toolbar{display:grid;grid-template-columns:minmax(280px,1fr) 190px 180px auto;gap:10px;margin:16px 0}.access-admin input,.access-admin select{min-height:42px;border:1px solid #c8d6ee;border-radius:8px;padding:9px;background:#fff}
     .access-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:10px 0 16px}.access-metric{padding:13px 15px;border:1px solid #d5e0f1;border-radius:12px;background:#fff;text-align:left;color:#092766}.access-metric:hover,.access-metric.active{border-color:#315bb4;box-shadow:0 5px 16px #173d8918;transform:translateY(-1px)}.access-metric strong{display:block;font-size:22px}.access-metric span{font-size:12px;color:#52698f}.access-metric.attention{background:#fff8e3;border-color:#f2d98b}.access-metric.danger{background:#fff0f0;border-color:#efc2c2}
     .access-table-wrap{overflow:auto;border:1px solid #d8e2f2;border-radius:12px;background:#fff}.access-admin table{width:100%;border-collapse:collapse;background:#fff}.access-admin th,.access-admin td{padding:12px;border-bottom:1px solid #e1e8f4;text-align:left;font-size:13px;vertical-align:middle}.access-admin th{position:sticky;top:0;background:#eaf0fb;z-index:2}.access-sort{border:0;background:transparent;color:#102b68;font:inherit;font-weight:800;padding:0}.access-user{min-width:210px}.access-user strong{font-size:13px}.access-user small{color:#52698f}.access-incomplete{display:inline-flex;margin-top:5px;padding:3px 7px;border-radius:999px;background:#fff2d8;color:#805b00;font-size:10px;font-weight:800}.access-profiles{display:flex;align-items:center;gap:5px;flex-wrap:wrap;max-width:390px}.access-profile-group{display:inline-flex;padding:5px 8px;border-radius:999px;background:#e8effc;color:#244887;font-size:11px;white-space:nowrap}.access-count{background:#173d89;color:#fff}.access-security{min-width:145px}.access-status{display:inline-flex;padding:5px 9px;border-radius:999px;background:#e6f5ed;color:#17623d;font-weight:800}.access-status.warning{background:#fff2d2;color:#805900}.access-status.danger{background:#fde7e7;color:#9c2626}.access-detail td{background:#f6f9fe;padding:14px 20px}.access-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.access-detail-grid span{display:block;color:#617393;font-size:11px}.access-detail-grid strong{display:block;margin-top:3px}.access-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.access-pager-actions{display:flex;gap:8px}.access-empty{text-align:center;padding:36px!important;color:#607294}
-    .access-admin-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.access-admin-form label{display:grid;gap:6px;font-size:12px;font-weight:800}
+    .access-admin-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.access-admin-form label{display:grid;gap:6px;font-size:12px;font-weight:800}.access-admin-form label small{color:#607294;font-weight:600;line-height:1.35}.access-admin-form input[list]{padding-right:34px}.access-field-valid{color:#17623d!important}.access-field-invalid{color:#9b1c1c!important}
     .access-admin-wide{grid-column:1/-1}.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.profile-option{display:flex!important;grid-template-columns:auto 1fr!important;align-items:start;padding:9px;border:1px solid #d6e1f2;border-radius:8px;background:#fff}
     .module-role-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.module-role{padding:10px;border:1px solid #d6e1f2;border-radius:9px;background:#fff}.module-role label{margin-top:7px}
     .permission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}.permission-option{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center!important;gap:7px!important;padding:7px;border:1px solid #e0e7f3;border-radius:7px;font-weight:700!important}.permission-option input{min-height:auto!important}.access-expiry{margin-top:9px!important}
@@ -167,6 +177,9 @@ export function initPortalAdmin({ supabase, context }) {
     const roleByModule = new Map((catalog.moduleRoles || []).filter((item) => item.user_id === user?.user_id).map((item) => [item.module_id, item]));
     const overrideByModule = new Map((catalog.accessOverrides || []).filter((item) => item.user_id === user?.user_id).map((item) => [item.module_id, item]));
     const isDetic = user?.email?.toLowerCase() === "detic@uberabadigital.com.br";
+    const currentArea = normalizedArea(user?.area) || normalizedArea(user?.directorate);
+    const currentDirectorate = normalizedArea(user?.directorate) || currentArea;
+    const managerOptions = (catalog.users || []).filter((item) => item.user_id !== user?.user_id && item.active !== false).sort((a,b)=>String(a.full_name).localeCompare(String(b.full_name), "pt-BR"));
     panel.querySelector("[data-content]").innerHTML = `
       <form class="access-admin-form" data-form>
         <div class="access-wizard"><button type="button" class="access-step active" data-go-step="1"><span>1</span>Identificação</button><button type="button" class="access-step" data-go-step="2"><span>2</span>Kit e sistemas</button><button type="button" class="access-step" data-go-step="3"><span>3</span>Alcance e regras</button><button type="button" class="access-step" data-go-step="4"><span>4</span>Conferência</button></div>
@@ -174,11 +187,11 @@ export function initPortalAdmin({ supabase, context }) {
         <div class="access-section-intro"><h3>${user ? "Editar identificação" : "Cadastrar usuário"}</h3><p>Informe o vínculo institucional. Os acessos serão configurados nas próximas etapas.</p></div>
         <label>Nome completo<input name="fullName" value="${esc(user?.full_name)}" required></label>
         <label>E-mail institucional<input name="email" type="email" value="${esc(user?.email)}" ${isDetic ? "readonly" : ""} required></label>
-        <label>Área de atuação<select name="area" required><option value="">Selecione a área</option>${USER_AREAS.map((area) => `<option value="${esc(area)}" ${user?.area === area ? "selected" : ""}>${esc(area)}</option>`).join("")}</select><small>Área institucional utilizada também no módulo Monitoramento.</small></label>
-        <label>Diretoria<input name="directorate" value="${esc(user?.directorate)}" placeholder="Diretoria responsável"></label>
-        <label>Unidade/estabelecimento<input name="unitName" value="${esc(user?.unit_name)}" placeholder="Unidade de lotação"></label>
-        <label>Cargo ou função<input name="jobTitle" value="${esc(user?.job_title)}" placeholder="Função exercida"></label>
-        <label>Gestor imediato<input name="managerName" value="${esc(user?.manager_name)}" placeholder="Responsável pela equipe"></label>
+        <label>Área de atuação<select name="area" required><option value="">Selecione a área</option>${USER_AREAS.map((area) => `<option value="${esc(area)}" ${currentArea === area ? "selected" : ""}>${esc(area)}</option>`).join("")}</select><small>Define o primeiro nível do vínculo e o alcance sugerido dos sistemas.</small></label>
+        <label>Diretoria<select name="directorate" required><option value="">Selecione a diretoria</option>${USER_AREAS.map((area) => `<option value="${esc(area)}" ${currentDirectorate === area ? "selected" : ""}>${esc(area)}</option>`).join("")}</select><small>Sincronizada com a área para impedir vínculos incompatíveis.</small></label>
+        <label>Unidade/estabelecimento<input name="unitName" list="institutional-unit-options" value="${esc(user?.unit_name)}" placeholder="Digite para pesquisar a unidade" autocomplete="off" required><datalist id="institutional-unit-options"></datalist><small data-unit-help>Selecione primeiro a área institucional.</small></label>
+        <label>Cargo ou função<select name="jobTitle" required><option value="">Selecione o cargo ou função</option>${JOB_TITLES.map((title) => `<option value="${esc(title)}" ${user?.job_title === title ? "selected" : ""}>${esc(title)}</option>`).join("")}${user?.job_title && !JOB_TITLES.includes(user.job_title) ? `<option value="${esc(user.job_title)}" selected>${esc(user.job_title)} (legado)</option>` : ""}</select></label>
+        <label>Gestor imediato<select name="managerName"><option value="">Sem gestor imediato</option>${managerOptions.map((manager) => `<option value="${esc(manager.full_name)}" ${user?.manager_name === manager.full_name ? "selected" : ""}>${esc(manager.full_name)} · ${esc(manager.unit_name || manager.area || "vínculo não informado")}</option>`).join("")}${user?.manager_name && !managerOptions.some((manager)=>manager.full_name===user.manager_name) ? `<option value="${esc(user.manager_name)}" selected>${esc(user.manager_name)} (legado)</option>` : ""}</select><small>Somente usuários ativos podem ser selecionados.</small></label>
         <label>Senha temporária<input name="temporaryPassword" type="password" autocomplete="new-password" minlength="8" pattern="(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}" title="Use no mínimo 8 caracteres, com letra, número e símbolo." ${user ? 'placeholder="Deixe vazio para manter a senha"' : "required"}><small>Mínimo de 8 caracteres, com letra, número e símbolo. O usuário deverá trocá-la no primeiro acesso.</small></label>
         <label>Situação da conta<select name="accountStatus" ${isDetic ? "disabled" : ""}><option value="ACTIVE" ${!user || user?.account_status === "ACTIVE" || (!user?.account_status && user?.active) ? "selected" : ""}>Ativa</option><option value="SUSPENDED" ${user?.account_status === "SUSPENDED" ? "selected" : ""}>Suspensa temporariamente</option><option value="INACTIVE" ${user?.account_status === "INACTIVE" || user?.active === false ? "selected" : ""}>Inativa</option></select></label>
         <label>Início da vigência<input name="accessStartsAt" type="date" value="${esc(user?.access_starts_at || "")}"></label>
@@ -225,6 +238,20 @@ export function initPortalAdmin({ supabase, context }) {
         <div class="access-wizard-actions"><button class="access-secondary" type="button" data-cancel>Cancelar</button><div><button class="access-secondary" type="button" data-previous hidden>Voltar</button> <button class="access-primary" type="button" data-next>Continuar</button><button class="access-primary" type="submit" data-submit hidden>Salvar usuário e acessos</button></div></div>
       </form>`;
     const form = panel.querySelector("[data-form]");
+    const refreshInstitutionalUnits = ({ clear = false } = {}) => {
+      const area = form.elements.area.value;
+      const directorate = form.elements.directorate.value;
+      const units = area && area === directorate ? INSTITUTIONAL_STRUCTURE[area] || [] : [];
+      const list = form.querySelector("#institutional-unit-options");
+      list.innerHTML = units.map((unit) => `<option value="${esc(unit)}"></option>`).join("");
+      if (clear && !units.includes(form.elements.unitName.value)) form.elements.unitName.value = "";
+      const help = form.querySelector("[data-unit-help]");
+      help.textContent = !area ? "Selecione primeiro a área institucional." : area !== directorate ? "Área e Diretoria precisam ser iguais." : `${units.length} unidades disponíveis nesta diretoria. Digite para pesquisar.`;
+      help.className = area && area === directorate ? "access-field-valid" : "access-field-invalid";
+    };
+    form.elements.area.addEventListener("change", () => { form.elements.directorate.value = form.elements.area.value; refreshInstitutionalUnits({ clear:true }); updateAccessSummary(form); });
+    form.elements.directorate.addEventListener("change", () => { form.elements.area.value = form.elements.directorate.value; refreshInstitutionalUnits({ clear:true }); updateAccessSummary(form); });
+    refreshInstitutionalUnits();
     let currentStep = 1;
     const showStep = (step) => {
       currentStep = Math.max(1, Math.min(4, Number(step)));
@@ -356,6 +383,18 @@ export function initPortalAdmin({ supabase, context }) {
     }
     if (payload.accessStartsAt && payload.accessEndsAt && payload.accessEndsAt < payload.accessStartsAt) {
       notice.textContent = "A data final da vigência não pode ser anterior à data inicial.";
+      return;
+    }
+    if (!USER_AREAS.includes(payload.area) || payload.directorate !== payload.area) {
+      notice.textContent = "Área de atuação e Diretoria devem representar o mesmo vínculo institucional.";
+      return;
+    }
+    if (!(INSTITUTIONAL_STRUCTURE[payload.directorate] || []).includes(payload.unitName)) {
+      notice.textContent = "Selecione uma Unidade/Estabelecimento pertencente à diretoria informada.";
+      return;
+    }
+    if (!JOB_TITLES.includes(payload.jobTitle) && !selectedUser) {
+      notice.textContent = "Selecione um Cargo ou função válido.";
       return;
     }
     for (const module of catalog.modules || []) {
