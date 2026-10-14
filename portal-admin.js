@@ -200,7 +200,7 @@ export function initPortalAdmin({ supabase, context }) {
         <section class="access-step-panel" data-step-panel="2">
         <div class="access-section-intro"><h3>Escolha um kit de acesso</h3><p>Use uma configuração pronta e ajuste somente quando necessário.</p></div>
         <div class="access-kit-grid">${ACCESS_KITS.map((kit) => `<button type="button" class="access-kit" data-access-kit="${kit.code}"><strong>${esc(kit.name)}</strong><small>${esc(kit.description)}</small></button>`).join("")}</div>
-        <p class="access-kit-note">Comunicação Protegida nunca é liberada globalmente por um kit. Cada caso continua exigindo autorização individual.</p>
+        <p class="access-kit-note">Comunicação Protegida exige um perfil nominal próprio. Use “Comunicação Protegida — Acesso” para participantes e “Comunicação Protegida — Gestor” somente para quem deve acompanhar todos os casos e relatórios.</p>
         <fieldset class="access-admin-wide"><legend>Perfis corporativos</legend><div class="profile-grid">
           ${(catalog.profiles || []).map((profile) => {
             const protectedAdmin = profile.code === "ADMIN_GERAL" && !isDetic;
@@ -220,7 +220,8 @@ export function initPortalAdmin({ supabase, context }) {
             const scopeMode = scope.mode || (scope.unit_id || scope.unidade ? "UNIT" : scope.area ? "AREA" : "ALL");
             const baseline = (catalog.profilePermissions || []).filter((permission) => permission.module_id === module.id && assignedProfileIds.has(permission.profile_id));
             const allowed = (key) => override && typeof override[key] === "boolean" ? override[key] : baseline.some((permission) => permission[key]);
-            const permissionOptions = [["can_view","Acessar"],["can_create","Criar"],["can_edit","Editar"],["can_delete","Excluir"],["can_approve","Aprovar/publicar"],["can_assign","Direcionar"],["can_export","Exportar"],["can_view_sensitive","Ver dados sensíveis"],["can_admin","Administrar"]];
+            const sensitiveLabel = module.code === "comunicacao" ? "Acessar Comunicação Protegida" : "Ver dados sensíveis";
+            const permissionOptions = [["can_view","Acessar"],["can_create","Criar"],["can_edit","Editar"],["can_delete","Excluir"],["can_approve","Aprovar/publicar"],["can_assign","Direcionar"],["can_export","Exportar"],["can_view_sensitive",sensitiveLabel],["can_admin","Administrar"]];
             const expiry = override?.expires_at ? String(override.expires_at).slice(0,10) : "";
             const profileNames = baseline.map((permission) => catalog.profiles.find((profile) => profile.id === permission.profile_id)?.name).filter(Boolean).join(", ");
             const governance = module.code === "votacao" ? '<p class="access-kit-note">As regras existentes da Urna Eletrônica foram preservadas. O vínculo continua obrigatório por unidade e processo eleitoral.</p>' : `<details class="access-advanced"><summary>Ajustes avançados de permissões</summary><div class="permission-grid">${permissionOptions.map(([key,label]) => `<label class="permission-option"><input type="checkbox" name="access:${module.code}:${key}" ${allowed(key)?"checked":""}><span>${label}</span></label>`).join("")}</div><label class="access-expiry">Expiração específica do sistema<input type="date" name="expires:${module.code}" value="${esc(expiry)}"><small>Opcional para acessos temporários.</small></label><small class="access-origin">Origem atual: ${esc(profileNames || "nenhum perfil com acesso")}${override ? " + ajuste individual" : ""}.</small></details>`;
@@ -303,7 +304,7 @@ export function initPortalAdmin({ supabase, context }) {
 
   function updateAccessSummary(form) {
     const items = (catalog.modules || []).filter((module) => form.elements[`access:${module.code}:can_view`]?.checked || module.code === "votacao" && form.elements[`role:${module.code}`]?.value).map((module) => {
-      const permissions = [["can_create","criar"],["can_edit","editar"],["can_delete","excluir"],["can_approve","aprovar/publicar"],["can_assign","direcionar"],["can_export","exportar"],["can_view_sensitive","ver dados sensíveis"],["can_admin","administrar"]].filter(([key]) => form.elements[`access:${module.code}:${key}`]?.checked).map(([,label]) => label);
+      const permissions = [["can_create","criar"],["can_edit","editar"],["can_delete","excluir"],["can_approve","aprovar/publicar"],["can_assign","direcionar"],["can_export","exportar"],["can_view_sensitive",module.code === "comunicacao" ? "acessar Comunicação Protegida" : "ver dados sensíveis"],["can_admin","administrar"]].filter(([key]) => form.elements[`access:${module.code}:${key}`]?.checked).map(([,label]) => label);
       const scopeLabel = SCOPE_MODES.find(([value]) => value === form.elements[`scopeMode:${module.code}`]?.value)?.[1] || "escopo próprio";
       return `<li><strong>${esc(module.name)}</strong>: ${esc(permissions.length ? permissions.join(", ") : "somente consultar")} · ${esc(scopeLabel.toLowerCase())}</li>`;
     });
@@ -318,7 +319,7 @@ export function initPortalAdmin({ supabase, context }) {
     for (const module of catalog.modules || []) {
       if (form.elements[`access:${module.code}:can_admin`]?.checked) risks.push(`${module.name}: administração completa`);
       if (form.elements[`access:${module.code}:can_delete`]?.checked) risks.push(`${module.name}: permissão para excluir`);
-      if (form.elements[`access:${module.code}:can_view_sensitive`]?.checked) risks.push(`${module.name}: visualização de dados sensíveis`);
+      if (form.elements[`access:${module.code}:can_view_sensitive`]?.checked) risks.push(module.code === "comunicacao" ? `${module.name}: acesso à Comunicação Protegida` : `${module.name}: visualização de dados sensíveis`);
       if (form.elements[`scopeMode:${module.code}`]?.value === "ALL" && form.elements[`access:${module.code}:can_view`]?.checked) risks.push(`${module.name}: alcance em todo o sistema`);
     }
     const warning = form.querySelector("[data-risk-warning]");
