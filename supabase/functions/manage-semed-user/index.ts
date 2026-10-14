@@ -17,7 +17,7 @@ const INSTITUTIONAL_STRUCTURE: Record<string, readonly string[]> = {
   "Diretoria de Planejamento, Gestão e Finanças": ["DIRETORIA DE PLANEJAMENTO, GESTÃO E FINANÇAS", "DEPARTAMENTO DE PLANEJAMENTO, GESTÃO, PROJETOS E CONVÊNIOS", "DEPARTAMENTO DE PROJETOS ESPECIAIS", "SEÇÃO DE CONTROLE DE CONTRATOS", "SEÇÃO DE CONVÊNIOS E RECURSOS", "SEÇÃO DE PLANEJAMENTO FINANCEIRO E ORÇAMENTÁRIO", "SEÇÃO DE MONITORAMENTO DE PROCESSOS LICITATÓRIOS"],
 };
 const USER_AREAS = Object.keys(INSTITUTIONAL_STRUCTURE);
-const JOB_TITLES = ["Secretário(a)", "Secretário(a) Adjunto(a)", "Assessor(a)", "Diretor(a) de Diretoria", "Chefe de Departamento", "Chefe de Seção", "Diretor(a) de Unidade", "Vice-Diretor(a) de Unidade", "Coordenador(a) Pedagógico(a)", "Coordenador(a) Administrativo(a)"];
+const JOB_TITLES = ["Secretário(a)", "Secretário(a) Adjunto(a)", "Assessor(a)", "Diretor(a) de Diretoria", "Chefe de Departamento", "Chefe de Seção", "Diretor(a) de Unidade", "Vice-Diretor(a) de Unidade", "Coordenador(a) Pedagógico(a)", "Administrativo"];
 const MODULE_ROLES: Record<string, readonly string[]> = {
   avaliacoes: ["ADMINISTRADOR", "GESTOR DA REDE", "GESTOR DE UNIDADE", "PROFESSOR", "OPERADOR", "CONSULTA"],
   monitor: ["administrador", "gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
@@ -92,11 +92,6 @@ Deno.serve(async (req) => {
     if (directorate !== area) throw new Error("Área de atuação e Diretoria devem representar o mesmo vínculo institucional.");
     if (!(INSTITUTIONAL_STRUCTURE[directorate] || []).includes(unitName)) throw new Error("Unidade/Estabelecimento incompatível com a diretoria selecionada.");
     if (!JOB_TITLES.includes(jobTitle) && !uid) throw new Error("Cargo ou função inválido.");
-    if (managerName) {
-      const { data: manager, error: managerError } = await admin.from("semed_people").select("user_id").eq("full_name", managerName).eq("active", true).limit(1).maybeSingle();
-      if (managerError) throw managerError;
-      if (!manager || manager.user_id === uid) throw new Error("Gestor imediato inválido ou inativo.");
-    }
     if (!['ACTIVE', 'SUSPENDED', 'INACTIVE'].includes(accountStatus)) throw new Error("Situação da conta inválida.");
     if (accessStartsAt && accessEndsAt && accessEndsAt < accessStartsAt) throw new Error("O fim da vigência não pode ser anterior ao início.");
     if (!uid && !strongPassword(temporaryPassword)) throw new Error("A senha temporária deve ter 8 caracteres, letra, número e símbolo.");
