@@ -9,7 +9,7 @@ import {authenticate,permit} from '../plugins/auth.js';
 import {createSequentialAssessment,saveAnswerKey} from '../services/assessmentService.js';
 import {assessmentSheetsPdf,createSheet,sheetPdf} from '../services/answerSheetService.js';
 import {processUpload} from '../services/processingService.js';
-import {importStudents} from '../services/studentService.js';
+import {importStudents,matchesStudentGroupContext} from '../services/studentService.js';
 import {importClasses} from '../services/classService.js';
 
 const uuid=z.string().uuid();
@@ -48,7 +48,7 @@ export async function routes(app:FastifyInstance){
 
  app.get('/api/classes',{preHandler:authenticate},r=>db.schoolClass.findMany({where:{unit:{organizationId:r.auth.organizationId}},include:{unit:true,_count:{select:{students:true}}},orderBy:[{schoolYear:'desc'},{grade:'asc'},{name:'asc'}]}));
  app.get('/api/student-groups',{preHandler:authenticate},r=>{const query=z.object({query:z.string().trim().max(160).optional()}).parse(r.query).query;return db.schoolClass.findMany({where:{unit:{organizationId:r.auth.organizationId},...(query?{OR:[{name:{contains:query,mode:'insensitive'}},{unit:{name:{contains:query,mode:'insensitive'}}},{students:{some:{OR:[{name:{contains:query,mode:'insensitive'}},{registration:{contains:query,mode:'insensitive'}}]}}}]}:{})},include:{unit:true,_count:{select:{students:true}}},orderBy:[{unit:{name:'asc'}},{grade:'asc'},{name:'asc'}]});});
- app.get('/api/classes/:id/students',{preHandler:authenticate},async r=>{const id=uuid.parse((r.params as {id:string}).id),query=z.object({query:z.string().trim().max(160).optional()}).parse(r.query).query;await requireClass(id,r.auth.organizationId);return db.student.findMany({where:{classId:id,active:true,...(query?{OR:[{name:{contains:query,mode:'insensitive'}},{registration:{contains:query,mode:'insensitive'}}]}:{})},select:{id:true,name:true,registration:true,classId:true},orderBy:{name:'asc'}});});
+ app.get('/api/classes/:id/students',{preHandler:authenticate},async r=>{const id=uuid.parse((r.params as {id:string}).id),query=z.object({query:z.string().trim().max(160).optional()}).parse(r.query).query,schoolClass=await db.schoolClass.findFirstOrThrow({where:{id,unit:{organizationId:r.auth.organizationId}},include:{unit:true}}),filterStudents=Boolean(query)&&!matchesStudentGroupContext(query!,schoolClass.name,schoolClass.unit.name);return db.student.findMany({where:{classId:id,active:true,...(filterStudents?{OR:[{name:{contains:query!,mode:'insensitive'}},{registration:{contains:query!,mode:'insensitive'}}]}:{})},select:{id:true,name:true,registration:true,classId:true},orderBy:{name:'asc'}});});
  app.post('/api/classes',{preHandler:permit('ADMIN','MANAGER')},async r=>{const input=parseInput<ClassInput>(classInput,r.body);await requireUnit(input.unitId,r.auth.organizationId);return db.schoolClass.create({data:{unitId:input.unitId,name:input.name,grade:input.grade,schoolYear:input.schoolYear,timeMode:input.timeMode}});});
  app.post('/api/classes/import',{preHandler:permit('ADMIN')},async r=>{const input=classImportInput.parse(r.body);return importClasses(input.rows,r.auth.organizationId);});
  app.patch('/api/classes/:id',{preHandler:permit('ADMIN')},async r=>{const id=uuid.parse((r.params as {id:string}).id),input=parseInput<ClassInput>(classInput,r.body);await requireClass(id,r.auth.organizationId);await requireUnit(input.unitId,r.auth.organizationId);return db.schoolClass.update({where:{id},data:input});});

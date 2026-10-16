@@ -20,6 +20,11 @@ export const canonicalUnitName=(value:string)=>canonicalText(value)
 const canonicalClassName=(value:string)=>canonicalText(value);
 const classKey=(unitId:string,grade:number,name:string,timeMode:string)=>`${unitId}|${grade}|${canonicalClassName(name)}|${timeMode}`;
 
+export function matchesStudentGroupContext(query:string,className:string,unitName:string){
+ const term=canonicalText(query);
+ return Boolean(term)&&[className,unitName].some(value=>canonicalText(value).includes(term));
+}
+
 export async function importStudents(rows:StudentImportRow[],organizationId:string){
  let units=await db.educationalUnit.findMany({where:{organizationId}});
  const aliases=new Map<string,typeof units>();

@@ -1,5 +1,5 @@
 import {describe,expect,it} from 'vitest';
-import {canonicalUnitName} from '../apps/api/src/services/studentService.js';
+import {canonicalUnitName,matchesStudentGroupContext} from '../apps/api/src/services/studentService.js';
 import {parseStudentCsv} from '../apps/web/src/lib/studentImport.js';
 
 describe('importação de alunos',()=>{
@@ -12,5 +12,10 @@ describe('importação de alunos',()=>{
  it('rejeita arquivos acima de 30.000 alunos',()=>{const row='Ana;;Escola Norte;8;8º B;Integral';expect(()=>parseStudentCsv(`nome;matricula;unidade;serie;turma;tempo\n${Array.from({length:30_001},()=>row).join('\n')}`)).toThrow('30.000 alunos')});
  it('reconhece abreviações equivalentes de escola municipal',()=>{
   expect(canonicalUnitName('EM ADOLFO BEZERRA DE MENEZES')).toBe(canonicalUnitName('Escola Municipal Adolfo Bezerra de Menezes'));
+ });
+ it('não restringe os alunos quando a busca corresponde à unidade ou turma',()=>{
+  expect(matchesStudentGroupContext('Celina Soares','4º A','EM CELINA SOARES DE PAIVA')).toBe(true);
+  expect(matchesStudentGroupContext('4 A','4º A','EM CELINA SOARES DE PAIVA')).toBe(true);
+  expect(matchesStudentGroupContext('Maria','4º A','EM CELINA SOARES DE PAIVA')).toBe(false);
  });
 });
