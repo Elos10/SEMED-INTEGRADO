@@ -2,6 +2,7 @@ const MODULE_ROLES = {
   avaliacoes: ["ADMINISTRADOR", "GESTOR DA REDE", "GESTOR DE UNIDADE", "PROFESSOR", "OPERADOR", "CONSULTA"],
   monitor: ["administrador", "gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
   comunicacao: ["administrador", "gestor", "emissor", "destinatario", "auditoria", "publicador"],
+  incidentes: ["REGISTRADOR", "GESTOR DE UNIDADE", "GESTÃO CENTRAL", "ADMINISTRADOR"],
   votacao: ["MESARIO"],
 };
 
@@ -32,6 +33,8 @@ const ACCESS_KITS = [
   { code: "COMUNICADOR", name: "Comunicador institucional", description: "Cria, encaminha e acompanha comunicações da área.", profiles: ["COMUNICACAO_EMISSOR"], roles: { comunicacao: "emissor" }, scope: "AREA" },
   { code: "PUBLICADOR", name: "Publicador institucional", description: "Revisa, aprova e publica comunicações autorizadas.", profiles: ["COMUNICACAO_PUBLICADOR"], roles: { comunicacao: "publicador" }, scope: "ALL" },
   { code: "AUDITOR", name: "Auditoria", description: "Consulta histórico e exporta dados sem alterar registros.", profiles: ["COMUNICACAO_AUDITOR"], roles: { comunicacao: "auditoria" }, scope: "READ_ONLY" },
+  { code: "INCIDENTE_UNIDADE", name: "Incidentes da unidade", description: "Registra, encaminha e acompanha incidentes da unidade vinculada.", profiles: ["INCIDENTE_UNIDADE"], roles: { incidentes: "GESTOR DE UNIDADE" }, scope: "UNIT" },
+  { code: "INCIDENTE_CENTRAL", name: "Gestão central de incidentes", description: "Acompanha todas as unidades, relatórios e reclassificações protegidas.", profiles: ["INCIDENTE_CENTRAL"], roles: { incidentes: "GESTÃO CENTRAL" }, scope: "ALL" },
   { code: "TEMPORARIO", name: "Acesso temporário", description: "Modelo sem sistemas pré-liberados e com vigência obrigatória.", profiles: [], roles: {}, scope: "OWN", temporary: true },
 ];
 

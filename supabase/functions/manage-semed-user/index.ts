@@ -22,6 +22,7 @@ const MODULE_ROLES: Record<string, readonly string[]> = {
   avaliacoes: ["ADMINISTRADOR", "GESTOR DA REDE", "GESTOR DE UNIDADE", "PROFESSOR", "OPERADOR", "CONSULTA"],
   monitor: ["administrador", "gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
   comunicacao: ["administrador", "gestor", "emissor", "destinatario", "auditoria", "publicador"],
+  incidentes: ["REGISTRADOR", "GESTOR DE UNIDADE", "GESTÃO CENTRAL", "ADMINISTRADOR"],
   votacao: ["MESARIO"],
 };
 const SCOPE_MODES = new Set(["ALL", "DIRECTORATE", "AREA", "UNIT", "TEAM", "OWN", "ASSIGNED", "READ_ONLY"]);
