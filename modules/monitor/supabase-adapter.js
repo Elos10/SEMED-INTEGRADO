@@ -1,7 +1,18 @@
 window.supabaseReady = (async () => {
-  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-  const { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } = await import('../../supabase-config.js');
-  const client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  if (!('SEMED_MODULE_ACCESS' in window)) {
+    await new Promise((resolve, reject) => {
+      const started = Date.now();
+      const check = () => {
+        if ('SEMED_MODULE_ACCESS' in window) return resolve();
+        if (Date.now() - started > 10000) return reject(new Error('A sessão central do Portal não foi carregada.'));
+        requestAnimationFrame(check);
+      };
+      check();
+    });
+  }
+  const access = await window.SEMED_MODULE_ACCESS;
+  if (!access?.supabase) return null;
+  const client = access.supabase;
   const db = { client };
   const ref = (collection, id = null) => ({ collection, id });
   const collection = (_db, name) => ref(name);
