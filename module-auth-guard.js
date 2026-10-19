@@ -4,7 +4,8 @@ import { semedUi } from "./shared-runtime.js";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const path = location.pathname.toLowerCase();
-const code = path.includes("/avaliacoes/") ? "avaliacoes" : path.includes("/monitor/") ? "monitor" : path.includes("/votacao/") ? "votacao" : "";
+const modulePath = path.match(/(?:^|\/)modules\/([^/]+)(?:\/|$)/)?.[1] || "";
+const code = ({ avaliacoes: "avaliacoes", monitor: "monitor", votacao: "votacao" })[modulePath] || "";
 const portalUrl = new URL("../../", location.href);
 portalUrl.searchParams.set("return", location.pathname + location.search);
 const portalHomeUrl = new URL("../../", location.href);

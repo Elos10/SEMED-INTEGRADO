@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "scripts": {
-    "build": "node scripts/build-portal.mjs"
+    "build": "node scripts/build-portal.mjs",
+    "preview": "node scripts/serve-portal.mjs"
   }
 }
