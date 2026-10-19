@@ -45,7 +45,39 @@ function exportCSV(){const h=['Código','Objeto','Área','Responsável','Status'
 function toast(t){document.querySelector('.toast')?.remove();document.body.insertAdjacentHTML('beforeend',`<div class="toast">${esc(t)}</div>`);setTimeout(()=>document.querySelector('.toast')?.remove(),2800)}
 function render(){const app=document.getElementById('app');if(!session){app.innerHTML=loginView();return}if(view==='access')view='dashboard';const views={dashboard,objects:objectsView,detail:detailView,timeline:timelineView,financial,reports,import:importView,audit};app.innerHTML=shell((views[view]||dashboard)())}
 fileInput.addEventListener('change',e=>{if(e.target.files[0])toast(`${e.target.files[0].name} recebido. Prévia pronta para validação.`)});if(localStorage.getItem('semed-theme')==='dark')document.body.classList.add('dark');
-async function bootstrap(){try{backend=await window.supabaseReady;if(backend){await backend.auth.authStateReady();const user=backend.auth.currentUser;if(user){const snap=await backend.dataSdk.getDoc(backend.dataSdk.doc(backend.db,'users',user.uid));if(snap.exists()&&snap.data().active===true){const profile=snap.data();session={id:user.uid,name:profile.fullName||user.email,role:profile.role||'servidor'};await loadRemoteState()}else await backend.authSdk.signOut(backend.auth)}}}catch(error){console.error('Falha ao inicializar o sistema',error)}finally{render()}}bootstrap();
+async function portalAccess(){
+  if(!('SEMED_MODULE_ACCESS' in window)){
+    await new Promise((resolve,reject)=>{
+      const started=Date.now();
+      const check=()=>{
+        if('SEMED_MODULE_ACCESS' in window)return resolve();
+        if(Date.now()-started>10000)return reject(new Error('A validação central do Portal não foi carregada.'));
+        requestAnimationFrame(check);
+      };
+      check();
+    });
+  }
+  return window.SEMED_MODULE_ACCESS;
+}
+async function bootstrap(){
+  try{
+    const [access,resolvedBackend]=await Promise.all([portalAccess(),window.supabaseReady]);
+    backend=resolvedBackend;
+    if(!access||!backend)return;
+    const person=access.context?.user||{};
+    const permissions=access.moduleAccess?.permissions||{};
+    session={
+      id:access.session.user.id,
+      name:person.full_name||access.session.user.email||'Usuário',
+      role:permissions.admin||access.context?.portal_admin?'administrador':(access.moduleAccess?.role_code||'servidor')
+    };
+    await loadRemoteState();
+  }catch(error){
+    console.error('Falha ao inicializar o sistema',error);
+    toast('Não foi possível carregar o Monitoramento. Atualize a página ou volte ao Portal.');
+  }finally{render()}
+}
+bootstrap();
 
 
 
