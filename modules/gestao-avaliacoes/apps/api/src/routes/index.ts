@@ -44,7 +44,7 @@ export async function routes(app:FastifyInstance){
 
  app.get('/api/units',{preHandler:authenticate},r=>db.educationalUnit.findMany({where:{organizationId:r.auth.organizationId},orderBy:{name:'asc'}}));
  app.post('/api/units',{preHandler:permit('ADMIN','MANAGER')},r=>{const input=parseInput<UnitInput>(unitInput,r.body);return db.educationalUnit.create({data:{organizationId:r.auth.organizationId,name:input.name,code:input.code}});});
- app.patch('/api/units/:id',{preHandler:permit('ADMIN','MANAGER')},async r=>{const id=uuid.parse((r.params as {id:string}).id);await requireUnit(id,r.auth.organizationId);return db.educationalUnit.update({where:{id},data:unitInput.partial().parse(r.body)});});
+ app.patch('/api/units/:id',{preHandler:permit('ADMIN')},async r=>{const id=uuid.parse((r.params as {id:string}).id);await requireUnit(id,r.auth.organizationId);return db.educationalUnit.update({where:{id},data:unitInput.partial().parse(r.body)});});
 
  app.get('/api/classes',{preHandler:authenticate},r=>db.schoolClass.findMany({where:{unit:{organizationId:r.auth.organizationId}},include:{unit:true,_count:{select:{students:true}}},orderBy:[{schoolYear:'desc'},{grade:'asc'},{name:'asc'}]}));
  app.get('/api/student-groups',{preHandler:authenticate},r=>{const query=z.object({query:z.string().trim().max(160).optional()}).parse(r.query).query;return db.schoolClass.findMany({where:{unit:{organizationId:r.auth.organizationId},...(query?{OR:[{name:{contains:query,mode:'insensitive'}},{unit:{name:{contains:query,mode:'insensitive'}}},{students:{some:{OR:[{name:{contains:query,mode:'insensitive'}},{registration:{contains:query,mode:'insensitive'}}]}}}]}:{})},include:{unit:true,_count:{select:{students:true}}},orderBy:[{unit:{name:'asc'}},{grade:'asc'},{name:'asc'}]});});
