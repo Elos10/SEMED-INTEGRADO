@@ -3,6 +3,8 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 import { semedUi } from "./shared-runtime.js";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const ACCESS_CACHE_KEY = "semed.access-context.v1";
+const ACCESS_CACHE_TTL = 30_000;
 const path = location.pathname.toLowerCase();
 const modulePath = path.match(/(?:^|\/)modules\/([^/]+)(?:\/|$)/)?.[1] || "";
 const code = ({ avaliacoes: "avaliacoes", monitor: "monitor", votacao: "votacao" })[modulePath] || "";
@@ -114,7 +116,20 @@ window.SEMED_MODULE_ACCESS = (async () => {
   semedUi.loading("Validando acesso ao módulo…");
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { location.replace(portalUrl); return null; }
-  const { data, error } = await supabase.rpc("get_my_access_context");
+  let data;
+  let error;
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(ACCESS_CACHE_KEY) || "null");
+    if (cached?.userId === session.user.id && Date.now() - cached.storedAt < ACCESS_CACHE_TTL) data = cached.context;
+  } catch {}
+  if (!data) {
+    const result = await supabase.rpc("get_my_access_context");
+    data = result.data;
+    error = result.error;
+    if (!error && data) {
+      try { sessionStorage.setItem(ACCESS_CACHE_KEY, JSON.stringify({ userId: session.user.id, storedAt: Date.now(), context: data })); } catch {}
+    }
+  }
   if (!error && data?.user?.must_change_password) {
     portalUrl.searchParams.set("first_access", "1");
     location.replace(portalUrl);

@@ -1,9 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
-import { createCaptcha } from "./captcha.js";
-import { initPortalAdmin } from "./portal-admin.js?v=20261008-access-governance-3";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const ACCESS_CACHE_KEY = "semed.access-context.v1";
+const ACCESS_CACHE_TTL = 30_000;
 const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",
   "./avaliacoes/": "avaliacoes",
@@ -81,18 +81,44 @@ overlay.querySelectorAll("[data-toggle-password]").forEach((button) => {
 const loginForm = overlay.querySelector('[data-auth-view="login"]');
 const recoveryForm = overlay.querySelector('[data-auth-view="recovery"]');
 const updateForm = overlay.querySelector('[data-auth-view="update"]');
-const loginCaptcha = await createCaptcha(overlay.querySelector('[data-captcha="login"]'));
-const recoveryCaptcha = await createCaptcha(overlay.querySelector('[data-captcha="recovery"]'));
+const emptyCaptcha = { enabled: false, token: () => undefined, reset() {} };
+let loginCaptcha = emptyCaptcha;
+let recoveryCaptcha = emptyCaptcha;
+let captchaPromise;
+let captchaLoadError = false;
+
+function ensureCaptchas() {
+  if (!captchaPromise) captchaPromise = import("./captcha.js").then(async ({ createCaptcha }) => {
+    [loginCaptcha, recoveryCaptcha] = await Promise.all([
+      createCaptcha(overlay.querySelector('[data-captcha="login"]')),
+      createCaptcha(overlay.querySelector('[data-captcha="recovery"]')),
+    ]);
+  }).catch(() => { captchaLoadError = true; });
+  return captchaPromise;
+}
 
 function showAuthView(name) {
   overlay.hidden = false;
   overlay.querySelectorAll("[data-auth-view]").forEach((form) => { form.hidden = form.dataset.authView !== name; });
 }
 
-async function accessContext() {
+function cacheAccessContext(session, context) {
+  try {
+    sessionStorage.setItem(ACCESS_CACHE_KEY, JSON.stringify({ userId: session.user.id, storedAt: Date.now(), context }));
+  } catch {}
+}
+
+async function accessContext(session, forceRefresh = false) {
+  if (!forceRefresh) {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(ACCESS_CACHE_KEY) || "null");
+      if (cached?.userId === session.user.id && Date.now() - cached.storedAt < ACCESS_CACHE_TTL && cached.context?.user?.active) return cached.context;
+    } catch {}
+  }
   const { data, error } = await supabase.rpc("get_my_access_context");
   if (error) throw error;
   if (!data?.user?.active) throw new Error("Usuário corporativo inativo.");
+  cacheAccessContext(session, data);
   return data;
 }
 
@@ -179,8 +205,8 @@ function initPortalInteractions() {
   filterCards();
 }
 
-async function revealPortal(session) {
-  const context = await accessContext();
+async function revealPortal(session, forceRefresh = false) {
+  const context = await accessContext(session, forceRefresh);
   if (context.user?.must_change_password) {
     updateForm.querySelector("h2").textContent = "Troca obrigatória de senha";
     updateForm.querySelector("p").textContent = "Por segurança, substitua a senha temporária antes de acessar os sistemas.";
@@ -201,7 +227,11 @@ async function revealPortal(session) {
   renderUser(session, context);
   initPortalInteractions();
   window.SEMED_ACCESS_CONTEXT = context;
-  initPortalAdmin({ supabase, context });
+  if (context.portal_admin) {
+    import("./portal-admin.js?v=20261020-performance-1")
+      .then(({ initPortalAdmin }) => initPortalAdmin({ supabase, context }))
+      .catch(() => {});
+  }
   overlay.hidden = true;
   document.body.classList.remove("portal-auth-pending");
 
@@ -226,6 +256,8 @@ loginForm.addEventListener("submit", async (event) => {
   const form = event.currentTarget;
   const errorBox = form.querySelector(".auth-error");
   errorBox.textContent = "";
+  await ensureCaptchas();
+  if (captchaLoadError) { errorBox.textContent = "A confirmação de segurança não carregou. Atualize a página e tente novamente."; return; }
   const values = new FormData(form);
   if (loginCaptcha.enabled && !loginCaptcha.token()) { errorBox.textContent = "Confirme que você não é um robô."; return; }
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -235,12 +267,13 @@ loginForm.addEventListener("submit", async (event) => {
   });
   loginCaptcha.reset();
   if (error || !data.session) { errorBox.textContent = "Não foi possível entrar. Confira suas credenciais e a confirmação de segurança."; return; }
-  try { await revealPortal(data.session); } catch (accessError) { await supabase.auth.signOut(); errorBox.textContent = accessError.message || "Acesso indisponível."; }
+  try { await revealPortal(data.session, true); } catch (accessError) { await supabase.auth.signOut(); errorBox.textContent = accessError.message || "Acesso indisponível."; }
 });
 
 loginForm.querySelector("[data-forgot]").addEventListener("click", () => {
   recoveryForm.elements.email.value = loginForm.elements.email.value;
   showAuthView("recovery");
+  ensureCaptchas();
 });
 recoveryForm.querySelector("[data-back-login]").addEventListener("click", () => showAuthView("login"));
 
@@ -248,6 +281,8 @@ recoveryForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const errorBox = recoveryForm.querySelector(".auth-error");
   errorBox.textContent = "";
+  await ensureCaptchas();
+  if (captchaLoadError) { errorBox.textContent = "A confirmação de segurança não carregou. Atualize a página e tente novamente."; return; }
   if (recoveryCaptcha.enabled && !recoveryCaptcha.token()) { errorBox.textContent = "Confirme que você não é um robô."; return; }
   const email = String(new FormData(recoveryForm).get("email") || "").trim().toLowerCase();
   const redirectTo = new URL(location.pathname, location.href);
@@ -283,6 +318,7 @@ updateForm.addEventListener("submit", async (event) => {
 });
 
 supabase.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_OUT") sessionStorage.removeItem(ACCESS_CACHE_KEY);
   if (event === "PASSWORD_RECOVERY") showAuthView("update");
 });
 
@@ -290,4 +326,8 @@ const { data: { session } } = await supabase.auth.getSession();
 if (session) {
   if (new URLSearchParams(location.search).get("recovery") === "1") showAuthView("update");
   else try { await revealPortal(session); } catch (error) { await supabase.auth.signOut(); loginForm.querySelector(".auth-error").textContent = error.message || "Acesso indisponível."; }
+} else if ("requestIdleCallback" in window) {
+  window.requestIdleCallback(() => ensureCaptchas(), { timeout: 1200 });
+} else {
+  setTimeout(() => ensureCaptchas(), 300);
 }
