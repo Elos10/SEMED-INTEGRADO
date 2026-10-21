@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const ACCESS_CACHE_KEY = "semed.access-context.v1";
+const ACCESS_CACHE_KEY = "semed.access-context.v2";
 const ACCESS_CACHE_TTL = 30_000;
 const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",

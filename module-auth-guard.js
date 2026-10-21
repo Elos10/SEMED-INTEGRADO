@@ -3,7 +3,7 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
 import { semedUi } from "./shared-runtime.js";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const ACCESS_CACHE_KEY = "semed.access-context.v1";
+const ACCESS_CACHE_KEY = "semed.access-context.v2";
 const ACCESS_CACHE_TTL = 30_000;
 const path = location.pathname.toLowerCase();
 const modulePath = path.match(/(?:^|\/)modules\/([^/]+)(?:\/|$)/)?.[1] || "";
@@ -118,14 +118,22 @@ window.SEMED_MODULE_ACCESS = (async () => {
   if (!session) { location.replace(portalUrl); return null; }
   let data;
   let error;
+  let staleContext;
   try {
     const cached = JSON.parse(sessionStorage.getItem(ACCESS_CACHE_KEY) || "null");
-    if (cached?.userId === session.user.id && Date.now() - cached.storedAt < ACCESS_CACHE_TTL) data = cached.context;
+    if (cached?.userId === session.user.id) {
+      staleContext = cached.context;
+      if (Date.now() - cached.storedAt < ACCESS_CACHE_TTL) data = cached.context;
+    }
   } catch {}
   if (!data) {
-    const result = await supabase.rpc("get_my_access_context");
-    data = result.data;
-    error = result.error;
+    let result = await supabase.rpc("get_my_access_context");
+    if (result.error || !result.data?.user?.active) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      result = await supabase.rpc("get_my_access_context");
+    }
+    data = result.data || staleContext;
+    error = data ? null : result.error;
     if (!error && data) {
       try { sessionStorage.setItem(ACCESS_CACHE_KEY, JSON.stringify({ userId: session.user.id, storedAt: Date.now(), context: data })); } catch {}
     }
@@ -136,14 +144,14 @@ window.SEMED_MODULE_ACCESS = (async () => {
     return null;
   }
   const moduleAccess = !error && data?.user?.active ? (data.modules || []).find((item) => item.code === code) : null;
-  const allowed = Boolean(moduleAccess?.permissions?.view);
+  const allowed = Boolean(moduleAccess?.permissions?.view || data?.portal_admin);
   if (!allowed) { location.replace(portalUrl); return null; }
   moduleSwitchEnabled = (data.modules || []).filter((item) => item.permissions?.view).length > 1;
   installModulePortalButton();
   document.documentElement.classList.remove("semed-auth-check");
   if (document.body) document.body.style.visibility = "visible";
   semedUi.clear();
-  window.SEMED_CAN = (operation = "view") => Boolean(moduleAccess.permissions?.[operation]);
+  window.SEMED_CAN = (operation = "view") => Boolean(data?.portal_admin || moduleAccess?.permissions?.[operation]);
   supabase.from("semed_audit").insert({ user_id: session.user.id, module_code: code, action: "MODULE_OPEN" }).then(() => {});
   return { session, code, moduleAccess, context: data, supabase };
 })();
