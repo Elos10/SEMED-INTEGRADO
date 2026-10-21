@@ -7,7 +7,7 @@ const ACCESS_CACHE_KEY = "semed.access-context.v1";
 const ACCESS_CACHE_TTL = 30_000;
 const path = location.pathname.toLowerCase();
 const modulePath = path.match(/(?:^|\/)modules\/([^/]+)(?:\/|$)/)?.[1] || "";
-const code = ({ avaliacoes: "avaliacoes", monitor: "monitor", votacao: "votacao" })[modulePath] || "";
+const code = ({ avaliacoes: "avaliacoes", monitor: "monitor", votacao: "votacao", inteligencia: "inteligencia" })[modulePath] || "";
 const portalUrl = new URL("../../", location.href);
 portalUrl.searchParams.set("return", location.pathname + location.search);
 const portalHomeUrl = new URL("../../", location.href);

@@ -23,6 +23,7 @@ await Promise.all(rootFiles.map((file) => cp(path.join(root, file), path.join(ou
 await Promise.all([
   cp(path.join(root, "modules", "monitor"), path.join(output, "modules", "monitor"), { recursive: true }),
   cp(path.join(root, "modules", "votacao"), path.join(output, "modules", "votacao"), { recursive: true }),
+  cp(path.join(root, "modules", "inteligencia"), path.join(output, "modules", "inteligencia"), { recursive: true }),
 ]);
 
 const moduleFiles = await readdir(path.join(root, "modules"), { withFileTypes: true });

@@ -10,6 +10,7 @@ const moduleByHref = {
   "./modules/monitor/": "monitor",
   "./modules/votacao/": "votacao",
   "./comunicacao/": "comunicacao",
+  "./modules/inteligencia/": "inteligencia",
 };
 
 const style = document.createElement("style");
