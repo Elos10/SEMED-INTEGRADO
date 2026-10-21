@@ -12,6 +12,7 @@ const rootFiles = [
   "portal-auth-critical.css",
   "portal-auth.js",
   "portal-modern.css",
+  "portal-runtime.js",
   "shared-runtime.js",
   "supabase-config.js",
 ];

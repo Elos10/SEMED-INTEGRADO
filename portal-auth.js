@@ -1,9 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
+import { getPortalClient, getAccessContext, moduleCodeFromHref, signOutPortal } from "/portal-runtime.js";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const ACCESS_CACHE_KEY = "semed.access-context.v2";
-const ACCESS_CACHE_TTL = 30_000;
+const supabase = getPortalClient();
 const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",
   "./avaliacoes/": "avaliacoes",
@@ -103,24 +100,8 @@ function showAuthView(name) {
   overlay.querySelectorAll("[data-auth-view]").forEach((form) => { form.hidden = form.dataset.authView !== name; });
 }
 
-function cacheAccessContext(session, context) {
-  try {
-    sessionStorage.setItem(ACCESS_CACHE_KEY, JSON.stringify({ userId: session.user.id, storedAt: Date.now(), context }));
-  } catch {}
-}
-
 async function accessContext(session, forceRefresh = false) {
-  if (!forceRefresh) {
-    try {
-      const cached = JSON.parse(sessionStorage.getItem(ACCESS_CACHE_KEY) || "null");
-      if (cached?.userId === session.user.id && Date.now() - cached.storedAt < ACCESS_CACHE_TTL && cached.context?.user?.active) return cached.context;
-    } catch {}
-  }
-  const { data, error } = await supabase.rpc("get_my_access_context");
-  if (error) throw error;
-  if (!data?.user?.active) throw new Error("Usuário corporativo inativo.");
-  cacheAccessContext(session, data);
-  return data;
+  return getAccessContext(session, { force: forceRefresh });
 }
 
 function preferredName(context, session) {
@@ -134,7 +115,7 @@ function renderUser(session, context) {
   const area = document.createElement("div");
   area.className = "portal-user";
   area.innerHTML = `<span>${session.user.email}</span><button type="button">Sair</button>`;
-  area.querySelector("button").addEventListener("click", async () => { await supabase.auth.signOut(); location.reload(); });
+  area.querySelector("button").addEventListener("click", async () => { await signOutPortal(); location.reload(); });
   document.querySelector(".topbar")?.append(area);
 
   const now = new Date();
@@ -218,7 +199,7 @@ async function revealPortal(session, forceRefresh = false) {
   const codes = new Set(availableModules.keys());
   document.querySelectorAll(".system-card").forEach((card) => {
     const href = card.querySelector(".access")?.getAttribute("href");
-    const moduleAccess = availableModules.get(moduleByHref[href]);
+    const moduleAccess = availableModules.get(moduleByHref[href] || moduleCodeFromHref(href));
     card.dataset.authorized = String(Boolean(moduleAccess));
     card.hidden = card.dataset.authorized !== "true";
     if (moduleAccess) renderAccessSummary(card, moduleAccess);
@@ -241,7 +222,7 @@ async function revealPortal(session, forceRefresh = false) {
   const target = selectionRequested ? "" : parameters.get("return");
   if (target) {
     const decoded = decodeURIComponent(target);
-    const moduleCode = Object.entries(moduleByHref).find(([href]) => decoded.includes(href.replace("./", "/")))?.[1];
+    const moduleCode = moduleCodeFromHref(decoded) || Object.entries(moduleByHref).find(([href]) => decoded.includes(href.replace("./", "/")))?.[1];
     if (moduleCode && codes.has(moduleCode)) location.assign(decoded);
   }
   if (selectionRequested) {

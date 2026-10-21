@@ -1,7 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "../../supabase-config.js";
+import { getPortalClient, signOutPortal } from "/portal-runtime.js";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const supabase = getPortalClient();
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
 export function createEmptyElectionState() {
@@ -63,7 +62,7 @@ export async function restoreElectionSession() {
   return { user: session.user, access };
 }
 
-export async function signOutElection() { await supabase.auth.signOut(); }
+export async function signOutElection() { await signOutPortal(); }
 
 export async function ensureElectionSeed() { return loadRows(); }
 
