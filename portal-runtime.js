@@ -93,7 +93,23 @@ export function canAccess(context, code, operation = "view") {
 
 export async function signOutPortal() {
   invalidateAccessContext();
-  await getPortalClient().auth.signOut();
+  const projectRef = new URL(SUPABASE_URL).hostname.split(".")[0];
+  let error = null;
+  try {
+    const result = await Promise.race([
+      getPortalClient().auth.signOut({ scope: "local" }),
+      new Promise((resolve) => setTimeout(() => resolve({ error: new Error("Tempo limite ao encerrar a sessão.") }), 3000)),
+    ]);
+    error = result?.error || null;
+  } catch (signOutError) {
+    error = signOutError;
+  } finally {
+    try {
+      Object.keys(localStorage).filter((key) => key.startsWith(`sb-${projectRef}-auth-token`)).forEach((key) => localStorage.removeItem(key));
+      sessionStorage.removeItem(ACCESS_CACHE_KEY);
+    } catch { /* a navegação para o login ainda deve acontecer */ }
+  }
+  return { error };
 }
 
 export function portalSelectionUrl(returnPath = "") {

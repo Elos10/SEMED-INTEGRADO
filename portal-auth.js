@@ -115,7 +115,14 @@ function renderUser(session, context) {
   const area = document.createElement("div");
   area.className = "portal-user";
   area.innerHTML = `<span>${session.user.email}</span><button type="button">Sair</button>`;
-  area.querySelector("button").addEventListener("click", async () => { await signOutPortal(); location.reload(); });
+  area.querySelector("button").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = "Saindo…";
+    try { await signOutPortal(); }
+    finally { location.replace(new URL("/", location.origin)); }
+  });
   document.querySelector(".topbar")?.append(area);
 
   const now = new Date();
