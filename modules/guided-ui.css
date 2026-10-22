@@ -1,0 +1,14 @@
+/* Padrão transversal SEMED: páginas limpas, cartões suaves e formulários guiados. */
+:root{--guided-brand:#243f91;--guided-brand-soft:#e8edfb;--guided-surface:#fff;--guided-canvas:#f5f7fb;--guided-line:#dfe4ec;--guided-text:#172033;--guided-muted:#667085;--guided-radius:20px}
+body{background:var(--guided-canvas);color:var(--guided-text)}
+:where(.card,.panel,.form-card,.table-card,.report,.summary,.modal,.content-card){border-color:var(--guided-line)!important;border-radius:var(--guided-radius)!important;background:var(--guided-surface);box-shadow:0 8px 24px rgba(15,35,74,.055)}
+:where(input,select,textarea){border-color:#d7dde7!important;border-radius:13px!important;background:#fff;transition:border-color .16s,box-shadow .16s}
+:where(input,select,textarea):focus{border-color:#8fa8ed!important;box-shadow:0 0 0 4px rgba(67,97,180,.13)!important;outline:0}
+:where(.btn,button).btn-primary,:where(.btn,button).primary{border-radius:12px;background:var(--guided-brand);box-shadow:none}
+:where(.btn,button).btn-neutral,:where(.btn,button).secondary{border-color:var(--guided-line);border-radius:12px;background:#fff}
+:where(.actions,.actions-row,.form-actions){gap:10px;border-color:var(--guided-line)}
+:where(table){border-collapse:separate;border-spacing:0}
+:where(th){color:#475467;font-size:12px}
+:where(.modal-bg,[role="dialog"]){backdrop-filter:blur(3px)}
+:where(.modal){max-width:min(1120px,calc(100vw - 24px));max-height:calc(100dvh - 24px)}
+@media(max-width:700px){:where(.card,.panel,.form-card,.table-card,.modal){border-radius:16px!important}:where(.actions,.actions-row,.form-actions){position:sticky;bottom:0;z-index:3;background:#fffffff2;box-shadow:0 -8px 18px #0f234a0d}}
