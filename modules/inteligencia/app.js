@@ -4,7 +4,7 @@ const access = await window.SEMED_MODULE_ACCESS;
 if (!access) throw new Error("Acesso gerencial não autorizado.");
 
 const { supabase, context, session } = access;
-const state = { unit: "all", year: String(new Date().getFullYear()), data: null, decisions: [] };
+const state = { unit: "all", year: String(new Date().getFullYear()), view: "executive", data: null, decisions: [], sources: { communication: null, voting: null }, loadingSource: "" };
 
 const icons = {
   executive: '<svg viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg>',
@@ -13,6 +13,7 @@ const icons = {
   risks: '<svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z"/><path d="M12 8v5m0 3h.01"/></svg>',
   strategy: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="m14 10 6-6"/></svg>',
   decisions: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 8h6m-6 4h6m-6 4h4"/></svg>',
+  voting: '<svg viewBox="0 0 24 24"><path d="M5 9h14l2 4v7H3v-7l2-4Z"/><path d="M8 9V4h8v5m-8 5h8"/></svg>',
 };
 
 const fmt = new Intl.NumberFormat("pt-BR");
@@ -26,24 +27,47 @@ document.querySelector("#app").innerHTML = `
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark">◎</span><div><strong>SEMED Integra</strong><span>Inteligência Gerencial</span></div></div>
       <nav class="nav" aria-label="Relatórios de gestão">
-        ${[["executive","Painel Executivo"],["alerts","Alertas e Prioridades"],["learning","Desempenho e Equidade"],["risks","Riscos e Proteção"],["strategy","Execução Estratégica"],["decisions","Agenda de Decisões"]].map(([id,label], index) => `<button type="button" data-view="${id}" class="${index === 0 ? "active" : ""}">${icons[id]}<span>${label}</span></button>`).join("")}
+        ${[["executive","Visão Geral"],["learning","Gestão de Avaliações"],["strategy","Monitoramento"],["risks","Comunicação"],["voting","Urna Eletrônica"],["alerts","Alertas e Prioridades"],["decisions","Agenda de Decisões"]].map(([id,label], index) => `<button type="button" data-view="${id}" class="${index === 0 ? "active" : ""}">${icons[id]}<span>${label}</span></button>`).join("")}
       </nav>
       <div class="sidebar-note"><strong>${esc(profileName)}</strong><br>Indicadores respeitam seu perfil e o alcance autorizado em cada sistema.</div>
       <a class="portal-back" href="/?select=1">← Voltar ao Portal</a>
     </aside>
     <main class="main">
       <header class="topbar"><div><h1>Central de Inteligência Gerencial</h1><p>Informação confiável para orientar decisões da Secretaria de Educação</p></div><div class="top-actions"><span class="status-live">Dados atualizados</span><button class="icon-button" type="button" data-refresh>Atualizar</button><button class="icon-button" type="button" data-print>Imprimir</button></div></header>
-      <section class="content"><div class="content-inner"><div id="notice"></div><div id="views"></div></div></section>
+      <section class="content"><div class="content-inner"><nav class="system-switcher" aria-label="Selecionar sistema">${[["executive","Visão Geral","Indicadores integrados"],["learning","Avaliações","Aprendizagem e participação"],["strategy","Monitoramento","Metas, prazos e recursos"],["risks","Comunicação","Proteção e incidentes"],["voting","Urna Eletrônica","Participação eleitoral"]].map(([id,label,detail]) => `<button type="button" data-system-view="${id}" aria-pressed="${id === "executive"}" class="${id === "executive" ? "active" : ""}>${icons[id]}<span><strong>${label}</strong><small>${detail}</small></span><i aria-hidden="true">→</i></button>`).join("")}</nav><div id="notice"></div><div id="views"></div></div></section>
     </main>
   </div>`;
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => selectView(button.dataset.view)));
-document.querySelector("[data-refresh]").addEventListener("click", () => load(true));
+document.querySelectorAll("[data-system-view]").forEach((button) => button.addEventListener("click", () => selectView(button.dataset.systemView)));
+document.querySelector("[data-refresh]").addEventListener("click", async () => { await load(true); if (state.view === "risks") state.sources.communication = null; if (state.view === "voting") state.sources.voting = null; await loadSystemSource(state.view); });
 document.querySelector("[data-print]").addEventListener("click", () => window.print());
 
-function selectView(id) {
+async function selectView(id, loadSource = true) {
+  state.view = id;
   document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === id));
+  document.querySelectorAll("[data-system-view]").forEach((button) => { const active = button.dataset.systemView === id; button.classList.toggle("active", active); button.setAttribute("aria-pressed", String(active)); });
   document.querySelectorAll(".view").forEach((view) => { view.hidden = view.dataset.view !== id; });
+  if (loadSource && ["risks", "voting"].includes(id)) await loadSystemSource(id);
+}
+
+async function loadSystemSource(view, force = false) {
+  const source = view === "risks" ? "communication" : view === "voting" ? "voting" : "";
+  if (!source || (!force && state.sources[source]) || state.loadingSource === source) return;
+  state.loadingSource = source;
+  notify(`Carregando indicadores de ${source === "communication" ? "Comunicação" : "Urna Eletrônica"}…`, false, 0);
+  if (source === "communication") {
+    const [protectedCases, incidents] = await Promise.all([
+      safeQuery(supabase.from("protected_cases").select("category,risk_level,occurred_at,unit_name,status,created_at"), { data: [], unavailable: true }),
+      safeQuery(supabase.from("school_incidents").select("reporting_unit,occurred_at,occurrence_location_type,category,severity,physical_risk,direction_notified,family_contacted,status,created_at,closed_at"), { data: [], unavailable: true }),
+    ]);
+    state.sources.communication = { protectedCases: protectedCases.data || [], incidents: incidents.data || [], available: !protectedCases.unavailable || !incidents.unavailable, updatedAt: new Date() };
+  } else {
+    const rows = await safeQuery(supabase.from("votacao_state").select("key,data,updated_at").in("key", ["registry", "voting"]), { data: [], unavailable: true });
+    state.sources.voting = { rows: rows.data || [], available: !rows.unavailable, updatedAt: new Date() };
+  }
+  state.loadingSource = "";
+  render();
 }
 
 async function safeQuery(promise, fallback) {
@@ -84,6 +108,27 @@ function filtered() {
 
 function render() {
   const d = filtered();
+  const communication = state.sources.communication;
+  const selectedUnitName = state.unit === "all" ? "" : state.data.units.find((item) => item.id === state.unit)?.name || "";
+  const protectedCases = (communication?.protectedCases || []).filter((item) => inSelectedYear(item.occurred_at || item.created_at) && (!selectedUnitName || sameText(item.unit_name, selectedUnitName)));
+  const incidents = (communication?.incidents || []).filter((item) => inSelectedYear(item.occurred_at || item.created_at) && (!selectedUnitName || sameText(item.reporting_unit, selectedUnitName)));
+  const openProtected = protectedCases.filter((item) => !["concluida","arquivada"].includes(item.status));
+  const criticalProtected = protectedCases.filter((item) => ["imediato","alto"].includes(item.risk_level));
+  const openIncidents = incidents.filter((item) => !["resolvido","encerrado","reclassificado_protegido"].includes(item.status));
+  const criticalIncidents = incidents.filter((item) => ["alto","emergencial"].includes(item.severity) || item.physical_risk);
+  const directionRate = incidents.length ? incidents.filter((item) => item.direction_notified).length / incidents.length * 100 : 0;
+  const familyRate = incidents.length ? incidents.filter((item) => item.family_contacted).length / incidents.length * 100 : 0;
+  const votingSource = state.sources.voting;
+  const votingRows = votingSource?.rows || [];
+  const registryData = votingRows.find((row) => row.key === "registry")?.data || {};
+  const votingData = votingRows.find((row) => row.key === "voting")?.data || {};
+  const electionUnits = registryData.units || [];
+  const candidates = registryData.candidates || [];
+  const votingSessions = votingData.votingSessions || [];
+  const boothAssignments = votingData.boothAssignments || [];
+  const votes = votingData.votes || [];
+  const completedVoters = votingSessions.filter((item) => String(item.status).toLowerCase() === "votou").length;
+  const turnout = votingSessions.length ? completedVoters / votingSessions.length * 100 : 0;
   const activeUnits = state.data.units.filter((item) => item.active);
   const completed = d.assessments.filter((item) => ["FINALIZADA","FINALIZADO","CONCLUIDA","CONCLUÍDA"].includes(String(item.status).toUpperCase()));
   const avg = d.results.length ? d.results.reduce((sum, item) => sum + Number(item.percentage || 0), 0) / d.results.length : null;
@@ -113,11 +158,13 @@ function render() {
     </section>
     <section class="view" data-view="alerts" hidden><div class="intro"><div><h2>Alertas e Prioridades</h2><p>O que precisa de atenção, decisão ou encaminhamento agora.</p></div>${filters}</div><article class="panel">${priorityList(alerts, true)}</article></section>
     <section class="view" data-view="learning" hidden><div class="intro"><div><h2>Desempenho e Equidade Educacional</h2><p>Acompanhe participação, evolução e diferenças entre unidades sem criar rankings simplistas.</p></div>${filters}</div><div class="metrics">${metric("Folhas geradas", d.sheets.length, "participação preparada", "#3157b7")}${metric("Resultados processados", d.results.length, "leituras finalizadas", "#16845b")}${metric("Média da rede", avg === null ? "Sem dados" : `${avg.toFixed(1)}%`, "no recorte selecionado", "#7453c6")}${metric("Avaliações sem folhas", assessmentsWithoutSheets.length, "requerem conferência", "#c56d08")}</div><article class="panel" style="margin-top:16px">${d.results.length ? performanceTable(d) : empty("Os resultados ainda não foram processados. O painel será preenchido automaticamente quando a Gestão de Avaliações concluir as leituras.")}</article></section>
-    <section class="view" data-view="risks" hidden><div class="intro"><div><h2>Riscos e Proteção Escolar</h2><p>Consolidação responsável de Incidentes Escolares e Comunicação Protegida.</p></div></div><article class="panel"><div class="source-state"><div class="source"><strong>Incidentes Escolares</strong><small>Indicadores disponíveis no relatório analítico do sistema Comunicação.</small></div><div class="source"><strong>Comunicação Protegida</strong><small>Dados pessoais permanecem restritos e auditados no sistema de origem.</small></div><div class="source"><strong>Visão executiva</strong><small>Somente informações anonimizadas devem compor a consolidação.</small></div></div><div class="quick-links" style="margin-top:16px"><a href="/comunicacao/">Abrir relatórios de Incidentes Escolares <span>→</span></a><a href="/comunicacao/">Abrir relatórios da Comunicação Protegida <span>→</span></a></div></article></section>
+    <section class="view" data-view="risks" hidden><div class="intro"><div><h2>Comunicação</h2><p>Indicadores anonimizados da Comunicação Protegida e dos Incidentes Escolares. Identidades, descrições e anexos permanecem restritos ao sistema de origem.</p></div><span class="source-update">${sourceStatus(communication, "Comunicação")}</span></div>${communication?.available ? `<div class="metrics">${metric("Comunicações protegidas", protectedCases.length, `${openProtected.length} em acompanhamento`, "#be3b49")}${metric("Risco alto ou imediato", criticalProtected.length, "prioridade de proteção", "#c56d08")}${metric("Incidentes escolares", incidents.length, `${openIncidents.length} em andamento`, "#3157b7")}${metric("Incidentes críticos", criticalIncidents.length, "alto, emergencial ou risco físico", "#7453c6")}</div><div class="grid-2"><article class="panel"><div class="panel-head"><div><h3>Incidentes por tipo</h3><p>Distribuição agregada, sem identificação das pessoas envolvidas.</p></div></div>${categoryTable(incidents, "category")}</article><aside class="panel"><div class="panel-head"><div><h3>Adoção do fluxo institucional</h3><p>Comunicações essenciais registradas no atendimento.</p></div></div><div class="flow-stats"><div><strong>${directionRate.toFixed(1)}%</strong><span>Direção comunicada</span></div><div><strong>${familyRate.toFixed(1)}%</strong><span>Família acionada</span></div></div></aside></div><div class="grid-2"><article class="panel"><div class="panel-head"><div><h3>Comunicação Protegida por risco</h3><p>Visão gerencial sem nomes, relatos ou documentos.</p></div></div>${categoryTable(protectedCases, "risk_level")}</article><aside class="panel"><div class="panel-head"><div><h3>Acesso ao sistema de origem</h3><p>Detalhes seguem as permissões específicas da Comunicação.</p></div></div><div class="quick-links"><a href="/comunicacao/?view=incidentes">Abrir Incidentes Escolares <span>→</span></a><a href="/comunicacao/?view=protegida">Abrir Comunicação Protegida <span>→</span></a></div></aside></div>` : sourceUnavailable("Comunicação", "/comunicacao/")}</section>
     <section class="view" data-view="strategy" hidden><div class="intro"><div><h2>Execução Estratégica</h2><p>Relação entre planejamento, execução física e aplicação dos recursos.</p></div>${filters}</div><div class="metrics">${metric("Objetos monitorados", countObjects(d.records), "registros estratégicos", "#3157b7")}${metric("Orçamento planejado", money.format(planned), `exercício ${state.year}`, "#7453c6")}${metric("Execução registrada", money.format(executed), `${execution.toFixed(1)}% do planejado`, "#16845b")}${metric("Decisões abertas", openDecisions.length, `${overdue.length} vencida(s)`, "#c56d08")}</div><article class="panel" style="margin-top:16px"><div class="panel-head"><div><h3>Matriz de acompanhamento</h3><p>Interpretação automática dos dados financeiros disponíveis.</p></div></div>${strategyMatrix(planned, executed)}</article></section>
+    <section class="view" data-view="voting" hidden><div class="intro"><div><h2>Urna Eletrônica</h2><p>Acompanhamento operacional e participação nos processos eleitorais, sem exposição de votos individuais.</p></div><span class="source-update">${sourceStatus(votingSource, "Urna Eletrônica")}</span></div>${votingSource?.available ? `<div class="metrics">${metric("Unidades habilitadas", electionUnits.length, "unidades cadastradas", "#3157b7")}${metric("Candidaturas", candidates.length, "registros eleitorais", "#7453c6")}${metric("Participação", `${turnout.toFixed(1)}%`, `${completedVoters} de ${votingSessions.length} eleitores liberados`, "#16845b")}${metric("Urnas em operação", boothAssignments.length, `${votes.length} voto(s) registrado(s)`, "#c56d08")}</div><div class="grid-2"><article class="panel"><div class="panel-head"><div><h3>Situação da participação</h3><p>Consolidado operacional dos eleitores habilitados.</p></div></div>${categoryTable(votingSessions, "status")}</article><aside class="panel"><div class="panel-head"><div><h3>Princípios de divulgação</h3><p>A Inteligência Gerencial preserva o sigilo eleitoral.</p></div></div><div class="source-state"><div class="source"><strong>Dados agregados</strong><small>Somente quantitativos e percentuais são apresentados.</small></div><div class="source"><strong>Sem voto individual</strong><small>Não há associação entre eleitor e escolha realizada.</small></div><div class="source"><strong>Resultado oficial</strong><small>Deve ser consultado após a liberação no sistema eleitoral.</small></div></div><div class="quick-links" style="margin-top:16px"><a href="/votacao/">Abrir Urna Eletrônica <span>→</span></a></div></aside></div>` : sourceUnavailable("Urna Eletrônica", "/votacao/")}</section>
     <section class="view" data-view="decisions" hidden><div class="intro"><div><h2>Agenda de Decisões</h2><p>Registre o problema, a evidência, a decisão, o responsável e a data de reavaliação.</p></div><div class="actions"><button class="secondary" data-export>Exportar CSV</button></div></div><article class="panel"><form class="decision-form" data-decision-form><div class="field"><label>Título da decisão<input name="title" required maxlength="160"></label></div><div class="field"><label>Origem<select name="source_module"><option>Portal</option><option>Gestão de Avaliações</option><option>Monitoramento</option><option>Comunicação</option><option>Urna Eletrônica</option></select></label></div><div class="field wide"><label>Problema analisado<textarea name="problem" required></textarea></label></div><div class="field wide"><label>Evidências utilizadas<textarea name="evidence" required></textarea></label></div><div class="field wide"><label>Decisão adotada<textarea name="decision" required></textarea></label></div><div class="field"><label>Responsável<input name="responsible_name" required></label></div><div class="field"><label>Prioridade<select name="priority"><option value="alta">Alta</option><option value="media" selected>Média</option><option value="baixa">Baixa</option></select></label></div><div class="field"><label>Prazo<input name="due_date" type="date" required></label></div><div class="field"><label>Data de reavaliação<input name="review_date" type="date"></label></div><div class="field wide actions"><button class="primary" type="submit">Registrar decisão</button></div></form></article><article class="panel" style="margin-top:16px"><div class="panel-head"><div><h3>Decisões registradas</h3><p>Histórico institucional e acompanhamento dos responsáveis.</p></div></div>${decisionTable()}</article></section>`;
 
   bindFilters();
+  void selectView(state.view, false);
   document.querySelectorAll("[data-go]").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); selectView(link.dataset.go); }));
   document.querySelector("[data-decision-form]")?.addEventListener("submit", saveDecision);
   document.querySelector("[data-export]")?.addEventListener("click", exportDecisions);
@@ -125,9 +172,15 @@ function render() {
 }
 
 function yearNow(){ return new Date().getFullYear(); }
+function inSelectedYear(value){ return !value || String(new Date(value).getFullYear()) === state.year; }
+function sameText(left,right){ return String(left||"").trim().localeCompare(String(right||"").trim(),"pt-BR",{sensitivity:"base"})===0; }
 function metric(label, value, detail, tone){ return `<article class="metric" style="--tone:${tone}"><span class="metric-label"><i></i>${label}</span><strong>${typeof value === "number" ? fmt.format(value) : esc(value)}</strong><small>${detail}</small></article>`; }
 function empty(text){ return `<div class="empty">${esc(text)}</div>`; }
 function short(value, max){ const text=String(value||""); return text.length>max?`${text.slice(0,max-1)}…`:text; }
+function labelValue(value){ const labels={violencia_fisica:"Violência física",violencia_sexual:"Violência sexual",violencia_psicologica:"Violência psicológica",negligencia:"Negligência",ameaca:"Ameaça",discriminacao:"Discriminação",violencia_institucional:"Violência institucional",conflito_interpessoal:"Conflito interpessoal",indisciplina:"Indisciplina",agressao_verbal:"Agressão verbal",agressao_fisica:"Agressão física",discriminacao_intimidacao:"Discriminação ou intimidação",dano_patrimonio:"Dano ao patrimônio",acidente:"Acidente",alimentacao:"Alimentação",animal_dependencias:"Animal nas dependências",seguranca_unidade:"Segurança da unidade",transporte_escolar:"Transporte escolar",conduta_servidor:"Conduta de servidor",saude:"Saúde",imediato:"Imediato",alto:"Alto",moderado:"Moderado",acompanhamento:"Acompanhamento",aguardando:"Aguardando",votou:"Votou"}; const key=String(value||"não informado").toLowerCase(); return labels[key]||key.replaceAll("_"," ").replace(/^./,char=>char.toUpperCase()); }
+function categoryTable(rows, key){ if(!rows.length)return empty("Ainda não há registros disponíveis neste recorte."); const counts=rows.reduce((map,item)=>map.set(item[key]||"não informado",(map.get(item[key]||"não informado")||0)+1),new Map()); const ordered=[...counts.entries()].sort((a,b)=>b[1]-a[1]); return `<div class="table-wrap"><table><thead><tr><th>Classificação</th><th>Quantidade</th><th>Participação</th></tr></thead><tbody>${ordered.map(([label,count])=>`<tr><td>${esc(labelValue(label))}</td><td>${fmt.format(count)}</td><td>${(count/rows.length*100).toFixed(1)}%</td></tr>`).join("")}</tbody></table></div>`; }
+function sourceStatus(source, label){ if(!source)return `Carregando ${label}…`; if(!source.available)return "Fonte indisponível neste acesso"; return `Atualizado às ${source.updatedAt.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`; }
+function sourceUnavailable(label,href){ return `<article class="panel"><div class="source-unavailable"><strong>Os indicadores de ${esc(label)} não estão disponíveis neste acesso.</strong><p>Isso pode ocorrer quando o sistema usa outra base de dados ou quando o seu perfil não possui permissão para consultar os registros consolidados.</p><a href="${href}">Abrir o sistema de origem <span>→</span></a></div></article>`; }
 function priorityList(items, expanded=false){ if(!items.length) return empty("Nenhuma prioridade crítica foi identificada com os dados disponíveis."); return `<div class="priority-list">${items.slice(0,expanded?50:6).map((item)=>`<div class="priority"><span class="priority-dot" style="--priority:${item.tone}"></span><div><strong>${esc(item.title)}</strong><p>${esc(item.detail)}</p></div><span class="badge ${item.label === "Crítico" ? "red" : "amber"}">${item.label}</span></div>`).join("")}</div>`; }
 function countObjects(records){ return records.filter((item)=>["objects","objetos"].includes(String(item.collection).toLowerCase())).length; }
 function performanceTable(d){ const values=d.results.map((item)=>Number(item.percentage||0)); const ranges=[["Abaixo de 50%",values.filter(v=>v<50).length],["50% a 69,9%",values.filter(v=>v>=50&&v<70).length],["70% a 84,9%",values.filter(v=>v>=70&&v<85).length],["85% ou mais",values.filter(v=>v>=85).length]]; return `<div class="table-wrap"><table><thead><tr><th>Faixa de desempenho</th><th>Resultados</th><th>Participação</th></tr></thead><tbody>${ranges.map(([label,count])=>`<tr><td>${label}</td><td>${fmt.format(count)}</td><td>${values.length?(count/values.length*100).toFixed(1):"0,0"}%</td></tr>`).join("")}</tbody></table></div>`; }
