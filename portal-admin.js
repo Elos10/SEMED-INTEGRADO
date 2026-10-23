@@ -302,7 +302,16 @@ export function initPortalAdmin({ supabase, context }) {
     form.querySelector("[data-previous]").addEventListener("click", () => showStep(currentStep - 1));
     form.querySelectorAll("[data-go-step]").forEach((button) => button.addEventListener("click", () => { if (Number(button.dataset.goStep) === 1 || form.reportValidity()) showStep(button.dataset.goStep); }));
     form.querySelectorAll("[data-access-kit]").forEach((button) => button.addEventListener("click", () => applyKit(ACCESS_KITS.find((kit) => kit.code === button.dataset.accessKit))));
-    form.addEventListener("change", (event) => { if (event.target.name === "profiles") syncPermissionsFromProfiles(); updateAccessSummary(form); });
+    form.addEventListener("change", (event) => {
+      if (event.target.name === "profiles") {
+        syncPermissionsFromProfiles();
+        if (event.target.value === "URNA_MESARIO" && !event.target.checked) {
+          const votingRole = form.elements["role:votacao"];
+          if (votingRole) votingRole.value = "";
+        }
+      }
+      updateAccessSummary(form);
+    });
     updateAccessSummary(form);
     form.addEventListener("submit", save);
   }
@@ -381,6 +390,10 @@ export function initPortalAdmin({ supabase, context }) {
     };
     if (!payload.profileCodes.length) {
       notice.textContent = "Selecione ao menos um perfil corporativo.";
+      return;
+    }
+    if (payload.moduleRoles.votacao?.roleCode && !payload.profileCodes.includes("URNA_MESARIO")) {
+      notice.textContent = "Urna Eletrônica: marque o perfil “Urna — Mesário” para liberar este sistema.";
       return;
     }
     if ((!selectedUser || payload.temporaryPassword) && !STRONG_PASSWORD.test(payload.temporaryPassword)) {

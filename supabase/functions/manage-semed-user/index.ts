@@ -163,13 +163,15 @@ Deno.serve(async (req) => {
     if (moduleError) throw moduleError;
 
     await admin.from("semed_user_module_roles").delete().eq("user_id", target.id);
+    const hasVotingProfile = requestedProfiles.includes("URNA_MESARIO");
     const roleRows = (moduleRows || []).map((module) => {
       const configured = requestedRoles[module.code] || {};
       const roleCode = String(configured.roleCode || "");
+      if (module.code === "votacao" && !hasVotingProfile) return null;
       if (roleCode && !(MODULE_ROLES[module.code] || []).includes(roleCode)) throw new Error(`Papel inválido para o sistema ${module.code}.`);
       if (module.code === "votacao" && roleCode && !configured.scope?.unit_id) throw new Error("Informe a unidade vinculada ao acesso da Urna Eletrônica.");
       return { user_id: target.id, module_id: module.id, role_code: roleCode, scope: configured.scope || {}, active: true, managed_by: user.id };
-    }).filter((row) => row.role_code);
+    }).filter((row) => row?.role_code);
     if (roleRows.length) {
       const { error } = await admin.from("semed_user_module_roles").insert(roleRows);
       if (error) throw error;

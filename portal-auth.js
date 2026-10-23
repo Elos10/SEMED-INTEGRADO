@@ -1,4 +1,4 @@
-import { ACCESS_CACHE_KEY, getPortalClient, getAccessContext, moduleCodeFromHref, signOutPortal } from "/portal-runtime.js";
+import { ACCESS_CACHE_KEY, getPortalClient, getAccessContext, moduleAccess, moduleCodeFromHref, signOutPortal } from "/portal-runtime.js";
 
 const supabase = getPortalClient();
 const moduleByHref = {
@@ -238,7 +238,7 @@ async function revealPortal(session, forceRefresh = false) {
     showAuthView("update");
     return;
   }
-  const availableModules = new Map((context.modules || []).filter((item) => item.permissions?.view).map((item) => [item.code, item]));
+  const availableModules = new Map((context.modules || []).filter((item) => item.permissions?.view && moduleAccess(context, item.code)).map((item) => [item.code, item]));
   const codes = new Set(availableModules.keys());
   document.querySelectorAll(".system-card").forEach((card) => {
     const href = card.querySelector(".access")?.getAttribute("href");
