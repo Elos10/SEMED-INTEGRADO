@@ -1,4 +1,4 @@
-import { getPortalClient, getAccessContext, moduleCodeFromHref, signOutPortal } from "/portal-runtime.js";
+import { ACCESS_CACHE_KEY, getPortalClient, getAccessContext, moduleCodeFromHref, signOutPortal } from "/portal-runtime.js";
 
 const supabase = getPortalClient();
 const moduleByHref = {
@@ -98,6 +98,42 @@ function ensureCaptchas() {
 function showAuthView(name) {
   overlay.hidden = false;
   overlay.querySelectorAll("[data-auth-view]").forEach((form) => { form.hidden = form.dataset.authView !== name; });
+}
+
+function cleanRecoveryUrl() {
+  const url = new URL(location.href);
+  ["code", "token", "token_hash", "type", "recovery"].forEach((key) => url.searchParams.delete(key));
+  url.hash = "";
+  history.replaceState({}, "", `${url.pathname}${url.search}`);
+}
+
+async function establishRecoverySession() {
+  let result = await supabase.auth.getSession();
+  if (result.data.session) return result.data.session;
+
+  const url = new URL(location.href);
+  const code = url.searchParams.get("code");
+  if (code) {
+    const exchanged = await supabase.auth.exchangeCodeForSession(code);
+    if (!exchanged.error && exchanged.data.session) {
+      cleanRecoveryUrl();
+      return exchanged.data.session;
+    }
+  }
+
+  const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+  const accessToken = hash.get("access_token");
+  const refreshToken = hash.get("refresh_token");
+  if (accessToken && refreshToken) {
+    const restored = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    if (!restored.error && restored.data.session) {
+      cleanRecoveryUrl();
+      return restored.data.session;
+    }
+  }
+
+  result = await supabase.auth.getSession();
+  return result.data.session || null;
 }
 
 async function accessContext(session, forceRefresh = false) {
@@ -274,7 +310,7 @@ recoveryForm.addEventListener("submit", async (event) => {
   if (captchaLoadError) { errorBox.textContent = "A confirmação de segurança não carregou. Atualize a página e tente novamente."; return; }
   if (recoveryCaptcha.enabled && !recoveryCaptcha.token()) { errorBox.textContent = "Confirme que você não é um robô."; return; }
   const email = String(new FormData(recoveryForm).get("email") || "").trim().toLowerCase();
-  const redirectTo = new URL(location.pathname, location.href);
+  const redirectTo = new URL("/", location.origin);
   redirectTo.searchParams.set("recovery", "1");
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: redirectTo.toString(),
@@ -296,8 +332,18 @@ updateForm.addEventListener("submit", async (event) => {
     errorBox.textContent = "Use 8 caracteres com maiúscula, minúscula, número e símbolo.";
     return;
   }
+  const recoverySession = await establishRecoverySession();
+  if (!recoverySession) {
+    errorBox.textContent = "O link de recuperação é inválido ou expirou. Volte ao login e solicite um novo link.";
+    return;
+  }
   const { error } = await supabase.auth.updateUser({ password });
-  if (error) { errorBox.textContent = error.message || "Não foi possível atualizar a senha."; return; }
+  if (error) {
+    errorBox.textContent = /session missing|invalid.*session|expired/i.test(error.message || "")
+      ? "O link de recuperação é inválido ou expirou. Volte ao login e solicite um novo link."
+      : "Não foi possível atualizar a senha. Verifique os requisitos e tente novamente.";
+    return;
+  }
   const { error: confirmationError } = await supabase.rpc("confirm_my_password_change");
   if (confirmationError) { errorBox.textContent = "A senha foi alterada, mas não foi possível concluir a confirmação do primeiro acesso."; return; }
   await supabase.auth.signOut();
@@ -306,15 +352,22 @@ updateForm.addEventListener("submit", async (event) => {
   showAuthView("login");
 });
 
-supabase.auth.onAuthStateChange((event) => {
+supabase.auth.onAuthStateChange((event, authSession) => {
   if (event === "SIGNED_OUT") sessionStorage.removeItem(ACCESS_CACHE_KEY);
-  if (event === "PASSWORD_RECOVERY") showAuthView("update");
+  if (event === "PASSWORD_RECOVERY" && authSession) showAuthView("update");
 });
 
-const { data: { session } } = await supabase.auth.getSession();
+const parameters = new URLSearchParams(location.search);
+const hashParameters = new URLSearchParams(location.hash.replace(/^#/, ""));
+const recoveryRequested = parameters.get("recovery") === "1" || parameters.has("code") || hashParameters.get("type") === "recovery";
+const recoverySession = recoveryRequested ? await establishRecoverySession() : null;
+const { data: { session } } = recoverySession ? { data: { session: recoverySession } } : await supabase.auth.getSession();
 if (session) {
-  if (new URLSearchParams(location.search).get("recovery") === "1") showAuthView("update");
+  if (recoveryRequested) showAuthView("update");
   else try { await revealPortal(session); } catch (error) { await supabase.auth.signOut(); loginForm.querySelector(".auth-error").textContent = error.message || "Acesso indisponível."; }
+} else if (recoveryRequested) {
+  recoveryForm.querySelector(".auth-error").textContent = "O link de recuperação é inválido ou expirou. Informe seu e-mail para receber um novo link.";
+  showAuthView("recovery");
 } else if ("requestIdleCallback" in window) {
   window.requestIdleCallback(() => ensureCaptchas(), { timeout: 1200 });
 } else {
