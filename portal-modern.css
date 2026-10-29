@@ -52,3 +52,26 @@ body{min-height:100vh!important;height:auto!important;overflow-x:hidden!importan
 .footer{background:#172f73!important}
 @media(min-width:1280px) and (min-height:720px){body{grid-template-rows:264px minmax(0,1fr) 76px!important}.hero{min-height:264px!important}.systems-section{margin-top:0!important;padding-top:25px!important}.system-card,.systems-grid.filtered .system-card:nth-child(n){min-height:220px!important}}
 @media(max-width:700px){.hero{min-height:300px!important}.systems-section{margin-top:0!important;border-radius:0!important}.hero-content{padding-bottom:45px!important}}
+
+/* Painel inicial otimizado: cabeçalho compacto e seis aplicativos na mesma linha. */
+@media(min-width:1360px){
+ body{height:100vh!important;min-height:680px!important;overflow-y:hidden!important}
+ .hero{min-height:190px!important;max-height:190px!important}
+ .topbar{height:58px!important;min-height:58px!important}
+ .hero-content{width:min(1600px,calc(100% - 64px))!important;padding:18px 0 24px!important}
+ .welcome{margin-bottom:5px!important;font-size:11px!important}
+ .hero h1{font-size:clamp(31px,2.7vw,40px)!important}
+ .hero-copy{margin-top:8px!important;font-size:12px!important}
+ .hero-accent{height:3px!important;margin-top:10px!important}
+ .building{height:180px!important;bottom:-12px!important}
+ .slogan{bottom:24px!important}
+ .systems-section{min-height:0!important;padding:20px 24px 18px!important;overflow:hidden!important}
+ .systems-wrap{width:min(1600px,100%)!important;height:100%!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important}
+ .systems-heading{margin-bottom:14px!important}
+ .systems-heading .section-title{font-size:23px!important}
+ .systems-grid,.systems-grid.filtered{height:100%!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-template-rows:minmax(0,1fr)!important;gap:12px!important}
+ .system-card,.systems-grid.filtered .system-card:nth-child(n){min-height:0!important;padding:15px!important}
+ .card-icon{width:44px!important;height:44px!important}.card-icon svg{width:24px!important;height:24px!important}
+ .card-copy{padding:11px 0 8px!important}.system-card h2{font-size:17px!important}.system-card p{font-size:10.5px!important;line-height:1.38!important}.access{min-height:36px!important}
+ .footer{padding:7px 24px!important}.footer-inner{height:54px!important}.footer-brand img{height:42px!important}
+}
