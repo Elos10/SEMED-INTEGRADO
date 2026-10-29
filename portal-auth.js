@@ -242,7 +242,14 @@ async function revealPortal(session, forceRefresh = false) {
   const codes = new Set(availableModules.keys());
   document.querySelectorAll(".system-card").forEach((card) => {
     const href = card.querySelector(".access")?.getAttribute("href");
-    const moduleAccess = availableModules.get(moduleByHref[href] || moduleCodeFromHref(href));
+    const creiSae = card.dataset.systemCode === "crei-sae";
+    const communicationAccess = availableModules.get("comunicacao");
+    const incidentAccess = availableModules.get("incidentes");
+    const moduleAccess = creiSae
+      ? context.portal_admin || communicationAccess?.permissions?.view_sensitive || incidentAccess?.permissions?.view
+        ? incidentAccess || communicationAccess
+        : null
+      : availableModules.get(moduleByHref[href] || moduleCodeFromHref(href));
     card.dataset.authorized = String(Boolean(moduleAccess));
     card.hidden = card.dataset.authorized !== "true";
     if (moduleAccess) renderAccessSummary(card, moduleAccess);
