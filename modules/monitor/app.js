@@ -37,7 +37,7 @@ const odsGoals=[
 const odsTargets=window.SEMED_ODS_TARGETS||{};
 let strategicMenuOpen=false;
 const strategicProgramByView=id=>strategicPrograms.find(program=>program.id===id);
-function toggleStrategicMenu(){strategicMenuOpen=!strategicMenuOpen;if(strategicMenuOpen&&view!=='strategic-overview'&&!strategicProgramByView(view)){view='strategic-overview';selected=null}document.getElementById('side')?.classList.remove('open');render()}
+function toggleStrategicMenu(){strategicMenuOpen=!strategicMenuOpen;view='strategic-overview';selected=null;document.getElementById('side')?.classList.remove('open');render()}
 function shell(body){
   const role=roleLabel(session.role),initials=(session.name||'Usuário').split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();
   const strategicActive=view==='strategic-overview'||!!strategicProgramByView(view),showStrategic=strategicMenuOpen;
