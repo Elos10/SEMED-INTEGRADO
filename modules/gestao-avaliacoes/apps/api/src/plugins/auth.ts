@@ -13,7 +13,7 @@ const supabaseAuth=createClient(config.AUTH_SUPABASE_URL??config.SUPABASE_URL,co
 type AuthContext=FastifyRequest['auth'];
 type PortalPermissions={view?:boolean;create?:boolean;edit?:boolean;delete?:boolean;approve?:boolean;admin?:boolean};
 type PortalModule={code?:string;role_code?:string|null;permissions?:PortalPermissions};
-type PortalContext={user?:{full_name?:string|null}|null;modules?:PortalModule[]};
+type PortalContext={user?:{full_name?:string|null}|null;portal_admin?:boolean;modules?:PortalModule[]};
 type PortalAccess={full_name:string|null;can_admin:boolean;can_manage:boolean;role_code:string|null};
 const authCache=new Map<string,{expiresAt:number;auth:AuthContext}>(),AUTH_CACHE_MS=15_000,AUTH_CACHE_MAX=500;
 
@@ -37,7 +37,7 @@ async function getPortalAccess(token:string):Promise<PortalAccess|null>{
  if(!module)return null;
  return {
   full_name:context.user?.full_name??null,
-  can_admin:Boolean(module.permissions?.admin),
+  can_admin:context.portal_admin===true||Boolean(module.permissions?.admin),
   can_manage:Boolean(module.permissions?.create||module.permissions?.edit||module.permissions?.delete||module.permissions?.approve),
   role_code:module.role_code??null
  };
