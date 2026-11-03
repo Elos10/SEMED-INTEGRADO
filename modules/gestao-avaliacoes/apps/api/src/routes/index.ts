@@ -39,7 +39,10 @@ async function finalizeProcessing(id:string,userId:string,organizationId:string)
 
 export async function routes(app:FastifyInstance){
  app.get('/api/health',async()=>({status:'ok',template:'A4_LANDSCAPE_2UP_HORIZONTAL_V1'}));
- app.get('/api/me',{preHandler:authenticate},r=>db.profile.findUniqueOrThrow({where:{id:r.auth.userId},include:{organization:true}}));
+ app.get('/api/me',{preHandler:authenticate},async r=>{
+  const profile=await db.profile.findUniqueOrThrow({where:{id:r.auth.userId},include:{organization:true}});
+  return {...profile,role:r.auth.role};
+ });
  app.get('/api/dashboard',{preHandler:authenticate},async r=>{const org=r.auth.organizationId;const [assessments,students,processed,corrected,avg,reviews]=await Promise.all([db.assessment.count({where:assessmentOrg(org)}),db.student.count({where:{schoolClass:{unit:{organizationId:org}}}}),db.readingProcessing.count({where:{sheet:{assessment:{unit:{organizationId:org}}},status:{in:['READY','FINALIZED']}}}),db.result.count({where:{sheet:{assessment:{unit:{organizationId:org}}}}}),db.result.aggregate({where:{sheet:{assessment:{unit:{organizationId:org}}}},_avg:{score:true}}),db.readingProcessing.count({where:{sheet:{assessment:{unit:{organizationId:org}}},status:'REVIEW_REQUIRED'}})]);return{assessments,students,processed,corrected,reviews,average:Number(avg._avg.score??0)};});
 
  app.get('/api/units',{preHandler:authenticate},r=>db.educationalUnit.findMany({where:{organizationId:r.auth.organizationId},orderBy:{name:'asc'}}));
