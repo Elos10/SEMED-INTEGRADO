@@ -38,7 +38,7 @@ async function getPortalAccess(token:string):Promise<PortalAccess|null>{
  const profileCodes=(context.profiles??[]).map(profile=>(profile.code??'').toUpperCase());
  const isPortalAdministrator=context.portal_admin===true
   ||context.user?.email?.toLowerCase()==='detic@uberabadigital.com.br'
-  ||profileCodes.some(code=>code==='ADMINISTRADOR'||code.includes('DETIC'));
+  ||profileCodes.some(code=>code==='ADMINISTRADOR'||code==='ADMIN_GERAL'||code==='AVALIACOES_ADMIN'||code.includes('DETIC'));
  return {
   full_name:context.user?.full_name??null,
   can_admin:isPortalAdministrator||Boolean(module.permissions?.admin),
@@ -65,6 +65,10 @@ export async function authenticate(req:FastifyRequest,reply:FastifyReply){
  if(error||!data.user)return reply.code(401).send({message:'Sessão inválida.'});
  const access=await getPortalAccess(token);
  if(!access)return reply.code(403).send({message:'Usuário sem permissão ativa para o módulo Avaliações no Portal INTEGRA.'});
+ // O e-mail vem de auth.getUser(token), portanto foi validado pelo servidor de autenticação.
+ // Esta garantia mantém o administrador geral do Portal com acesso integral mesmo quando
+ // uma sessão antiga ainda recebe um contexto central desatualizado.
+ if(data.user.email?.toLowerCase()==='detic@uberabadigital.com.br')access.can_admin=true;
  const auth=await provisionFromPortal(data.user.id,data.user.email,access);
  req.auth=auth;
  if(authCache.size>=AUTH_CACHE_MAX)authCache.delete(authCache.keys().next().value!);
