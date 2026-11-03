@@ -46,6 +46,12 @@ export async function routes(app:FastifyInstance){
  app.get('/api/dashboard',{preHandler:authenticate},async r=>{const org=r.auth.organizationId;const [assessments,students,processed,corrected,avg,reviews]=await Promise.all([db.assessment.count({where:assessmentOrg(org)}),db.student.count({where:{schoolClass:{unit:{organizationId:org}}}}),db.readingProcessing.count({where:{sheet:{assessment:{unit:{organizationId:org}}},status:{in:['READY','FINALIZED']}}}),db.result.count({where:{sheet:{assessment:{unit:{organizationId:org}}}}}),db.result.aggregate({where:{sheet:{assessment:{unit:{organizationId:org}}}},_avg:{score:true}}),db.readingProcessing.count({where:{sheet:{assessment:{unit:{organizationId:org}}},status:'REVIEW_REQUIRED'}})]);return{assessments,students,processed,corrected,reviews,average:Number(avg._avg.score??0)};});
 
  app.get('/api/units',{preHandler:authenticate},r=>db.educationalUnit.findMany({where:{organizationId:r.auth.organizationId},orderBy:{name:'asc'}}));
+ app.get('/api/units/:id',{preHandler:authenticate},async r=>{
+  const id=uuid.parse((r.params as {id:string}).id);
+  const unit=await db.educationalUnit.findFirstOrThrow({where:{id,organizationId:r.auth.organizationId},include:{_count:{select:{classes:true,assessments:true}}}});
+  const students=await db.student.count({where:{schoolClass:{unitId:id}}});
+  return {...unit,counts:{classes:unit._count.classes,students,assessments:unit._count.assessments}};
+ });
  app.post('/api/units',{preHandler:permit('ADMIN','MANAGER')},r=>{const input=parseInput<UnitInput>(unitInput,r.body);return db.educationalUnit.create({data:{organizationId:r.auth.organizationId,name:input.name,code:input.code}});});
  app.patch('/api/units/:id',{preHandler:permit('ADMIN')},async r=>{const id=uuid.parse((r.params as {id:string}).id);await requireUnit(id,r.auth.organizationId);return db.educationalUnit.update({where:{id},data:unitInput.partial().parse(r.body)});});
 

@@ -1,4 +1,4 @@
-export type Unit={id:string;name:string;code?:string};
+export type Unit={id:string;name:string;code?:string;active?:boolean};
 export type SchoolClass={id:string;unitId:string;name:string;grade:number;schoolYear:number;timeMode:'PARTIAL'|'FULL';unit:Unit;_count?:{students:number}};
 export type Student={id:string;name:string;registration?:string;classId:string;schoolClass:SchoolClass};
 export type Assessment={id:string;number:string;year:number;grade:number;subject:'PORTUGUESE'|'MATHEMATICS'|'SINGLE';timeMode:'PARTIAL'|'FULL'|'ALL';questionCount:number;assessmentDate:string;unit:Unit;schoolClass?:SchoolClass|null;key?:Array<{question:number;choice:string}>;sheets?:Array<{id:string;student?:Student}>;_count?:{key:number;sheets:number}};
