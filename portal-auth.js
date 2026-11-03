@@ -264,6 +264,11 @@ async function revealPortal(session, forceRefresh = false) {
       .then(({ initPortalAdmin }) => initPortalAdmin({ supabase, context }))
       .catch(() => {});
   }
+  if (context.portal_admin || availableModules.get("cadastros")?.permissions?.view) {
+    import("./portal-catalog-admin.js?v=20261103-1")
+      .then(({ initSharedCatalogAdmin }) => initSharedCatalogAdmin({ supabase, context }))
+      .catch(() => {});
+  }
   overlay.hidden = true;
   document.body.classList.remove("portal-auth-pending");
 

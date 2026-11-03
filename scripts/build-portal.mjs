@@ -9,6 +9,7 @@ const rootFiles = [
   "design-system.css",
   "module-auth-guard.js",
   "portal-admin.js",
+  "portal-catalog-admin.js",
   "portal-auth-critical.css",
   "portal-auth.js",
   "portal-modern.css",

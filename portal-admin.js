@@ -4,6 +4,7 @@ const MODULE_ROLES = {
   comunicacao: ["administrador", "gestor", "emissor", "destinatario", "auditoria", "publicador"],
   incidentes: ["REGISTRADOR", "GESTOR DE UNIDADE", "GESTÃO CENTRAL", "ADMINISTRADOR"],
   votacao: ["MESARIO"],
+  cadastros: ["CONSULTA", "GESTOR"],
 };
 
 const SCOPE_MODES = [
@@ -35,6 +36,8 @@ const ACCESS_KITS = [
   { code: "AUDITOR", name: "Auditoria", description: "Consulta histórico e exporta dados sem alterar registros.", profiles: ["COMUNICACAO_AUDITOR"], roles: { comunicacao: "auditoria" }, scope: "READ_ONLY" },
   { code: "INCIDENTE_UNIDADE", name: "Incidentes da unidade", description: "Registra, encaminha e acompanha incidentes da unidade vinculada.", profiles: ["INCIDENTE_UNIDADE"], roles: { incidentes: "GESTOR DE UNIDADE" }, scope: "UNIT" },
   { code: "INCIDENTE_CENTRAL", name: "Gestão central de incidentes", description: "Acompanha todas as unidades, relatórios e reclassificações protegidas.", profiles: ["INCIDENTE_CENTRAL"], roles: { incidentes: "GESTÃO CENTRAL" }, scope: "ALL" },
+  { code: "CADASTROS_CONSULTA", name: "Consulta de cadastros", description: "Consulta unidades, setores, diretorias, áreas e funções compartilhadas.", profiles: ["CADASTROS_CONSULTA"], roles: { cadastros: "CONSULTA" }, scope: "READ_ONLY" },
+  { code: "CADASTROS_GESTOR", name: "Gestão de cadastros", description: "Cria, altera, ativa e inativa os cadastros utilizados pelos sistemas.", profiles: ["CADASTROS_GESTOR"], roles: { cadastros: "GESTOR" }, scope: "ALL" },
   { code: "TEMPORARIO", name: "Acesso temporário", description: "Modelo sem sistemas pré-liberados e com vigência obrigatória.", profiles: [], roles: {}, scope: "OWN", temporary: true },
 ];
 
