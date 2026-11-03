@@ -134,6 +134,8 @@ async function bootstrap(){
     const [access,resolvedBackend]=await Promise.all([portalAccess(),window.supabaseReady]);
     backend=resolvedBackend;
     if(!access||!backend)return;
+    const centralSectors=(access.referenceCatalogs||[]).filter(item=>item.catalog==='SECTOR').map(item=>item.label);
+    if(centralSectors.length)internalSector2Areas.splice(0,internalSector2Areas.length,...centralSectors);
     const person=access.context?.user||{};
     const permissions=access.moduleAccess?.permissions||{};
     session={

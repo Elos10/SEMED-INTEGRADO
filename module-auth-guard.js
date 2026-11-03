@@ -1,5 +1,5 @@
 import { semedUi } from "./shared-runtime.js";
-import { canAccess, getAccessContext, getPortalClient, getPortalSession, moduleAccess as findModuleAccess, moduleCodeFromPath, portalSelectionUrl, signOutPortal } from "./portal-runtime.js";
+import { canAccess, getAccessContext, getPortalClient, getPortalSession, getReferenceCatalogs, moduleAccess as findModuleAccess, moduleCodeFromPath, portalSelectionUrl, signOutPortal } from "./portal-runtime.js";
 
 const supabase = getPortalClient();
 const path = location.pathname.toLowerCase();
@@ -133,5 +133,6 @@ window.SEMED_MODULE_ACCESS = (async () => {
   semedUi.clear();
   window.SEMED_CAN = (operation = "view") => canAccess(data, code, operation);
   supabase.from("semed_audit").insert({ user_id: session.user.id, module_code: code, action: "MODULE_OPEN" }).then(() => {});
-  return { session, code, moduleAccess, context: data, supabase };
+  const referenceCatalogs = await getReferenceCatalogs().catch(() => []);
+  return { session, code, moduleAccess, context: data, supabase, referenceCatalogs };
 })();

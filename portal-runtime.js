@@ -15,6 +15,7 @@ export const MODULE_ROUTES = Object.freeze({
 
 const routeEntries = Object.entries(MODULE_ROUTES);
 let contextRequest;
+const referenceCatalogCache = new Map();
 
 export function getPortalClient() {
   if (!globalThis[CLIENT_KEY]) {
@@ -51,7 +52,19 @@ function writeCache(session, context) {
 
 export function invalidateAccessContext() {
   contextRequest = undefined;
+  referenceCatalogCache.clear();
   try { sessionStorage.removeItem(ACCESS_CACHE_KEY); } catch {}
+}
+
+export async function getReferenceCatalogs(catalog = null, { force = false } = {}) {
+  const key = catalog || "*";
+  const cached = referenceCatalogCache.get(key);
+  if (!force && cached && Date.now() - cached.storedAt < 300_000) return cached.items;
+  const { data, error } = await getPortalClient().rpc("get_semed_reference_catalogs", { p_catalog: catalog });
+  if (error) throw error;
+  const items = data || [];
+  referenceCatalogCache.set(key, { storedAt: Date.now(), items });
+  return items;
 }
 
 export async function getPortalSession() {
