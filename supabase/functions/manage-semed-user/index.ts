@@ -23,7 +23,6 @@ const MODULE_ROLES: Record<string, readonly string[]> = {
   monitor: ["administrador", "gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
   comunicacao: ["administrador", "gestor", "emissor", "destinatario", "auditoria", "publicador"],
   incidentes: ["REGISTRADOR", "GESTOR DE UNIDADE", "GESTÃO CENTRAL", "ADMINISTRADOR"],
-  votacao: ["MESARIO"],
 };
 const SCOPE_MODES = new Set(["ALL", "DIRECTORATE", "AREA", "UNIT", "TEAM", "OWN", "ASSIGNED", "READ_ONLY"]);
 const SCOPES_REQUIRING_REFERENCE = new Set(["DIRECTORATE", "AREA", "UNIT"]);
@@ -105,7 +104,6 @@ Deno.serve(async (req) => {
       const configured = configuredValue && typeof configuredValue === "object" ? configuredValue as Record<string, any> : {};
       const roleCode = String(configured.roleCode || "");
       if (roleCode && !(MODULE_ROLES[moduleCode] || []).includes(roleCode)) throw new Error(`Papel inválido para o sistema ${moduleCode}.`);
-      if (moduleCode === "votacao" && roleCode && !configured.scope?.unit_id) throw new Error("Informe a unidade vinculada ao acesso da Urna Eletrônica.");
     }
     for (const [moduleCode, configuredValue] of Object.entries(requestedOverrides)) {
       const configured = configuredValue && typeof configuredValue === "object" ? configuredValue as Record<string, any> : {};
@@ -163,13 +161,10 @@ Deno.serve(async (req) => {
     if (moduleError) throw moduleError;
 
     await admin.from("semed_user_module_roles").delete().eq("user_id", target.id);
-    const hasVotingProfile = requestedProfiles.includes("URNA_MESARIO");
     const roleRows = (moduleRows || []).map((module) => {
       const configured = requestedRoles[module.code] || {};
       const roleCode = String(configured.roleCode || "");
-      if (module.code === "votacao" && !hasVotingProfile) return null;
       if (roleCode && !(MODULE_ROLES[module.code] || []).includes(roleCode)) throw new Error(`Papel inválido para o sistema ${module.code}.`);
-      if (module.code === "votacao" && roleCode && !configured.scope?.unit_id) throw new Error("Informe a unidade vinculada ao acesso da Urna Eletrônica.");
       return { user_id: target.id, module_id: module.id, role_code: roleCode, scope: configured.scope || {}, active: true, managed_by: user.id };
     }).filter((row) => row?.role_code);
     if (roleRows.length) {
@@ -181,7 +176,6 @@ Deno.serve(async (req) => {
     if (deleteOverridesError) throw deleteOverridesError;
     const permissionKeys = ["can_view", "can_create", "can_edit", "can_delete", "can_approve", "can_admin", "can_assign", "can_export", "can_view_sensitive"] as const;
     const overrideRows = (moduleRows || []).map((module) => {
-      if (module.code === "votacao") return null;
       const configured = requestedOverrides[module.code];
       if (!configured || typeof configured !== "object") return null;
       const scope = configured.scope && typeof configured.scope === "object" ? configured.scope : {};
@@ -205,18 +199,12 @@ Deno.serve(async (req) => {
     }
 
     const roleFor = (code: string, fallback: string) => String(requestedRoles[code]?.roleCode || fallback);
-    const scopeFor = (code: string) => requestedRoles[code]?.scope || {};
     const allowedCodes = new Set((moduleRows || []).map((module) => module.code));
 
     if (allowedCodes.has("monitor")) {
       const { error } = await admin.from("monitor_profiles").upsert({ user_id: target.id, full_name: fullName, email, area, role: roleFor("monitor", "servidor"), active, updated_by: user.id, updated_at: new Date().toISOString() });
       if (error) throw error;
     } else await admin.from("monitor_profiles").update({ active: false, updated_by: user.id }).eq("user_id", target.id);
-
-    if (allowedCodes.has("votacao")) {
-      const { error } = await admin.from("votacao_accounts").upsert({ user_id: target.id, access_kind: roleFor("votacao", "MESARIO"), unit_id: scopeFor("votacao").unit_id || null, active, updated_at: new Date().toISOString() });
-      if (error) throw error;
-    } else await admin.from("votacao_accounts").update({ active: false }).eq("user_id", target.id);
 
     await admin.from("semed_audit").insert({
       user_id: user.id, module_code: "portal", action: uid ? "UPDATE_USER_ACCESS" : "CREATE_USER_ACCESS",

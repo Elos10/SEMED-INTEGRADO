@@ -23,8 +23,8 @@ await mkdir(path.join(output, "modules"), { recursive: true });
 
 await Promise.all(rootFiles.map((file) => cp(path.join(root, file), path.join(output, file))));
 await Promise.all([
+  cp(path.join(root, "modules", "logo-municipal.png"), path.join(output, "modules", "logo-municipal.png")),
   cp(path.join(root, "modules", "monitor"), path.join(output, "modules", "monitor"), { recursive: true }),
-  cp(path.join(root, "modules", "votacao"), path.join(output, "modules", "votacao"), { recursive: true }),
   cp(path.join(root, "modules", "inteligencia"), path.join(output, "modules", "inteligencia"), { recursive: true }),
 ]);
 

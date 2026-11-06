@@ -8,7 +8,6 @@ export const ACCESS_CACHE_TTL = 60_000;
 export const MODULE_ROUTES = Object.freeze({
   avaliacoes: "/avaliacoes/",
   monitor: "/modules/monitor/",
-  votacao: "/modules/votacao/",
   comunicacao: "/comunicacao/",
   inteligencia: "/modules/inteligencia/",
 });
@@ -96,10 +95,6 @@ export async function getAccessContext(session, { force = false, retry = true } 
 }
 
 export function moduleAccess(context, code) {
-  if (code === "votacao" && !context?.portal_admin) {
-    const hasExplicitVotingProfile = (context?.profiles || []).some((profile) => profile.code === "URNA_MESARIO");
-    if (!hasExplicitVotingProfile) return null;
-  }
   return (context?.modules || []).find((item) => item.code === code) || null;
 }
 

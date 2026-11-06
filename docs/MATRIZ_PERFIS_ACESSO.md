@@ -20,7 +20,6 @@ ocultação visual.
 | OS — Solicitante | Ordens de Serviço | abrir e acompanhar as próprias OS |
 | OS — Responsável | Ordens de Serviço | visualizar e atualizar OS atribuídas |
 | OS — Consulta | Ordens de Serviço | somente visualizar |
-| Urna — Mesário | Urna Eletrônica | operar a votação da unidade vinculada |
 
 ## Papéis funcionais por módulo
 
@@ -28,7 +27,6 @@ ocultação visual.
 - Monitoramento: Gabinete, Assessoria, Diretoria, Departamento, Seção e
   Servidor.
 - Ordens de Serviço: Solicitante, Responsável e Gestor/Consulta.
-- Urna Eletrônica: Mesário, vinculado a uma unidade escolar.
 
 O perfil corporativo determina o módulo e as operações. O papel funcional
 determina o campo de atuação dentro do módulo, como unidade escolar,

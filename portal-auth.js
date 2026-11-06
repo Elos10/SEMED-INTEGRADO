@@ -5,7 +5,6 @@ const moduleByHref = {
   "./modules/avaliacoes/": "avaliacoes",
   "./avaliacoes/": "avaliacoes",
   "./modules/monitor/": "monitor",
-  "./modules/votacao/": "votacao",
   "./comunicacao/": "comunicacao",
   "./modules/inteligencia/": "inteligencia",
 };

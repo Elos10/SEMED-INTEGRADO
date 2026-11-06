@@ -3,7 +3,6 @@ const MODULE_ROLES = {
   monitor: ["administrador", "gabinete", "assessoria", "diretoria", "departamento", "secao", "servidor"],
   comunicacao: ["administrador", "gestor", "emissor", "destinatario", "auditoria", "publicador"],
   incidentes: ["REGISTRADOR", "GESTOR DE UNIDADE", "GESTÃO CENTRAL", "ADMINISTRADOR"],
-  votacao: ["MESARIO"],
   cadastros: ["CONSULTA", "GESTOR"],
 };
 
@@ -230,7 +229,7 @@ export function initPortalAdmin({ supabase, context }) {
             const permissionOptions = [["can_view","Acessar"],["can_create","Criar"],["can_edit","Editar"],["can_delete","Excluir"],["can_approve","Aprovar/publicar"],["can_assign","Direcionar"],["can_export","Exportar"],["can_view_sensitive",sensitiveLabel],["can_admin","Administrar"]];
             const expiry = override?.expires_at ? String(override.expires_at).slice(0,10) : "";
             const profileNames = baseline.map((permission) => catalog.profiles.find((profile) => profile.id === permission.profile_id)?.name).filter(Boolean).join(", ");
-            const governance = module.code === "votacao" ? '<p class="access-kit-note">As regras existentes da Urna Eletrônica foram preservadas. O vínculo continua obrigatório por unidade e processo eleitoral.</p>' : `<details class="access-advanced"><summary>Ajustes avançados de permissões</summary><div class="permission-grid">${permissionOptions.map(([key,label]) => `<label class="permission-option"><input type="checkbox" name="access:${module.code}:${key}" ${allowed(key)?"checked":""}><span>${label}</span></label>`).join("")}</div><label class="access-expiry">Expiração específica do sistema<input type="date" name="expires:${module.code}" value="${esc(expiry)}"><small>Opcional para acessos temporários.</small></label><small class="access-origin">Origem atual: ${esc(profileNames || "nenhum perfil com acesso")}${override ? " + ajuste individual" : ""}.</small></details>`;
+            const governance = `<details class="access-advanced"><summary>Ajustes avançados de permissões</summary><div class="permission-grid">${permissionOptions.map(([key,label]) => `<label class="permission-option"><input type="checkbox" name="access:${module.code}:${key}" ${allowed(key)?"checked":""}><span>${label}</span></label>`).join("")}</div><label class="access-expiry">Expiração específica do sistema<input type="date" name="expires:${module.code}" value="${esc(expiry)}"><small>Opcional para acessos temporários.</small></label><small class="access-origin">Origem atual: ${esc(profileNames || "nenhum perfil com acesso")}${override ? " + ajuste individual" : ""}.</small></details>`;
             return `<div class="module-role" data-module-card="${esc(module.code)}"><div class="access-module-title"><strong>${esc(module.name)}</strong><span class="access-module-state" data-module-state>Configuração do perfil</span></div><label>Papel funcional<select name="role:${module.code}"><option value="">Automático/sem vínculo</option>${roles.map((role) => `<option value="${esc(role)}" ${current?.role_code === role ? "selected" : ""}>${esc(role)}</option>`).join("")}</select></label><label>Alcance dos dados<select name="scopeMode:${module.code}">${SCOPE_MODES.map(([value,label]) => `<option value="${value}" ${scopeMode === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><label>Referência do alcance<input name="scope:${module.code}" value="${esc(scopeValue)}" placeholder="Diretoria, área ou unidade vinculada"></label>${governance}</div>`;
           }).join("")}
         </div></fieldset>
@@ -280,7 +279,7 @@ export function initPortalAdmin({ supabase, context }) {
         const scopeMode = form.elements[`scopeMode:${module.code}`];
         const scopeValue = form.elements[`scope:${module.code}`];
         if (role && kit.roles[module.code]) role.value = kit.roles[module.code];
-        if (scopeMode && module.code !== "votacao") scopeMode.value = kit.scope;
+        if (scopeMode) scopeMode.value = kit.scope;
         if (scopeValue && ["UNIT","AREA","DIRECTORATE"].includes(kit.scope)) scopeValue.value = kit.scope === "UNIT" ? form.elements.unitName.value : kit.scope === "AREA" ? form.elements.area.value : form.elements.directorate.value;
         const selectedProfileIds = new Set((catalog.profiles || []).filter((profile) => kit.profiles.includes(profile.code)).map((profile) => profile.id));
         const grants = (catalog.profilePermissions || []).filter((permission) => permission.module_id === module.id && selectedProfileIds.has(permission.profile_id));
@@ -293,7 +292,6 @@ export function initPortalAdmin({ supabase, context }) {
       const selectedCodes = new Set([...form.querySelectorAll('[name="profiles"]:checked')].map((input) => input.value));
       const selectedIds = new Set((catalog.profiles || []).filter((profile) => selectedCodes.has(profile.code)).map((profile) => profile.id));
       for (const module of catalog.modules || []) {
-        if (module.code === "votacao") continue;
         const grants = (catalog.profilePermissions || []).filter((permission) => permission.module_id === module.id && selectedIds.has(permission.profile_id));
         ["can_view","can_create","can_edit","can_delete","can_approve","can_assign","can_export","can_view_sensitive","can_admin"].forEach((key) => { const input = form.elements[`access:${module.code}:${key}`]; if (input) input.checked = grants.some((grant) => grant[key]); });
         const state = form.querySelector(`[data-module-card="${module.code}"] [data-module-state]`);
@@ -308,10 +306,6 @@ export function initPortalAdmin({ supabase, context }) {
     form.addEventListener("change", (event) => {
       if (event.target.name === "profiles") {
         syncPermissionsFromProfiles();
-        if (event.target.value === "URNA_MESARIO" && !event.target.checked) {
-          const votingRole = form.elements["role:votacao"];
-          if (votingRole) votingRole.value = "";
-        }
       }
       updateAccessSummary(form);
     });
@@ -320,7 +314,7 @@ export function initPortalAdmin({ supabase, context }) {
   }
 
   function updateAccessSummary(form) {
-    const items = (catalog.modules || []).filter((module) => form.elements[`access:${module.code}:can_view`]?.checked || module.code === "votacao" && form.elements[`role:${module.code}`]?.value).map((module) => {
+    const items = (catalog.modules || []).filter((module) => form.elements[`access:${module.code}:can_view`]?.checked).map((module) => {
       const permissions = [["can_create","criar"],["can_edit","editar"],["can_delete","excluir"],["can_approve","aprovar/publicar"],["can_assign","direcionar"],["can_export","exportar"],["can_view_sensitive",module.code === "comunicacao" ? "acessar Comunicação Protegida" : "ver dados sensíveis"],["can_admin","administrar"]].filter(([key]) => form.elements[`access:${module.code}:${key}`]?.checked).map(([,label]) => label);
       const scopeLabel = SCOPE_MODES.find(([value]) => value === form.elements[`scopeMode:${module.code}`]?.value)?.[1] || "escopo próprio";
       return `<li><strong>${esc(module.name)}</strong>: ${esc(permissions.length ? permissions.join(", ") : "somente consultar")} · ${esc(scopeLabel.toLowerCase())}</li>`;
@@ -357,9 +351,9 @@ export function initPortalAdmin({ supabase, context }) {
       const scope = { mode: scopeMode, value: scopeValue || null };
       if (roleCode) moduleRoles[module.code] = {
         roleCode,
-        scope: module.code === "votacao" ? { unit_id: scopeValue || null } : scope,
+        scope,
       };
-      if (module.code !== "votacao") accessOverrides[module.code] = {
+      accessOverrides[module.code] = {
         can_view: values.get(`access:${module.code}:can_view`) === "on",
         can_create: values.get(`access:${module.code}:can_create`) === "on",
         can_edit: values.get(`access:${module.code}:can_edit`) === "on",
@@ -395,10 +389,6 @@ export function initPortalAdmin({ supabase, context }) {
       notice.textContent = "Selecione ao menos um perfil corporativo.";
       return;
     }
-    if (payload.moduleRoles.votacao?.roleCode && !payload.profileCodes.includes("URNA_MESARIO")) {
-      notice.textContent = "Urna Eletrônica: marque o perfil “Urna — Mesário” para liberar este sistema.";
-      return;
-    }
     if ((!selectedUser || payload.temporaryPassword) && !STRONG_PASSWORD.test(payload.temporaryPassword)) {
       notice.textContent = "A senha temporária deve ter ao menos 8 caracteres, incluindo letra, número e símbolo.";
       return;
@@ -426,7 +416,6 @@ export function initPortalAdmin({ supabase, context }) {
         if (elevated && !access.can_view) { notice.textContent = `${module.name}: libere “Acessar” antes das demais operações.`; return; }
         if (access.can_view && ["DIRECTORATE","AREA","UNIT"].includes(access.scope.mode) && !access.scope.value) { notice.textContent = `${module.name}: informe a referência do alcance selecionado.`; return; }
       }
-      if (module.code === "votacao" && moduleRoles.votacao?.roleCode && !moduleRoles.votacao.scope?.unit_id) { notice.textContent = "Urna Eletrônica: informe a unidade vinculada ao mesário."; return; }
     }
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
