@@ -7,7 +7,7 @@ const CATALOGS = {
 };
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const codeFromLabel = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "");
-const PARENT_CATALOG = { SECTOR: "DIRECTORATE" };
+const PARENT_CATALOG = { SECTOR: "DIRECTORATE", EDUCATIONAL_UNIT: "DIRECTORATE" };
 
 export function initSharedCatalogAdmin({ supabase, context }) {
   const access = (context.modules || []).find((item) => item.code === "cadastros")?.permissions;
@@ -68,14 +68,21 @@ export function initSharedCatalogAdmin({ supabase, context }) {
       const candidates=parentCatalog?[...new Map(items.filter((candidate)=>candidate.catalog===parentCatalog&&candidate.active).map((candidate)=>[candidate.code,candidate])).values()]:[];
       parentSelect.innerHTML=`<option value="">Sem vínculo</option>${candidates.map((candidate)=>`<option value="${esc(candidate.code)}" ${selected===candidate.code?"selected":""}>${esc(candidate.label)}</option>`).join("")}`;
       parentSelect.disabled=!parentCatalog;
-      parentHelp.textContent=parentCatalog?"Selecione a diretoria responsável pelo setor.":"Este tipo de cadastro não utiliza vínculo superior.";
+      parentHelp.textContent=parentCatalog?"Selecione a diretoria responsável por este cadastro.":"Este tipo de cadastro não utiliza vínculo superior.";
     };
     updateParentOptions(item?.catalog||"",item?.parent_code||"");
     form.elements.catalog?.addEventListener("change",(event)=>updateParentOptions(event.target.value));
     wrap.querySelector("[data-cancel]").addEventListener("click",()=>wrap.remove());
     if(item){const {data}=await supabase.from("semed_reference_catalog_history").select("operation,changed_at,new_data").eq("reference_id",item.id).order("changed_at",{ascending:false}).limit(5);wrap.querySelector("[data-history]").innerHTML=`<strong>Últimas alterações</strong>${data?.length?`<ul>${data.map((row)=>`<li>${new Date(row.changed_at).toLocaleString("pt-BR")} · ${row.operation==="INSERT"?"criado":"alterado"}</li>`).join("")}</ul>`:"<p>Ainda não há alterações registradas.</p>"}`}
     form.addEventListener("submit",async(event)=>{event.preventDefault();const submit=form.querySelector(".catalog-primary"),error=form.querySelector("[data-error]"),values=new FormData(form),catalog=item?.catalog||String(values.get("catalog")),label=String(values.get("label")||"").trim(),code=String(values.get("code")||"").trim()||codeFromLabel(label),active=values.get("active")==="true",parent_code=String(values.get("parentCode")||"")||null;submit.disabled=true;error.textContent="Salvando…";let result;
-      if(catalog==="EDUCATIONAL_UNIT") { const organization_id=item?.metadata?.organization_id||items.find((candidate)=>candidate.catalog==="EDUCATIONAL_UNIT")?.metadata?.organization_id; result=item?await supabase.from("avalia_educational_units").update({name:label,code,active}).eq("id",item.source_id):await supabase.from("avalia_educational_units").insert({name:label,code,active,organization_id}); }
+      if(catalog==="EDUCATIONAL_UNIT") {
+        const organization_id=item?.metadata?.organization_id||items.find((candidate)=>candidate.catalog==="EDUCATIONAL_UNIT")?.metadata?.organization_id;
+        const unitMutation=item
+          ?await supabase.from("avalia_educational_units").update({name:label,code,active}).eq("id",item.source_id).select("id").single()
+          :await supabase.from("avalia_educational_units").insert({name:label,code,active,organization_id}).select("id").single();
+        if(unitMutation.error) result=unitMutation;
+        else result=await supabase.from("semed_reference_catalogs").update({parent_code,updated_at:new Date().toISOString()}).eq("catalog","EDUCATIONAL_UNIT").eq("source_id",unitMutation.data.id);
+      }
       else result=item?await supabase.from("semed_reference_catalogs").update({label,code,parent_code,active,updated_at:new Date().toISOString()}).eq("id",item.id):await supabase.from("semed_reference_catalogs").insert({catalog,label,code,parent_code,active,sort_order:items.filter((candidate)=>candidate.catalog===catalog).length*10+10});
       if(result.error){error.textContent=result.error.message;submit.disabled=false;return} wrap.remove();await load();});
   }
