@@ -25,7 +25,7 @@ const FORM_CATALOGS = {
 };
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const codeFromLabel = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "");
-const PARENT_CATALOG = { SECTOR: "DIRECTORATE", EDUCATIONAL_UNIT: "DIRECTORATE" };
+const PARENT_CATALOG = { DIRECTORATE: "DIRECTORATE", SECTOR: "DIRECTORATE", EDUCATIONAL_UNIT: "DIRECTORATE" };
 
 export function initSharedCatalogAdmin({ supabase, context }) {
   const access = (context.modules || []).find((item) => item.code === "cadastros")?.permissions;
@@ -81,6 +81,11 @@ export function initSharedCatalogAdmin({ supabase, context }) {
   }
   function usagesFor(item){return [...new Set((item.sourceItems||[item]).flatMap((source)=>CATALOG_USAGE[source.catalog]||[]))]}
   function parentLabel(item){return items.find((candidate)=>["DIRECTORATE","AREA"].includes(candidate.catalog)&&candidate.code===item.parent_code)?.label||"—"}
+  function createsHierarchyCycle(code,parentCode){
+    const visited=new Set([code]);let cursor=parentCode;
+    while(cursor){if(visited.has(cursor))return true;visited.add(cursor);cursor=items.find((candidate)=>candidate.catalog==="DIRECTORATE"&&candidate.code===cursor)?.parent_code||null}
+    return false;
+  }
   function showUsage(item){
     const usages=usagesFor(item),wrap=document.createElement("div");wrap.className="catalog-dialog-wrap";
     wrap.innerHTML=`<section class="catalog-dialog"><h3>${esc(item.label)}</h3><p>Este cadastro é compartilhado com:</p><ul>${usages.map((usage)=>`<li>${esc(usage)}</li>`).join("")}</ul><div class="catalog-actions"><button class="catalog-primary" data-close-usage>Fechar</button></div></section>`;
@@ -119,10 +124,10 @@ export function initSharedCatalogAdmin({ supabase, context }) {
     const parentSelect=form.elements.parentCode,parentHelp=wrap.querySelector("[data-parent-help]");
     const updateParentOptions=(catalog,selected="")=>{
       const parentCatalog=PARENT_CATALOG[catalog];
-      const candidates=parentCatalog?[...new Map(items.filter((candidate)=>candidate.catalog===parentCatalog&&candidate.active).map((candidate)=>[candidate.code,candidate])).values()]:[];
+      const candidates=parentCatalog?[...new Map(items.filter((candidate)=>candidate.catalog===parentCatalog&&candidate.active&&candidate.code!==item?.code).map((candidate)=>[candidate.code,candidate])).values()]:[];
       parentSelect.innerHTML=`<option value="">Sem vínculo</option>${candidates.map((candidate)=>`<option value="${esc(candidate.code)}" ${selected===candidate.code?"selected":""}>${esc(candidate.label)}</option>`).join("")}`;
       parentSelect.disabled=!parentCatalog;
-      parentHelp.textContent=parentCatalog?"Selecione a diretoria responsável por este cadastro.":"Este tipo de cadastro não utiliza vínculo superior.";
+      parentHelp.textContent=parentCatalog?"Selecione o superior hierárquico deste cadastro.":"Este tipo de cadastro não utiliza vínculo superior.";
     };
     updateParentOptions(item?.catalog||"",item?.parent_code||"");
     form.elements.catalog?.addEventListener("change",(event)=>updateParentOptions(event.target.value));
@@ -133,6 +138,7 @@ export function initSharedCatalogAdmin({ supabase, context }) {
       const duplicate=items.find((candidate)=>candidate.id!==item?.id&&sameLogicalCatalog(candidate)&&(candidate.code===code||candidate.label.trim().toLocaleLowerCase("pt-BR")===normalizedLabel)&&!(item&&["AREA","DIRECTORATE"].includes(item.catalog)&&candidate.code===item.code));
       if(duplicate){error.textContent=`Já existe ${duplicate.label} neste tipo de cadastro.`;return}
       if(parent_code===code){error.textContent="Um cadastro não pode ser vínculo superior dele mesmo.";return}
+      if(createsHierarchyCycle(code,parent_code)){error.textContent="Este vínculo criaria um ciclo na hierarquia institucional.";return}
       submit.disabled=true;error.textContent="Salvando…";let result;
       if(catalog==="EDUCATIONAL_UNIT") {
         const organization_id=item?.metadata?.organization_id||items.find((candidate)=>candidate.catalog==="EDUCATIONAL_UNIT")?.metadata?.organization_id;
