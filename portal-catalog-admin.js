@@ -7,6 +7,7 @@ const CATALOGS = {
 };
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const codeFromLabel = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "");
+const PARENT_CATALOG = { SECTOR: "DIRECTORATE" };
 
 export function initSharedCatalogAdmin({ supabase, context }) {
   const access = (context.modules || []).find((item) => item.code === "cadastros")?.permissions;
@@ -58,9 +59,19 @@ export function initSharedCatalogAdmin({ supabase, context }) {
   async function editItem(item) {
     const wrap = document.createElement("div");
     wrap.className = "catalog-dialog-wrap";
-    wrap.innerHTML = `<form class="catalog-dialog"><h3>${item?"Editar cadastro":"Novo cadastro compartilhado"}</h3><p>A alteração será utilizada pelos sistemas integrados.</p><div class="catalog-form"><label>Tipo<select name="catalog" ${item?"disabled":""} required><option value="">Selecione</option>${Object.entries(CATALOGS).map(([key,value])=>`<option value="${key}" ${item?.catalog===key?"selected":""}>${esc(value[0])}</option>`).join("")}</select></label><label>Código<input name="code" value="${esc(item?.code)}" placeholder="Gerado automaticamente"></label><label class="catalog-wide">Descrição<input name="label" value="${esc(item?.label)}" required minlength="2"></label><label>Vínculo superior<select name="parentCode"><option value="">Sem vínculo</option>${items.filter((candidate)=>["AREA","DIRECTORATE"].includes(candidate.catalog)&&candidate.active).map((candidate)=>`<option value="${esc(candidate.code)}" ${item?.parent_code===candidate.code?"selected":""}>${esc(candidate.label)}</option>`).join("")}</select></label><label>Situação<select name="active"><option value="true" ${item?.active!==false?"selected":""}>Ativo</option><option value="false" ${item?.active===false?"selected":""}>Inativo</option></select></label><div class="catalog-wide catalog-error" data-error></div></div><div class="catalog-history" data-history></div><div class="catalog-actions"><button type="button" class="catalog-secondary" data-cancel>Cancelar</button><button class="catalog-primary">Salvar cadastro</button></div></form>`;
+    wrap.innerHTML = `<form class="catalog-dialog"><h3>${item?"Editar cadastro":"Novo cadastro compartilhado"}</h3><p>A alteração será utilizada pelos sistemas integrados.</p><div class="catalog-form"><label>Tipo<select name="catalog" ${item?"disabled":""} required><option value="">Selecione</option>${Object.entries(CATALOGS).map(([key,value])=>`<option value="${key}" ${item?.catalog===key?"selected":""}>${esc(value[0])}</option>`).join("")}</select></label><label>Código<input name="code" value="${esc(item?.code)}" placeholder="Gerado automaticamente"></label><label class="catalog-wide">Descrição<input name="label" value="${esc(item?.label)}" required minlength="2"></label><label>Vínculo superior<select name="parentCode"></select><small data-parent-help></small></label><label>Situação<select name="active"><option value="true" ${item?.active!==false?"selected":""}>Ativo</option><option value="false" ${item?.active===false?"selected":""}>Inativo</option></select></label><div class="catalog-wide catalog-error" data-error></div></div><div class="catalog-history" data-history></div><div class="catalog-actions"><button type="button" class="catalog-secondary" data-cancel>Cancelar</button><button class="catalog-primary">Salvar cadastro</button></div></form>`;
     document.body.append(wrap);
     const form=wrap.querySelector("form");
+    const parentSelect=form.elements.parentCode,parentHelp=wrap.querySelector("[data-parent-help]");
+    const updateParentOptions=(catalog,selected="")=>{
+      const parentCatalog=PARENT_CATALOG[catalog];
+      const candidates=parentCatalog?[...new Map(items.filter((candidate)=>candidate.catalog===parentCatalog&&candidate.active).map((candidate)=>[candidate.code,candidate])).values()]:[];
+      parentSelect.innerHTML=`<option value="">Sem vínculo</option>${candidates.map((candidate)=>`<option value="${esc(candidate.code)}" ${selected===candidate.code?"selected":""}>${esc(candidate.label)}</option>`).join("")}`;
+      parentSelect.disabled=!parentCatalog;
+      parentHelp.textContent=parentCatalog?"Selecione a diretoria responsável pelo setor.":"Este tipo de cadastro não utiliza vínculo superior.";
+    };
+    updateParentOptions(item?.catalog||"",item?.parent_code||"");
+    form.elements.catalog?.addEventListener("change",(event)=>updateParentOptions(event.target.value));
     wrap.querySelector("[data-cancel]").addEventListener("click",()=>wrap.remove());
     if(item){const {data}=await supabase.from("semed_reference_catalog_history").select("operation,changed_at,new_data").eq("reference_id",item.id).order("changed_at",{ascending:false}).limit(5);wrap.querySelector("[data-history]").innerHTML=`<strong>Últimas alterações</strong>${data?.length?`<ul>${data.map((row)=>`<li>${new Date(row.changed_at).toLocaleString("pt-BR")} · ${row.operation==="INSERT"?"criado":"alterado"}</li>`).join("")}</ul>`:"<p>Ainda não há alterações registradas.</p>"}`}
     form.addEventListener("submit",async(event)=>{event.preventDefault();const submit=form.querySelector(".catalog-primary"),error=form.querySelector("[data-error]"),values=new FormData(form),catalog=item?.catalog||String(values.get("catalog")),label=String(values.get("label")||"").trim(),code=String(values.get("code")||"").trim()||codeFromLabel(label),active=values.get("active")==="true",parent_code=String(values.get("parentCode")||"")||null;submit.disabled=true;error.textContent="Salvando…";let result;
