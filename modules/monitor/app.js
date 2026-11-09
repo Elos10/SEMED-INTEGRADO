@@ -16,6 +16,9 @@ const strategicPrograms=[
   {id:'strategic-social-education',code:'PM_ACOES_SOCIO_EDUCATIVAS',name:'PM Ações Sócio Educativas',description:'Planejamento e acompanhamento das ações socioeducativas municipais.'},
   {id:'objects',code:'OBJECTS',name:'Objetos',description:'Carteira institucional de objetos, responsáveis, prazos, entregas e execução.'}
 ];
+const objectProgramCode=object=>String(object?.strategicProgram||object?.programCode||'OBJECTS').toUpperCase();
+const objectsFromProgram=code=>state.objects.filter(object=>objectProgramCode(object)===String(code||'OBJECTS').toUpperCase());
+const operationalObjects=()=>objectsFromProgram('OBJECTS');
 const internalSector2Areas=[
   'SEMED - Secretária','SEMED - Secretário Adjunto','SEMED - Assessoria Jurídica','SEMED - Assessoria de Comunicação','SEMED - Fale com a SEMED',
   'SEMED - Núcleo da Primeira Infância','SEMED - Núcleo de Alfabetização','SEMED - Núcleo de Avaliação Sistêmica e Estatística','SEMED - Núcleo de Busca Ativa Escolar',
