@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     const action = String(input.action || "list");
 
     if (action === "list") {
-      const [people, profiles, modules, assignments, permissions, roles, overrides] = await Promise.all([
+      const [people, profiles, modules, assignments, permissions, roles, overrides, links] = await Promise.all([
         admin.from("semed_people").select("user_id,email,full_name,area,directorate,unit_name,job_title,manager_name,account_status,access_starts_at,access_ends_at,active,must_change_password,password_changed_at,created_at").order("full_name"),
         admin.from("semed_profiles").select("id,code,name,description,active").eq("active", true).order("name"),
         admin.from("semed_modules").select("id,code,name,description,display_order").eq("active", true).order("display_order"),
@@ -64,20 +64,43 @@ Deno.serve(async (req) => {
         admin.from("semed_profile_module_permissions").select("profile_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin,can_assign,can_export,can_view_sensitive"),
         admin.from("semed_user_module_roles").select("user_id,module_id,role_code,scope,active").eq("active", true),
         admin.from("semed_user_module_overrides").select("user_id,module_id,can_view,can_create,can_edit,can_delete,can_approve,can_admin,can_assign,can_export,can_view_sensitive,scope,expires_at,active").eq("active", true),
+        admin.from("semed_person_links").select("id,user_id,link_kind,area,directorate,unit_name,job_title,manager_name,starts_at,ends_at,active").eq("active", true).order("link_kind").order("created_at"),
       ]);
-      for (const result of [people, profiles, modules, assignments, permissions, roles, overrides]) if (result.error) throw result.error;
-      return respond({ users: people.data, profiles: profiles.data, modules: modules.data, assignments: assignments.data, profilePermissions: permissions.data, moduleRoles: roles.data, accessOverrides: overrides.data });
+      for (const result of [people, profiles, modules, assignments, permissions, roles, overrides, links]) if (result.error) throw result.error;
+      return respond({ users: people.data, profiles: profiles.data, modules: modules.data, assignments: assignments.data, profilePermissions: permissions.data, moduleRoles: roles.data, accessOverrides: overrides.data, institutionalLinks: links.data });
     }
 
     if (action !== "save") return respond({ error: "Ação inválida." }, 400);
     const uid = input.uid ? String(input.uid) : "";
     const email = String(input.email || "").trim().toLowerCase();
     const fullName = String(input.fullName || "").trim();
-    const area = String(input.area || "").trim();
-    const directorate = String(input.directorate || "").trim();
-    const unitName = String(input.unitName || "").trim();
-    const jobTitle = String(input.jobTitle || "").trim();
-    const managerName = String(input.managerName || "").trim();
+    const requestedLinks = (Array.isArray(input.institutionalLinks) ? input.institutionalLinks : []).map((raw: any, index: number) => ({
+      linkKind: String(raw?.linkKind || (index === 0 ? "PRIMARY" : "COMPLEMENTARY")).toUpperCase(),
+      area: String(raw?.area || "").trim(),
+      directorate: String(raw?.directorate || "").trim(),
+      unitName: String(raw?.unitName || "").trim(),
+      jobTitle: String(raw?.jobTitle || "").trim(),
+      managerName: String(raw?.managerName || "").trim(),
+      startsAt: raw?.startsAt ? String(raw.startsAt) : null,
+      endsAt: raw?.endsAt ? String(raw.endsAt) : null,
+    }));
+    if (!requestedLinks.length) requestedLinks.push({
+      linkKind: "PRIMARY", area: String(input.area || "").trim(), directorate: String(input.directorate || "").trim(),
+      unitName: String(input.unitName || "").trim(), jobTitle: String(input.jobTitle || "").trim(),
+      managerName: String(input.managerName || "").trim(), startsAt: input.accessStartsAt ? String(input.accessStartsAt) : null,
+      endsAt: input.accessEndsAt ? String(input.accessEndsAt) : null,
+    });
+    const primaryLinks = requestedLinks.filter((link: any) => link.linkKind === "PRIMARY");
+    if (primaryLinks.length !== 1) throw new Error("Informe exatamente um vínculo institucional principal.");
+    for (const link of requestedLinks) {
+      if (!['PRIMARY','COMPLEMENTARY','TEMPORARY'].includes(link.linkKind)) throw new Error("Tipo de vínculo institucional inválido.");
+      if (!USER_AREAS.includes(link.area) || link.directorate !== link.area) throw new Error("Área e Diretoria devem representar o mesmo vínculo institucional.");
+      if (!(INSTITUTIONAL_STRUCTURE[link.directorate] || []).includes(link.unitName)) throw new Error("Unidade/Estabelecimento incompatível com a diretoria selecionada.");
+      if (!JOB_TITLES.includes(link.jobTitle) && !uid) throw new Error("Cargo ou função inválido.");
+      if (link.startsAt && link.endsAt && link.endsAt < link.startsAt) throw new Error("O fim da vigência de um vínculo não pode ser anterior ao início.");
+    }
+    const primaryLink = primaryLinks[0];
+    const { area, directorate, unitName, jobTitle, managerName } = primaryLink;
     const accountStatus = String(input.accountStatus || (input.active === false ? "INACTIVE" : "ACTIVE")).toUpperCase();
     const accessStartsAt = input.accessStartsAt ? String(input.accessStartsAt) : null;
     const accessEndsAt = input.accessEndsAt ? String(input.accessEndsAt) : null;
@@ -87,11 +110,7 @@ Deno.serve(async (req) => {
     const requestedRoles = input.moduleRoles && typeof input.moduleRoles === "object" ? input.moduleRoles : {};
     const requestedOverrides = input.accessOverrides && typeof input.accessOverrides === "object" ? input.accessOverrides : {};
 
-    if (!email || !fullName || !area || !requestedProfiles.length) throw new Error("Nome, e-mail, área e ao menos um perfil são obrigatórios.");
-    if (!USER_AREAS.includes(area)) throw new Error("Área de atuação inválida.");
-    if (directorate !== area) throw new Error("Área de atuação e Diretoria devem representar o mesmo vínculo institucional.");
-    if (!(INSTITUTIONAL_STRUCTURE[directorate] || []).includes(unitName)) throw new Error("Unidade/Estabelecimento incompatível com a diretoria selecionada.");
-    if (!JOB_TITLES.includes(jobTitle) && !uid) throw new Error("Cargo ou função inválido.");
+    if (!email || !fullName || !area || !requestedProfiles.length) throw new Error("Nome, e-mail, vínculo principal e ao menos um perfil são obrigatórios.");
     if (!['ACTIVE', 'SUSPENDED', 'INACTIVE'].includes(accountStatus)) throw new Error("Situação da conta inválida.");
     if (accessStartsAt && accessEndsAt && accessEndsAt < accessStartsAt) throw new Error("O fim da vigência não pode ser anterior ao início.");
     if (!uid && !strongPassword(temporaryPassword)) throw new Error("A senha temporária deve ter 8 caracteres, letra, número e símbolo.");
@@ -145,6 +164,15 @@ Deno.serve(async (req) => {
       updated_at: new Date().toISOString(),
     });
     if (personError) throw personError;
+
+    const { error: deleteLinksError } = await admin.from("semed_person_links").delete().eq("user_id", target.id);
+    if (deleteLinksError) throw deleteLinksError;
+    const { error: insertLinksError } = await admin.from("semed_person_links").insert(requestedLinks.map((link: any) => ({
+      user_id: target.id, link_kind: link.linkKind, area: link.area, directorate: link.directorate || null,
+      unit_name: link.unitName || null, job_title: link.jobTitle || null, manager_name: link.managerName || null,
+      starts_at: link.startsAt, ends_at: link.endsAt, active: true, created_by: user.id,
+    })));
+    if (insertLinksError) throw insertLinksError;
 
     const { error: deleteProfilesError } = await admin.from("semed_user_profiles").delete().eq("user_id", target.id);
     if (deleteProfilesError) throw deleteProfilesError;
@@ -209,7 +237,7 @@ Deno.serve(async (req) => {
     await admin.from("semed_audit").insert({
       user_id: user.id, module_code: "portal", action: uid ? "UPDATE_USER_ACCESS" : "CREATE_USER_ACCESS",
       entity_type: "auth.users", entity_id: target.id,
-      metadata: { email, fullName, area, directorate, unitName, jobTitle, managerName, accountStatus, accessStartsAt, accessEndsAt, active, profileCodes: requestedProfiles, moduleOverrides: Object.keys(requestedOverrides), passwordReset: Boolean(temporaryPassword) },
+      metadata: { email, fullName, area, directorate, unitName, jobTitle, managerName, institutionalLinkCount: requestedLinks.length, accountStatus, accessStartsAt, accessEndsAt, active, profileCodes: requestedProfiles, moduleOverrides: Object.keys(requestedOverrides), passwordReset: Boolean(temporaryPassword) },
     });
 
     return respond({ user: { user_id: target.id, email, full_name: fullName, area, directorate, unit_name: unitName, job_title: jobTitle, manager_name: managerName, account_status: accountStatus, access_starts_at: accessStartsAt, access_ends_at: accessEndsAt, active, must_change_password: mustChange } });
