@@ -49,7 +49,7 @@ function installPortalButton(root = document) {
 }
 
 function installModulePortalButton(root = document) {
-  if (!moduleSwitchEnabled || root.querySelector?.("[data-module-portal-switch]")) return;
+  if (root.querySelector?.("[data-module-portal-switch]")) return;
   const placements = [
     [".top .top-actions", "prepend"],
     [".app-shell .sidebar", "before-logout"],
@@ -66,11 +66,22 @@ function installModulePortalButton(root = document) {
   link.dataset.modulePortalSwitch = "1";
   link.dataset.moduleHome = "1";
     link.href = portalHomeUrl.href;
-  link.innerHTML = '<span aria-hidden="true">←</span><span>Voltar</span>';
+  link.innerHTML = '<span aria-hidden="true">⌂</span><span>Voltar ao Portal</span>';
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = "module-menu-back";
+  back.innerHTML = '<span aria-hidden="true">←</span> Voltar';
+  back.addEventListener("click", () => {
+    const menu = document.querySelector(".sidebar .nav button");
+    if (menu) menu.click();
+    else location.assign(code === "monitor" ? "/modules/monitor/" : location.pathname.startsWith("/modules/inteligencia") ? "/modules/inteligencia/" : "/avaliacoes/");
+  });
+  link.insertAdjacentElement("beforebegin", back);
   const logout = target.querySelector?.("#logout,[data-action='logout'],.topbar-logout");
   if (mode === "prepend") target.prepend(link);
   else if (mode === "before-logout" && logout) logout.insertAdjacentElement("beforebegin", link);
   else target.append(link);
+  link.before(back);
 }
 
 installPortalButton();
