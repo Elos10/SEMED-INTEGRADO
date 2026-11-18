@@ -19,3 +19,18 @@
   .content { background:#f5f6fa!important; }
   button:focus-visible,a:focus-visible { outline:3px solid #a8b8ee; outline-offset:3px; }
 }
+
+@media screen {
+  .sidebar { background:#003399!important; color:#fff!important; border-right-color:#001f66!important; }
+  .sidebar .brand strong,.sidebar .brand span,.sidebar .brand small { color:#fff!important; }
+  .sidebar .nav-group { color:#c4d2ff!important; }
+  .sidebar .nav button { color:#eef3ff!important; }
+  .sidebar .nav button:hover { background:#ffffff18!important; color:#fff!important; }
+  .sidebar .nav button.active { background:#fff!important; color:#003399!important; }
+  .sidebar .sidebar-note,.sidebar .user-card { background:#ffffff0d!important; color:#eef3ff!important; border-color:#ffffff30!important; }
+  .sidebar .user-card small { color:#d5e0ff!important; }
+  .sidebar .portal-back,.sidebar .sidebar-logout { background:#ffffff10!important; color:#fff!important; border-color:#ffffff50!important; }
+  .sidebar .monitor-nav-icon { background:#ffffff20!important; color:#fff!important; }
+  .sidebar .nav button.active .monitor-nav-icon { background:#003399!important; color:#fff!important; }
+  .sidebar .strategic-submenu button>span:first-child { color:inherit!important; }
+}
