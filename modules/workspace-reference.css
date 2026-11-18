@@ -1,0 +1,16 @@
+/* Tema visual comum, sem modificar fluxos ou cores semânticas. */
+@media screen {
+  :root { --ui-primary:#303f91; --ui-primary-strong:#263578; --ui-primary-soft:#e9edfc; --ui-canvas:#f5f6fa; --ui-border:#dce2ef; --ui-shadow:0 8px 24px rgba(22,38,75,.05); --blue:#303f91; --bg:#f5f6fa; --line:#dce2ef; }
+  .sidebar { background:#fff!important; color:#17233d!important; border-right:1px solid #dce2ef!important; box-shadow:none!important; }
+  .sidebar .brand strong { color:#17233d!important; }
+  .sidebar .brand span,.sidebar .brand small,.sidebar .sidebar-note { color:#526481!important; }
+  .sidebar .sidebar-note { background:#f5f6fa!important; border-color:#dce2ef!important; }
+  .sidebar .nav button { color:#526481!important; background:transparent!important; border-radius:11px!important; }
+  .sidebar .nav button:hover { background:#f2f4fb!important; }
+  .sidebar .nav button.active { background:#e9edfc!important; color:#303f91!important; }
+  .sidebar .portal-back,.sidebar .sidebar-logout { color:#303f91!important; background:#fff!important; border:1px solid #dce2ef!important; }
+  .panel,.card,.kpi,.report,.content-card { border-color:#dce2ef!important; border-radius:16px!important; box-shadow:0 8px 24px rgba(22,38,75,.05)!important; }
+  .field input,.field select,.field textarea { border-color:#dce2ef!important; border-radius:10px!important; }
+  .content { background:#f5f6fa!important; }
+  button:focus-visible,a:focus-visible { outline:3px solid #a8b8ee; outline-offset:3px; }
+}
