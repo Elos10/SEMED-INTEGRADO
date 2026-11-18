@@ -169,7 +169,7 @@ function renderUser(session, context) {
   const welcomeNode = document.querySelector("#portalWelcome");
   const profileNode = document.querySelector("#portalProfile");
   if (greetingNode) greetingNode.textContent = `${greeting}, ${name}`;
-  if (welcomeNode) welcomeNode.textContent = "Escolha onde deseja trabalhar";
+  if (welcomeNode) welcomeNode.textContent = "Secretaria Municipal de Educação de Uberaba";
   if (profileNode) profileNode.textContent = `${profile} · somente os aplicativos autorizados para seu perfil são exibidos.`;
 }
 
@@ -181,7 +181,11 @@ function renderAccessSummary(card, moduleAccess) {
   const summary = document.createElement("div");
   summary.className = "card-access-summary";
   summary.setAttribute("aria-label", "Permissões disponíveis neste aplicativo");
-  summary.innerHTML = (labels.length ? labels : ["Consulta"]).map((label) => `<span class="card-access-chip">${label}</span>`).join("");
+  summary.title = labels.length ? labels.join(", ") : "Consulta";
+  const text = document.createElement("span");
+  text.className = "card-access-chip";
+  text.textContent = labels.length === 8 ? "Acesso total · 8 permissões" : labels.length ? `Acesso autorizado · ${labels.length} permissões` : "Consulta";
+  summary.append(text);
   if (moduleAccess?.expires_at) {
     const expires = new Date(`${String(moduleAccess.expires_at).slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");
     summary.insertAdjacentHTML("beforeend", `<span class="card-access-expiry">Acesso válido até ${expires}</span>`);
