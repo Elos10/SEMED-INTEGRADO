@@ -29,7 +29,6 @@ document.querySelector("#app").innerHTML = `
         ${[["executive","Visão Geral"],["learning","Gestão de Avaliações"],["strategy","Monitoramento"],["risks","Comunicação"],["alerts","Alertas e Prioridades"],["decisions","Agenda de Decisões"]].map(([id,label], index) => `<button type="button" data-view="${id}" class="${index === 0 ? "active" : ""}">${icons[id]}<span>${label}</span></button>`).join("")}
       </nav>
       <div class="sidebar-note"><strong>${esc(profileName)}</strong><br>Indicadores respeitam seu perfil e o alcance autorizado em cada sistema.</div>
-      <a class="portal-back" href="/?select=1">← Voltar ao Portal</a>
     </aside>
     <main class="main">
       <header class="topbar"><div><h1>Central de Inteligência Gerencial</h1><p>Informação confiável para orientar decisões da Secretaria de Educação</p></div><div class="top-actions"><span class="status-live">Dados atualizados</span><button class="icon-button" type="button" data-refresh>Atualizar</button><button class="icon-button" type="button" data-print>Imprimir</button></div></header>

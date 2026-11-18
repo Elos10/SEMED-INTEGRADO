@@ -51,6 +51,7 @@ function installPortalButton(root = document) {
 function installModulePortalButton(root = document) {
   if (root.querySelector?.("[data-module-portal-switch]")) return;
   const placements = [
+    [".topbar .top-actions", "prepend"],
     [".top .top-actions", "prepend"],
     [".app-shell .sidebar", "before-logout"],
     [".shell .sidebar .nav", "append"],
@@ -76,7 +77,6 @@ function installModulePortalButton(root = document) {
     if (menu) menu.click();
     else location.assign(code === "monitor" ? "/modules/monitor/" : location.pathname.startsWith("/modules/inteligencia") ? "/modules/inteligencia/" : "/avaliacoes/");
   });
-  link.insertAdjacentElement("beforebegin", back);
   const logout = target.querySelector?.("#logout,[data-action='logout'],.topbar-logout");
   if (mode === "prepend") target.prepend(link);
   else if (mode === "before-logout" && logout) logout.insertAdjacentElement("beforebegin", link);
