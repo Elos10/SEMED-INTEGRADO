@@ -1,0 +1,38 @@
+/* SEMED: padrão obrigatório de consultas, independente do tema do dispositivo. */
+:root { color-scheme: light; }
+html body select,
+html body select option,
+html body select optgroup,
+html body datalist,
+html body [role="listbox"],
+html body [role="listbox"] *,
+html body [role="option"],
+html body [data-slot="select-content"],
+html body [data-slot="select-content"] * {
+  color-scheme: light !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+html body table,
+html body table *,
+html body [role="table"],
+html body [role="table"] *,
+html body [role="grid"],
+html body [role="grid"] * {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+/* Mantém foco e distinção dos links sem depender de cores. */
+html body table a,
+html body table button:hover,
+html body [role="option"]:hover {
+  text-decoration: underline;
+}
+html body select:focus-visible,
+html body [role="option"]:focus-visible,
+html body table :is(a, button, input, select):focus-visible {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
+}

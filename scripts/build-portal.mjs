@@ -7,6 +7,7 @@ const rootFiles = [
   "index.html",
   "captcha.js",
   "design-system.css",
+  "consultation-standard.css",
   "module-auth-guard.js",
   "portal-admin.js",
   "portal-catalog-admin.js",
