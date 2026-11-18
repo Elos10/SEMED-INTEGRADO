@@ -149,7 +149,16 @@ function renderUser(session, context) {
   document.querySelector(".portal-user")?.remove();
   const area = document.createElement("div");
   area.className = "portal-user";
-  area.innerHTML = `<span>${session.user.email}</span><button type="button">Sair</button>`;
+  const avatar = document.createElement("span");
+  avatar.className = "portal-avatar";
+  avatar.setAttribute("aria-hidden", "true");
+  avatar.textContent = preferredName(context, session).split(/\s+/).map((word) => word[0]).slice(0,2).join("").toUpperCase();
+  const emailLabel = document.createElement("span");
+  emailLabel.textContent = session.user.email;
+  const exitButton = document.createElement("button");
+  exitButton.type = "button";
+  exitButton.textContent = "Sair";
+  area.append(avatar, emailLabel, exitButton);
   area.querySelector("button").addEventListener("click", async (event) => {
     const button = event.currentTarget;
     if (button.disabled) return;
@@ -197,6 +206,20 @@ function initPortalInteractions() {
   const cards = [...document.querySelectorAll(".system-card")];
   const search = document.querySelector("#systemSearch");
   const empty = document.querySelector("#systemsEmpty");
+  let countBadge = document.querySelector("#portalSystemCount");
+  if (!countBadge) {
+    countBadge = document.createElement("span");
+    countBadge.id = "portalSystemCount";
+    countBadge.className = "portal-system-count";
+    document.querySelector(".section-title")?.after(countBadge);
+  }
+  const shortcutHint = document.createElement("kbd");
+  shortcutHint.textContent = "Ctrl + K";
+  shortcutHint.className = "portal-search-shortcut";
+  if (!document.querySelector(".portal-search-shortcut")) document.querySelector(".system-search")?.append(shortcutHint);
+  document.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); search?.focus(); }
+  });
 
   const openCard = (card) => {
     const href = card.dataset.href || card.querySelector(".access")?.getAttribute("href");
@@ -227,6 +250,7 @@ function initPortalInteractions() {
       if (!card.hidden) visible += 1;
     });
     if (empty) empty.hidden = visible > 0;
+    if (countBadge) countBadge.textContent = `${visible} ${visible === 1 ? "sistema" : "sistemas"}`;
   };
 
   search?.addEventListener("input", filterCards);

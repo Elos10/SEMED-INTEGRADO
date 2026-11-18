@@ -108,3 +108,27 @@ body:not(.portal-auth-pending){height:auto!important;min-height:100vh!important;
 .footer{flex:none!important;background:#101729!important;padding:12px 20px!important}.footer-inner{width:min(1320px,100%)!important;height:auto!important;display:flex!important;flex-wrap:wrap!important;gap:16px!important}.footer-brand{gap:8px!important}.footer-brand img{width:22px!important;height:25px!important}.footer-brand div{display:flex;gap:4px;align-items:center}.footer-brand strong{font-size:12px!important}.footer-brand span,.footer-brand small,.contact{font-size:10px!important}.footer-brand small{margin:0!important}.contact{display:flex!important;flex-wrap:wrap!important;border-left:1px solid #ffffff25!important;padding-left:16px!important;gap:14px!important}.contact br{display:none}.motto{margin-left:auto!important;border:0!important;padding:0!important;font-size:11px!important}.motto br{display:none}.motto strong{display:inline!important;color:#facc15!important}
 @media(max-width:1050px){.systems-grid,.systems-grid.filtered{grid-template-columns:repeat(2,minmax(0,1fr))!important}.systems-section{padding-top:35px!important}.portal-user{flex-wrap:wrap!important}.systems-heading{flex-wrap:wrap}.card-label{right:95px}}
 @media(max-width:650px){.systems-grid,.systems-grid.filtered{grid-template-columns:1fr!important}.hero-content{width:calc(100% - 32px)!important}.systems-section{padding:25px 16px!important}.systems-heading{flex-direction:column!important;align-items:stretch!important}.system-search{width:100%!important}.system-card h2{font-size:16px!important}.portal-user{width:100%!important}.footer-brand div{flex-wrap:wrap}.contact{padding-left:0!important;border:0!important}.motto{margin-left:0!important}}
+
+/* Ajustes da referência visual, preservando as permissões de acesso. */
+.portal-avatar{display:inline-grid;place-items:center;flex:none;width:24px;height:24px;border:1px solid #4262bd;border-radius:50%;background:#243663;color:#93baff;font-size:10px;font-weight:700}
+.portal-system-count{padding:4px 8px;border-radius:20px;background:#e8edf5;color:#314760;font-size:10px;white-space:nowrap}
+.portal-search-shortcut{flex:none;border:1px solid #e0e7f1;border-radius:4px;background:#f3f6fa;color:#687891;padding:3px 5px;font-size:9px}
+.system-search{height:35px!important;padding:0 10px!important;gap:9px!important}.system-search input{min-width:0!important;width:100%!important}
+.system-card .card-state::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#33bf86;margin-right:6px}
+.system-card:nth-child(4) .card-state{color:#9149ff!important;border-color:#e7d7ff!important;background:#faf5ff!important}.system-card:nth-child(4) .card-state::before{background:#a855f7}
+.system-card:nth-child(5) .card-state{color:#6757ed!important;border-color:#d6d5ff!important;background:#f1f1ff!important}.system-card:nth-child(5) .card-state::before{background:#7563ff}
+.card-access-chip::before{content:"⚿";color:#8ca0bc;margin-right:6px}
+.welcome::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:#31b78a}
+.hero h1{order:3!important}.hero-copy{order:2!important}.welcome{order:1!important}
+.system-card:focus-visible,.access:focus-visible,.portal-user button:focus-visible{outline:3px solid #6387ff!important;outline-offset:3px}
+@media(min-width:1100px){
+ .systems-wrap{max-width:1216px!important;margin-left:0!important;margin-right:auto!important}
+ .systems-section{padding-top:107px!important;padding-bottom:60px!important}
+ .systems-grid,.systems-grid.filtered{gap:20px!important}
+ .system-card,.systems-grid.filtered .system-card:nth-child(n){min-height:184px!important;padding-top:16px!important;padding-bottom:16px!important}
+ .system-card h2{font-size:16px!important}
+ .slogan{display:grid!important;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;column-gap:28px;row-gap:2px;right:10%!important;bottom:30px!important;text-align:center;border:0!important;padding:0!important;text-transform:uppercase}
+ .slogan span:first-child{grid-column:1;grid-row:1}.slogan strong:nth-child(2){grid-column:1;grid-row:2}.slogan span:nth-child(3){grid-column:2;grid-row:1}.slogan strong:last-child{grid-column:2;grid-row:2;color:#facc15!important}
+ .slogan span{font-size:10px!important;letter-spacing:.1em}.slogan strong{font-size:14px!important}
+ .hero h1{max-width:75%!important}
+}
