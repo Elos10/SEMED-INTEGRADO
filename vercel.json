@@ -11,6 +11,8 @@
     { "source": "/logo_semed.webp", "destination": "https://gest-o-de-avalia-es.vercel.app/logo_semed.webp" },
     { "source": "/logo_detic.webp", "destination": "https://gest-o-de-avalia-es.vercel.app/logo_detic.webp" },
 
+    { "source": "/crei-sae", "destination": "https://semed-comunicacao.vercel.app/?workspace=crei-sae" },
+    { "source": "/crei-sae/:path*", "destination": "https://semed-comunicacao.vercel.app/:path*?workspace=crei-sae" },
     { "source": "/comunicacao", "destination": "https://semed-comunicacao.vercel.app/" },
     { "source": "/comunicacao/:path*", "destination": "https://semed-comunicacao.vercel.app/:path*" },
     { "source": "/_next/:path*", "destination": "https://semed-comunicacao.vercel.app/_next/:path*" },
