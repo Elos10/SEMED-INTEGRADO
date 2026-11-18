@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "/supabase-config.js";
+import { installSuggestionLists } from "/suggestion-lists.js";
+
+if (document.body) installSuggestionLists();
+else document.addEventListener("DOMContentLoaded", () => installSuggestionLists(), { once: true });
 
 const CLIENT_KEY = Symbol.for("semed.portal.supabase");
 export const ACCESS_CACHE_KEY = "semed.access-context.v3";

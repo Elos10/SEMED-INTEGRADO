@@ -16,6 +16,7 @@ const rootFiles = [
   "portal-modern.css",
   "portal-runtime.js",
   "shared-runtime.js",
+  "suggestion-lists.js",
   "supabase-config.js",
 ];
 
