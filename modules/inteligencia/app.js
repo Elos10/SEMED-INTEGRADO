@@ -1,9 +1,11 @@
 import { semedUi } from "/shared-runtime.js";
+import { mountStudentDossier } from "./student-dossier.js?v=20261118-1";
 
 const access = await window.SEMED_MODULE_ACCESS;
 if (!access) throw new Error("Acesso gerencial não autorizado.");
 
 const { supabase, context, session } = access;
+const canConsultStudent = context.portal_admin || context.profiles?.some(p => p.code === "ADMIN_GERAL") || context.modules?.some(m => m.code === "prontuario" && m.permissions?.view);
 const state = { unit: "all", year: String(new Date().getFullYear()), view: "executive", data: null, decisions: [], sources: { communication: null }, loadingSource: "" };
 
 const icons = {
@@ -13,6 +15,7 @@ const icons = {
   risks: '<svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z"/><path d="M12 8v5m0 3h.01"/></svg>',
   strategy: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="m14 10 6-6"/></svg>',
   decisions: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 8h6m-6 4h6m-6 4h4"/></svg>',
+  student: '<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21v-3a8 8 0 0 1 16 0v3M9 17h6m-3-3v6"/></svg>',
 };
 
 const fmt = new Intl.NumberFormat("pt-BR");
@@ -37,12 +40,22 @@ document.querySelector("#app").innerHTML = `
   </div>`;
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => selectView(button.dataset.view)));
+if (canConsultStudent) {
+  const button = document.createElement("button");
+  button.type = "button"; button.dataset.view = "student";
+  button.innerHTML = `${icons.student}<span>Consulta Integrada do Aluno</span>`;
+  button.addEventListener("click", () => selectView("student"));
+  document.querySelector(".sidebar .nav").append(button);
+}
 document.querySelectorAll("[data-system-view]").forEach((button) => button.addEventListener("click", () => selectView(button.dataset.systemView)));
 document.querySelector("[data-refresh]").addEventListener("click", async () => { await load(true); if (state.view === "risks") state.sources.communication = null; await loadSystemSource(state.view); });
-document.querySelector("[data-print]").addEventListener("click", () => window.print());
+document.querySelector("[data-print]").addEventListener("click", () => { if (state.view !== "student") window.print(); });
 
 async function selectView(id, loadSource = true) {
+  if (id === "student" && !canConsultStudent) return;
   state.view = id;
+  if (id !== "student" && !state.data) await load();
+  document.querySelector("[data-print]").hidden = id === "student";
   document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === id));
   document.querySelectorAll("[data-system-view]").forEach((button) => { const active = button.dataset.systemView === id; button.classList.toggle("active", active); button.setAttribute("aria-pressed", String(active)); });
   document.querySelectorAll(".view").forEach((view) => { view.hidden = view.dataset.view !== id; });
@@ -145,6 +158,12 @@ function render() {
     <section class="view" data-view="decisions" hidden><div class="intro"><div><h2>Agenda de Decisões</h2><p>Registre o problema, a evidência, a decisão, o responsável e a data de reavaliação.</p></div><div class="actions"><button class="secondary" data-export>Exportar CSV</button></div></div><article class="panel"><form class="decision-form" data-decision-form><div class="field"><label>Título da decisão<input name="title" required maxlength="160"></label></div><div class="field"><label>Origem<select name="source_module"><option>Portal</option><option>Gestão de Avaliações</option><option>Monitoramento</option><option>Comunicação</option></select></label></div><div class="field wide"><label>Problema analisado<textarea name="problem" required></textarea></label></div><div class="field wide"><label>Evidências utilizadas<textarea name="evidence" required></textarea></label></div><div class="field wide"><label>Decisão adotada<textarea name="decision" required></textarea></label></div><div class="field"><label>Responsável<input name="responsible_name" required></label></div><div class="field"><label>Prioridade<select name="priority"><option value="alta">Alta</option><option value="media" selected>Média</option><option value="baixa">Baixa</option></select></label></div><div class="field"><label>Prazo<input name="due_date" type="date" required></label></div><div class="field"><label>Data de reavaliação<input name="review_date" type="date"></label></div><div class="field wide actions"><button class="primary" type="submit">Registrar decisão</button></div></form></article><article class="panel" style="margin-top:16px"><div class="panel-head"><div><h3>Decisões registradas</h3><p>Histórico institucional e acompanhamento dos responsáveis.</p></div></div>${decisionTable()}</article></section>`;
 
   bindFilters();
+  if (canConsultStudent) {
+    const section = document.createElement("section");
+    section.className = "view"; section.dataset.view = "student"; section.hidden = true;
+    document.querySelector("#views").append(section);
+    mountStudentDossier(section, { supabase });
+  }
   void selectView(state.view, false);
   document.querySelectorAll("[data-go]").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); selectView(link.dataset.go); }));
   document.querySelector("[data-decision-form]")?.addEventListener("submit", saveDecision);
@@ -174,4 +193,12 @@ async function updateDecision(event){ const id=event.currentTarget.dataset.decis
 function exportDecisions(){ const cols=["Título","Origem","Problema","Evidências","Decisão","Responsável","Prazo","Reavaliação","Prioridade","Situação"]; const rows=state.decisions.map((item)=>[item.title,item.source_module,item.problem,item.evidence,item.decision,item.responsible_name,item.due_date,item.review_date,item.priority,item.status]); const csv=[cols,...rows].map((row)=>row.map((value)=>`"${String(value??"").replaceAll('"','""')}"`).join(";")).join("\r\n"); const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url;a.download=`agenda-decisoes-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url); }
 function notify(message,error=false,timeout=4500){ const node=document.querySelector("#notice"); node.innerHTML=`<div class="notice ${error?"error":""}">${esc(message)}</div>`; if(timeout)setTimeout(()=>{node.innerHTML="";},timeout); }
 
-try { await load(); semedUi.clear(); } catch (error) { semedUi.error(`Não foi possível carregar a Central de Inteligência: ${error.message}`, "/?select=1"); }
+try {
+  if (new URLSearchParams(location.search).get("view") === "student" && canConsultStudent) {
+    // An individual consultation does not need to download network-wide metrics.
+    const section = document.createElement("section"); section.className = "view"; section.dataset.view = "student";
+    document.querySelector("#views").append(section); mountStudentDossier(section, { supabase });
+    await selectView("student");
+  } else await load();
+  semedUi.clear();
+} catch (error) { semedUi.error(`Não foi possível carregar a Central de Inteligência: ${error.message}`, "/?select=1"); }

@@ -26,6 +26,7 @@ const JOB_TITLES = ["Secretário(a)", "Secretário(a) Adjunto(a)", "Assessor(a)"
 const LEGACY_AREA_MAP = { "Gestão SEMED": "Gabinete", "Arte e Cultura": "Diretoria de Apoio à Educação Básica", "Formação - Casa do Educador": "Diretoria de Ensino", "Formação - Polo UAB": "Diretoria de Ensino", "Inclusão": "Diretoria de Apoio à Educação Básica", "Infraestrutura": "Diretoria de Logística", "Planejamento Financeiro": "Diretoria de Planejamento, Gestão e Finanças", "Tecnologia": "Diretoria de Ensino", "Transporte": "Diretoria de Logística", "Diretoria de Planejamento Gestão e Finanças": "Diretoria de Planejamento, Gestão e Finanças" };
 const normalizedArea = (value) => USER_AREAS.includes(value) ? value : LEGACY_AREA_MAP[value] || "";
 const ACCESS_KITS = [
+  { code: "PRONTUARIO_CONSULTA", name: "Prontuário — Consulta", description: "Consulta individual de alunos no alcance informado, preservando o acesso de cada sistema de origem.", profiles: ["PRONTUARIO_CONSULTA"], roles: {}, scope: "UNIT" },
   { code: "BUSCA_ATIVA_REGISTRO", name: "Busca Ativa — Registro", description: "Registra frequência escolar e justificativas.", profiles: ["BUSCA_ATIVA_REGISTRO"], roles: {}, scope: "OWN" },
   { code: "SAE_REGISTRO", name: "Atendimentos SAE — Registro", description: "Cadastra e acompanha atendimentos SAE.", profiles: ["SAE_REGISTRO"], roles: {}, scope: "ALL" },
   { code: "SAE_RELATORIOS", name: "Atendimentos SAE — Relatórios", description: "Consulta indicadores e relatórios de atendimentos.", profiles: ["SAE_RELATORIOS"], roles: {}, scope: "ALL" },
