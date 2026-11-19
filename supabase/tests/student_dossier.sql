@@ -14,6 +14,17 @@ select 'c8000000-0000-4000-8000-000000000001',class_id,'DOSSIER-REGRESSION-01','
 insert into public.avalia_students(id,class_id,registration,name,active)
 select 'c8000000-0000-4000-8000-000000000002',other_class_id,'DOSSIER-REGRESSION-02','ZZ DOSSIER REGRESSION',true from dossier_test_context;
 select set_config('request.jwt.claims',jsonb_build_object('sub',(select actor from dossier_test_context),'role','authenticated')::text,true);
+insert into public.semed_student_record_links(student_id,source_module,source_record_id,confirmed_by)
+select 'c8000000-0000-4000-8000-000000000001','sae','c8000000-0000-4000-8000-000000000099',actor from dossier_test_context;
+do $$ begin
+ assert exists(select 1 from public.semed_student_dossier_audit where student_id='c8000000-0000-4000-8000-000000000001' and action='LINK' and actor_id=(select actor from dossier_test_context)),'link audit missing';
+ insert into dossier_test_results values('link audit recorded atomically',true);
+end $$;
+update public.semed_student_record_links set active=false where student_id='c8000000-0000-4000-8000-000000000001';
+do $$ begin
+ assert exists(select 1 from public.semed_student_dossier_audit where student_id='c8000000-0000-4000-8000-000000000001' and action='UNLINK'),'unlink audit missing';
+ insert into dossier_test_results values('unlink preserves original and audit',true);
+end $$;
 set local role authenticated;
 do $$ declare d jsonb; begin
  d:=public.get_student_dossier('c8000000-0000-4000-8000-000000000001');
@@ -71,6 +82,14 @@ do $$ declare d jsonb; begin
  d:=public.get_student_dossier('c8000000-0000-4000-8000-000000000002','PRINT');
  assert (d->>'can_print')::boolean,'export override ignored';
  insert into dossier_test_results values('explicit institutional scope and export respected',true);
+end $$;
+reset role;
+insert into public.semed_user_module_overrides(user_id,module_id,can_view,scope,active)
+select c.actor,m.id,false,'{}',true from dossier_test_context c cross join public.semed_modules m where m.code='avaliacoes';
+set local role authenticated;
+do $$ begin
+ assert jsonb_array_length(public.search_student_dossiers('DOSSIER-REGRESSION',0))=0,'source deny override ignored';
+ insert into dossier_test_results values('source system effective deny respected',true);
 end $$;
 reset role;
 update public.semed_people set access_ends_at=current_date-1 where user_id=(select actor from dossier_test_context);

@@ -31,9 +31,13 @@ Deno.serve(async req => {
   const source=String(body.source||"");
   if(body.action!=="read" && (!titles[source] || !dossier.sources[source])) return reply({error:"Fonte não autorizada."},403);
   const index=createClient(portalUrl,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false,autoRefreshToken:false}});
-  const {data:linked,error:indexError}=await index.from("semed_student_record_links").select("source_module,source_record_id,source_person_id").eq("student_id",body.student_id).eq("active",true);
-  if(indexError)throw indexError;
-  const sourceLinks=(linked||[]).filter((l:{source_module:string})=>dossier.sources[l.source_module]);
+  const linked:any[]=[];
+  for(let offset=0;;offset+=500) {
+   const {data:page,error:indexError}=await index.from("semed_student_record_links").select("id,source_module,source_record_id,source_person_id").eq("student_id",body.student_id).eq("active",true).order("id").range(offset,offset+499);
+   if(indexError)throw indexError;
+   linked.push(...(page||[]));if(!page||page.length<500)break;
+  }
+  const sourceLinks=linked.filter((l:{source_module:string})=>dossier.sources[l.source_module]);
   if(body.action==="read" && !sourceLinks.length) return reply({records:[],unavailable:[]});
   // Existing exchange verifies current source grants and synchronizes local
   // privileges. The OTP is consumed only server-side; no source token is returned.
@@ -48,10 +52,12 @@ Deno.serve(async req => {
   const {data:profile}=await local.from("profiles").select("role,email,active").eq("id",login.user.id).single();
   const cpAllowed=profile?.active && (profile.role==="administrador" || ["assistenciaaoeducando@edu.uberabadigital.com.br","daeb@uberabadigital.com.br"].includes(profile.email?.toLowerCase()));
   const query=async(p:any)=>{const {data,error}=await p;if(error)throw new Error(cleanError);return data;};
+  let protectedSummaries:Promise<any>|undefined;
+  const protectedRows=()=>protectedSummaries??=query(local!.rpc("list_protected_case_summaries"));
   const readSource=async(module:string,id:string,personId?:string)=>{
    if(!dossier.sources[module] || (module==="protected" && !cpAllowed)) return null;
    if(module==="protected") {
-    const rows=await query(local!.rpc("list_protected_case_summaries"));const r=rows?.find((r:any)=>r.id===id);if(!r)return null;
+    const rows=await protectedRows();const r=rows?.find((r:any)=>r.id===id);if(!r)return null;
     return {id,module,title:titles[module],protocol:r.protocol,date:r.occurred_at||r.created_at,unit:r.unit_name,status:r.status,summary:"****",details:{"Pessoa protegida":"****","Descrição":"****","Providências":"****"},href:`/crei-sae/?view=${route[module]}&record=${id}`};
    }
    if(module==="sae") {
@@ -84,7 +90,7 @@ Deno.serve(async req => {
    let candidates:any[]=[];
    if(source==="protected") {
     if(!cpAllowed)return reply({error:"Fonte não autorizada."},403);
-    const rows=await query(local.rpc("list_protected_case_summaries"));
+    const rows=await protectedRows();
     candidates=(rows||[]).filter((r:any)=>r.protocol?.toLowerCase()===search.toLowerCase()).map((r:any)=>({id:r.id,protocol:r.protocol,unit:r.unit_name,date:r.occurred_at,name:"****"}));
    } else if(source==="active_search") {
     const rows=await query(local.from("active_search_records").select("id,student_name,unit_name,created_at").ilike("student_name",pattern).order("created_at",{ascending:false}).limit(25));
