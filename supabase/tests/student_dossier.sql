@@ -66,6 +66,10 @@ do $$ declare d jsonb; found jsonb; begin
  assert jsonb_array_length(public.search_student_report((select unit_id from dossier_test_context),'DOSSIER-REGRESSION',0))=1,'unit dependent students mismatch';
  assert jsonb_array_length(public.search_student_report((select other_unit_id from dossier_test_context),'DOSSIER-REGRESSION',0))=0,'cross-unit filter bypass';
  insert into dossier_test_results values('report unit list respects scope',true),('report students depend on selected unit',true),('report cross-unit filter cannot bypass access',true);
+ assert jsonb_array_length(public.get_student_report_groups(null,'DOSSIER-REGRESSION'))=1,'group counts crossed scope';
+ assert (public.get_student_report_groups((select unit_id from dossier_test_context),'DOSSIER-REGRESSION')->0->>'student_count')::integer=1,'group count mismatch';
+ assert jsonb_array_length(public.get_student_report_groups((select other_unit_id from dossier_test_context),'DOSSIER-REGRESSION'))=0,'selected group bypassed scope';
+ insert into dossier_test_results values('unit group counts limited to authorized unit',true),('selected unit returns exact filtered student count',true),('unauthorized unit group is not disclosed',true);
  begin perform public.get_student_dossier('c8000000-0000-4000-8000-000000000002'); raise exception 'cross-unit IDOR'; exception when insufficient_privilege then null; end;
  begin perform public.get_student_dossier('c8000000-0000-4000-8000-000000000001','PRINT'); raise exception 'unauthorized print'; exception when insufficient_privilege then null; end;
  insert into dossier_test_results values('consultation limited to linked unit',true),('cross-unit direct ID denied',true),('read role cannot link or export',true),('protected source hidden from ordinary role',true);

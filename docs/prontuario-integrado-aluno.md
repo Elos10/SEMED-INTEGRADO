@@ -6,6 +6,10 @@ Local: Inteligência Gerencial → Consulta Integrada do Aluno.
 
 A apresentação principal segue o padrão dos relatórios SAE: identificação compacta, filtros de Unidade, Aluno, Módulo e período e tabelas independentes por módulo. A linha do tempo permanece como apresentação alternativa.
 
+A navegação inicial é recolhida por unidade: nome e quantidade de alunos cadastrados no alcance autorizado. Selecionar uma unidade restringe a listagem a ela. Clicar na unidade expande/recolhe a relação paginada de alunos; clicar no nome abre o relatório individual completo, com série, turma e opção de impressão. A contagem é de alunos do cadastro escolar, não de atendimentos.
+
+O filtro de unidade atual controla os grupos. O filtro opcional de unidade onde o registro aconteceu é independente, para preservar a consulta de registros anteriores a transferências.
+
 A lista de alunos é paginada no servidor e depende da unidade atual selecionada. A pesquisa por nome ou matrícula permite refinar a escolha sem carregar toda a rede. O modo "Onde o registro aconteceu" pesquisa o aluno no alcance autorizado e filtra a unidade histórica dos registros, sem alterar a unidade atual.
 
 Cada módulo autorizado possui quantidade e tabela própria; textos completos ficam em detalhes expansíveis e são abertos integralmente na impressão. A versão impressa mantém os mesmos filtros de unidade histórica, módulo e datas. Campos e módulos sem autorização não são acrescentados pelo relatório.
