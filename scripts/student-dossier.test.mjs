@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {dossierTimeline,dossierRecordsHtml,dossierPrintHtml,dossierEnrollmentHtml} from '../modules/inteligencia/student-dossier.js';
+import {dossierTimeline,dossierRecordsHtml,dossierPrintHtml,dossierEnrollmentHtml,dossierModuleReportHtml,filterDossierRecords,authorizedDossierModules} from '../modules/inteligencia/student-dossier.js';
 const dossier={student:{id:'test-id',name:'Aluno de teste',registration:'TEST-01',unit_name:'Unidade de teste',class_name:'4º A',school_year:2026},evaluations:[],enrollments:[],emitted_at:'2026-11-19T12:00:00Z',issuer:'Emissor de teste'};
 test('timeline combines only explicit records and orders by date',()=>{
  const rows=dossierTimeline({...dossier,evaluations:[{id:'eval',number:'Final',date:'2026-10-01',percentage:0}]},[{id:'sae',module:'sae',date:'2026-11-01',summary:'Acompanhamento'}]);
@@ -43,4 +43,26 @@ test('hardening migration hides case existence from browser APIs',async()=>{
  assert.doesNotMatch(sql,/'links',links/);
  assert.match(sql,/security invoker/);
  assert.match(sql,/enable row level security/);
+});
+test('module report separates sources and never renders unauthorized modules',()=>{
+ const records=[{module:'learning',protocol:'AV-TEST',summary:'Português',details:{}},{module:'sae',protocol:'SAE-TEST',summary:'Demanda',details:{Relato:'Relato completo'}},{module:'protected',protocol:'PRIVATE-CP',summary:'PRIVATE SUMMARY'}];
+ const modules=authorizedDossierModules({sources:{sae:true,protected:false}});
+ const html=dossierModuleReportHtml(records,modules);
+ assert.match(html,/data-report-module="learning"/);assert.match(html,/data-report-module="sae"/);assert.doesNotMatch(html,/PRIVATE|data-report-module="protected"/);
+ assert.match(html,/Relato completo/);assert.match(html,/1 registro\(s\)/);
+});
+test('empty sections do not assert absence of previous follow-up',()=>{
+ assert.match(dossierModuleReportHtml([],['sae']),/Nenhum registro vinculado disponível neste período/);
+});
+test('module date and occurrence unit filters apply together without filtering by current school',()=>{
+ const records=[{module:'sae',date:'2026-10-01',unit:'Unidade Anterior'},{module:'sae',date:'2026-11-01',unit:'Unidade Atual'},{module:'incidents',date:'2026-10-02',unit:'Unidade Anterior'}];
+ assert.equal(filterDossierRecords(records,{module:'sae',start:'2026-10-01',end:'2026-10-31',unitMode:'record',unitLabel:'Unidade Anterior'}).length,1);
+ assert.equal(filterDossierRecords(records,{unitMode:'current',unitLabel:'Unidade Atual'}).length,3);
+ assert.equal(filterDossierRecords(records,{unitMode:'record',unitLabel:'Unidade Anterior'}).length,2);
+});
+test('module report and print preserve protected masks and complete narratives',()=>{
+ const long='Narrativa completa '.repeat(500);
+ const records=[{module:'protected',protocol:'CP-TEST',summary:'PRIVATE',details:{Nome:'PRIVATE'}},{module:'sae',protocol:'SAE-TEST',details:{Relato:long}}];
+ const html=dossierPrintHtml(dossier,records,{modules:['protected','sae'],filterSummary:'Unidade atual: Teste · Período: novembro'});
+ assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);assert.ok(html.includes(long));assert.match(html,/<details open>/);assert.match(html,/Período: novembro/);
 });
