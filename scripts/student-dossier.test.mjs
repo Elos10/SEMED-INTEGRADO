@@ -66,3 +66,8 @@ test('module report and print preserve protected masks and complete narratives',
  const html=dossierPrintHtml(dossier,records,{modules:['protected','sae'],filterSummary:'Unidade atual: Teste · Período: novembro'});
  assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);assert.ok(html.includes(long));assert.match(html,/<details open>/);assert.match(html,/Período: novembro/);
 });
+test('period boundaries use the same Sao Paulo calendar day displayed in the report',()=>{
+ const records=[{module:'sae',date:'2026-11-02T01:00:00Z'},{module:'sae',date:'2026-11-02'}];
+ assert.equal(filterDossierRecords(records,{start:'2026-11-01',end:'2026-11-01'}).length,1);
+ assert.equal(filterDossierRecords(records,{start:'2026-11-02',end:'2026-11-02'}).length,1);
+});

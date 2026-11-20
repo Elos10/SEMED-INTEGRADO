@@ -2,7 +2,13 @@ export const dossierSources = { learning:"Avaliações", active_search:"Busca At
 export const escapeDossier = value => String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const esc=escapeDossier;
 const display=value=>value===null||value===undefined||value===""?"Não informado":String(value);
-const date=value=>value?new Date(String(value).length===10?`${value}T12:00:00`:value).toLocaleDateString("pt-BR"):"Não informada";
+export function dossierDateKey(value) {
+ if(!value)return "";if(/^\d{4}-\d{2}-\d{2}$/.test(String(value)))return String(value);
+ const parsed=new Date(value);if(Number.isNaN(parsed.getTime()))return "";
+ const parts=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(parsed).map(p=>[p.type,p.value]));
+ return `${parts.year}-${parts.month}-${parts.day}`;
+}
+const date=value=>{const key=dossierDateKey(value);return key?key.split("-").reverse().join("/"):"Não informada";};
 export function dossierTimeline(dossier,records) {
  const assessments=(dossier.evaluations||[]).map(r=>({id:r.id,module:"learning",title:dossierSources.learning,protocol:r.number,date:r.date,unit:r.unit_name,status:r.percentage===null?"Sem resultado":"Resultado disponível",summary:String(r.subject),details:{"Aproveitamento":r.percentage===null?"Não informado":`${r.percentage}%`,"Nota":r.score,"Acertos":r.correct,"Total de questões":r.total},href:"/avaliacoes/"}));
  return [...assessments,...records.map(r=>r.module==="protected"?{...r,summary:"****",details:{"Pessoa protegida":"****","Descrição":"****","Providências":"****"}}:r)].sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
@@ -18,7 +24,7 @@ export function authorizedDossierModules(data) {
 }
 export function filterDossierRecords(records,{module="all",start="",end="",unitMode="current",unitLabel=""}={}) {
  const normal=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().replace(/\s+/g," ").toLowerCase();
- return records.filter(r=>(module==="all"||r.module===module)&&(!start||String(r.date||"").slice(0,10)>=start)&&(!end||String(r.date||"").slice(0,10)<=end)&&(unitMode!=="record"||!unitLabel||normal(r.unit)===normal(unitLabel)));
+ return records.filter(r=>{const day=dossierDateKey(r.date);return (module==="all"||r.module===module)&&(!start||day>=start)&&(!end||(day&&day<=end))&&(unitMode!=="record"||!unitLabel||normal(r.unit)===normal(unitLabel));});
 }
 export function dossierModuleReportHtml(records,modules,canUnlink=false) {
  const schemas={
