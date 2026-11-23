@@ -9,6 +9,7 @@ const rootFiles = [
   "design-system.css",
   "consultation-standard.css",
   "module-auth-guard.js",
+  "portal-menu-branding.js",
   "portal-admin.js",
   "portal-catalog-admin.js",
   "portal-auth-critical.css",
@@ -26,6 +27,7 @@ await mkdir(path.join(output, "modules"), { recursive: true });
 await Promise.all(rootFiles.map((file) => cp(path.join(root, file), path.join(output, file))));
 await Promise.all([
   cp(path.join(root, "modules", "logo-municipal.png"), path.join(output, "modules", "logo-municipal.png")),
+  cp(path.join(root, "modules", "logo-educacao-uberaba.png"), path.join(output, "modules", "logo-educacao-uberaba.png")),
   cp(path.join(root, "modules", "monitor"), path.join(output, "modules", "monitor"), { recursive: true }),
   cp(path.join(root, "modules", "inteligencia"), path.join(output, "modules", "inteligencia"), { recursive: true }),
 ]);

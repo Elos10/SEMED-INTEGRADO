@@ -1,4 +1,5 @@
 import { semedUi } from "./shared-runtime.js";
+import { installPortalMenuBranding } from "./portal-menu-branding.js?v=20261123-1";
 import { canAccess, getAccessContext, getPortalClient, getPortalSession, getReferenceCatalogs, moduleAccess as findModuleAccess, moduleCodeFromPath, portalSelectionUrl, signOutPortal } from "./portal-runtime.js";
 
 const supabase = getPortalClient();
@@ -85,7 +86,8 @@ function installModulePortalButton(root = document) {
 }
 
 installPortalButton();
-new MutationObserver(() => { installPortalButton(); installModulePortalButton(); }).observe(document.documentElement, { childList: true, subtree: true });
+installPortalMenuBranding();
+new MutationObserver(() => { installPortalButton(); installModulePortalButton(); installPortalMenuBranding(); }).observe(document.documentElement, { childList: true, subtree: true });
 
 document.addEventListener("click", (event) => {
   const moduleHomeLink = event.target.closest?.("[data-module-home]");
