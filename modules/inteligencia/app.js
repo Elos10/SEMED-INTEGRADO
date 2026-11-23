@@ -1,5 +1,5 @@
 import { semedUi } from "/shared-runtime.js";
-import { mountStudentDossier } from "./student-dossier.js?v=20261123-unified-2";
+import { mountStudentDossier } from "./student-dossier.js?v=20261123-auth-3";
 
 const access = await window.SEMED_MODULE_ACCESS;
 if (!access) throw new Error("Acesso gerencial não autorizado.");

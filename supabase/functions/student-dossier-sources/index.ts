@@ -13,13 +13,15 @@ const route: Record<string,string> = { protected:"protected", incidents:"inciden
 const cleanError = "Não foi possível consultar esta fonte. Confira seu acesso no CREI/SAE.";
 Deno.serve(async req => {
  const origin=req.headers.get("Origin") || "";
- const headers={"Content-Type":"application/json","Access-Control-Allow-Origin":origins.has(origin)?origin:"https://semed-integrado.vercel.app","Access-Control-Allow-Headers":"authorization, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Cache-Control":"no-store","Vary":"Origin"};
+ const headers={"Content-Type":"application/json","Access-Control-Allow-Origin":origins.has(origin)?origin:"https://semed-integrado.vercel.app","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-portal-authorization","Access-Control-Allow-Methods":"POST, OPTIONS","Cache-Control":"no-store","Vary":"Origin"};
  const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
  if(req.method==="OPTIONS") return new Response("ok",{headers});
  if(req.method!=="POST" || (origin && !origins.has(origin))) return reply({error:"Solicitação não permitida."},403);
  let local: ReturnType<typeof createClient> | null=null;
  try {
-  const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
+  // External rewrites can reserve/replace Authorization. The explicit portal
+  // header transports the same user JWT; getUser still verifies it server-side.
+  const token=(req.headers.get("X-Portal-Authorization")||req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
   const portal=createClient(portalUrl,portalKey,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false}});
   const {data:user,error:authError}=await portal.auth.getUser(token);
   if(authError || !user.user?.email) return reply({error:"Sessão inválida."},401);

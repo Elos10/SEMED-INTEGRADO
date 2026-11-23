@@ -1,5 +1,5 @@
-import { requestStudentSources } from "./student-source-client.js?v=20261123-unified-2";
-import { mountStudentUnitBrowser, studentSeries } from "./student-unit-browser.js?v=20261123-unified-2";
+import { requestStudentSources } from "./student-source-client.js?v=20261123-auth-3";
+import { mountStudentUnitBrowser, studentSeries } from "./student-unit-browser.js?v=20261123-auth-3";
 
 export const dossierSources = { learning:"Avaliações", active_search:"Busca Ativa", sae:"Atendimentos SAE", incidents:"Incidentes Escolares", protected:"Comunicação Protegida" };
 export const escapeDossier = value => String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
@@ -61,7 +61,11 @@ export function mountStudentDossier(node,{supabase}) {
  const rpc=async(name,args)=>{const {data,error}=await supabase.rpc(name,args);if(error)throw new Error(error.message);return data;};
  const sourceCall=async(action,extra={},studentId=data?.student.id)=>{
   const {data:auth,error}=await supabase.auth.getSession();if(error||!auth.session)throw new Error("Entre novamente no Portal.");
-  return requestStudentSources({token:auth.session.access_token,body:{action,student_id:studentId,...extra}});
+  return requestStudentSources({token:auth.session.access_token,body:{action,student_id:studentId,...extra},refreshToken:async()=>{
+   const {data:fresh,error:refreshError}=await supabase.auth.refreshSession();
+   if(refreshError||!fresh.session)throw new Error("Não foi possível renovar seu acesso. Entre novamente no portal.");
+   return fresh.session.access_token;
+  }});
  };
  const reportFilters=()=>({module:tab,start,end,unitMode,unitLabel:units.find(u=>u.id===(unitMode==="record"?recordUnitId:unitId))?.name||""});
  const filtered=()=>filterDossierRecords(dossierTimeline(data,records),reportFilters());
