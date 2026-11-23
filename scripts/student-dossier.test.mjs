@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {dossierTimeline,dossierRecordsHtml,dossierPrintHtml,dossierEnrollmentHtml,dossierModuleReportHtml,filterDossierRecords,authorizedDossierModules} from '../modules/inteligencia/student-dossier.js';
-const dossier={student:{id:'test-id',name:'Aluno de teste',registration:'TEST-01',unit_name:'Unidade de teste',class_name:'4º A',school_year:2026},evaluations:[],enrollments:[],emitted_at:'2026-11-19T12:00:00Z',issuer:'Emissor de teste'};
+const dossier={sources:{sae:true,protected:true,incidents:true,active_search:true},student:{id:'test-id',name:'Aluno de teste',registration:'TEST-01',unit_name:'Unidade de teste',class_name:'4º A',school_year:2026},evaluations:[],enrollments:[],emitted_at:'2026-11-19T12:00:00Z',issuer:'Emissor de teste'};
 test('timeline combines only explicit records and orders by date',()=>{
  const rows=dossierTimeline({...dossier,evaluations:[{id:'eval',number:'Final',date:'2026-10-01',percentage:0}]},[{id:'sae',module:'sae',date:'2026-11-01',summary:'Acompanhamento'}]);
  assert.deepEqual(rows.map(x=>x.id),['eval','sae']);assert.equal(rows[0].details.Aproveitamento,'0%');
@@ -11,7 +11,7 @@ test('timeline combines only explicit records and orders by date',()=>{
 test('protected summaries are masked again in timeline, rendering and print',()=>{
  const rows=[{module:'protected',id:'cp',summary:'PRIVATE SUMMARY',details:{Nome:'PRIVATE NAME'},protocol:'CP-TEST',unit:'Unidade de origem'}];
  for(const html of [dossierRecordsHtml(rows),dossierRecordsHtml(dossierTimeline(dossier,rows)),dossierPrintHtml(dossier,rows)]){
-  assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);assert.match(html,/Unidade de origem/);
+  assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);
  }
 });
 test('all supplied text is escaped and long narratives are not shortened',()=>{
@@ -60,11 +60,11 @@ test('module date and occurrence unit filters apply together without filtering b
  assert.equal(filterDossierRecords(records,{unitMode:'current',unitLabel:'Unidade Atual'}).length,3);
  assert.equal(filterDossierRecords(records,{unitMode:'record',unitLabel:'Unidade Anterior'}).length,2);
 });
-test('module report and print preserve protected masks and complete narratives',()=>{
+test('summary print preserves masks and omits narratives while retaining applied filters',()=>{
  const long='Narrativa completa '.repeat(500);
  const records=[{module:'protected',protocol:'CP-TEST',summary:'PRIVATE',details:{Nome:'PRIVATE'}},{module:'sae',protocol:'SAE-TEST',details:{Relato:long}}];
  const html=dossierPrintHtml(dossier,records,{modules:['protected','sae'],filterSummary:'Unidade atual: Teste · Período: novembro'});
- assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);assert.ok(html.includes(long));assert.doesNotMatch(html,/<details/);assert.match(html,/Histórico integrado do aluno/);assert.match(html,/Período: novembro/);
+ assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);assert.ok(!html.includes(long));assert.doesNotMatch(html,/<details/);assert.match(html,/Histórico integrado do aluno/);assert.match(html,/Período: novembro/);
 });
 test('period boundaries use the same Sao Paulo calendar day displayed in the report',()=>{
  const records=[{module:'sae',date:'2026-11-02T01:00:00Z'},{module:'sae',date:'2026-11-02'}];

@@ -60,7 +60,7 @@ Deno.serve(async req => {
    if(!dossier.sources[module] || (module==="protected" && !cpAllowed)) return null;
    if(module==="protected") {
     const rows=await protectedRows();const r=rows?.find((r:any)=>r.id===id);if(!r)return null;
-    return {id,module,title:titles[module],protocol:r.protocol,date:r.occurred_at||r.created_at,unit:r.unit_name,status:r.status,summary:"****",details:{"Pessoa protegida":"****","Descrição":"****","Providências":"****"},href:`/crei-sae/?view=${route[module]}&record=${id}`};
+    return {id,module,title:titles[module],protocol:r.protocol,date:r.occurred_at||r.created_at,unit:r.unit_name,status:r.status,occurrence_type:r.category,summary:"****",details:{"Pessoa protegida":"****","Descrição":"****","Providências":"****"},href:`/crei-sae/?view=${route[module]}&record=${id}`};
    }
    if(module==="sae") {
     const r=await query(local!.from("sae_cases").select("id,person_id,protocol_number,opened_on,unit_name,status,presented_situation,reported_situations,referral_summary,network_return,assigned_professional,notes").eq("id",id).maybeSingle());if(!r)return null;

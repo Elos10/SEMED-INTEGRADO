@@ -273,8 +273,8 @@ async function revealPortal(session, forceRefresh = false) {
     const communicationAccess = availableModules.get("comunicacao");
     const incidentAccess = availableModules.get("incidentes");
     const moduleAccess = creiSae
-      ? context.portal_admin || communicationAccess?.permissions?.view_sensitive || incidentAccess?.permissions?.view
-        ? incidentAccess || communicationAccess
+      ? context.portal_admin || communicationAccess?.permissions?.view_sensitive || incidentAccess?.permissions?.view || context.profiles?.some(p=>["SAE_CONSULTA","SAE_REGISTRO","SAE_RELATORIOS","BUSCA_ATIVA_REGISTRO","COMUNICACAO_PROTEGIDA_GESTOR"].includes(p.code))
+        ? incidentAccess || communicationAccess || {permissions:{view:true}}
         : null
       : availableModules.get(moduleByHref[href] || moduleCodeFromHref(href));
     card.dataset.authorized = String(Boolean(moduleAccess));
