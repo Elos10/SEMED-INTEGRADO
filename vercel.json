@@ -4,6 +4,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/integrations/student-dossier-sources", "destination": "https://mqzaaelyiskwshqjwaxy.supabase.co/functions/v1/student-dossier-sources" },
     { "source": "/avaliacoes", "destination": "https://gest-o-de-avalia-es.vercel.app/" },
     { "source": "/avaliacoes/:path*", "destination": "https://gest-o-de-avalia-es.vercel.app/:path*" },
     { "source": "/assets/:path*", "destination": "https://gest-o-de-avalia-es.vercel.app/assets/:path*" },
