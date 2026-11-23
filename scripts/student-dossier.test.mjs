@@ -5,7 +5,7 @@ import {dossierTimeline,dossierRecordsHtml,dossierPrintHtml,dossierEnrollmentHtm
 const dossier={student:{id:'test-id',name:'Aluno de teste',registration:'TEST-01',unit_name:'Unidade de teste',class_name:'4º A',school_year:2026},evaluations:[],enrollments:[],emitted_at:'2026-11-19T12:00:00Z',issuer:'Emissor de teste'};
 test('timeline combines only explicit records and orders by date',()=>{
  const rows=dossierTimeline({...dossier,evaluations:[{id:'eval',number:'Final',date:'2026-10-01',percentage:0}]},[{id:'sae',module:'sae',date:'2026-11-01',summary:'Acompanhamento'}]);
- assert.deepEqual(rows.map(x=>x.id),['sae','eval']);assert.equal(rows[1].details.Aproveitamento,'0%');
+ assert.deepEqual(rows.map(x=>x.id),['eval','sae']);assert.equal(rows[0].details.Aproveitamento,'0%');
  assert.equal(dossierTimeline(dossier,[]).length,0);
 });
 test('protected summaries are masked again in timeline, rendering and print',()=>{
@@ -64,7 +64,7 @@ test('module report and print preserve protected masks and complete narratives',
  const long='Narrativa completa '.repeat(500);
  const records=[{module:'protected',protocol:'CP-TEST',summary:'PRIVATE',details:{Nome:'PRIVATE'}},{module:'sae',protocol:'SAE-TEST',details:{Relato:long}}];
  const html=dossierPrintHtml(dossier,records,{modules:['protected','sae'],filterSummary:'Unidade atual: Teste · Período: novembro'});
- assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);assert.ok(html.includes(long));assert.match(html,/<details open>/);assert.match(html,/Período: novembro/);
+ assert.doesNotMatch(html,/PRIVATE/);assert.match(html,/\*\*\*\*/);assert.ok(html.includes(long));assert.doesNotMatch(html,/<details/);assert.match(html,/Histórico integrado do aluno/);assert.match(html,/Período: novembro/);
 });
 test('period boundaries use the same Sao Paulo calendar day displayed in the report',()=>{
  const records=[{module:'sae',date:'2026-11-02T01:00:00Z'},{module:'sae',date:'2026-11-02'}];

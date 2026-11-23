@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import {studentUnitGroupsHtml,studentSeries,mountStudentUnitBrowser} from '../modules/inteligencia/student-unit-browser.js';
 const groups=[{id:'u1',name:'Unidade Alfa',student_count:123},{id:'u2',name:'Unidade Beta',student_count:2}];
 const student={id:'s1',name:'Aluno fictício',registration:'TEST-001',grade:4,class_name:'4º A',active:true};
+
+test('units without students are omitted, including when all units are empty',()=>{
+ const empty={id:'empty',name:'Unidade vazia',student_count:0};
+ assert.doesNotMatch(studentUnitGroupsHtml([...groups,empty]),/Unidade vazia/);
+ assert.match(studentUnitGroupsHtml([empty]),/Nenhuma unidade com alunos/);
+});
 test('initial listing contains only unit names and full student counts',()=>{
  const html=studentUnitGroupsHtml(groups);
  assert.match(html,/Unidade Alfa/);assert.match(html,/123 aluno/);assert.match(html,/aria-expanded="false"/);

@@ -3,6 +3,7 @@ export function studentSeries(student) {
  return student.grade===null||student.grade===undefined?"Não informada":/^\d+$/.test(String(student.grade))?`${student.grade}º Ano`:String(student.grade);
 }
 export function studentUnitGroupsHtml(groups,expanded=new Map(),selected="") {
+ groups=groups.filter(group=>Number(group.student_count)>0);
  if(!groups.length)return '<p class="dossier-empty">Nenhuma unidade com alunos disponível neste filtro e alcance.</p>';
  return `<div class="table-wrap dossier-unit-table"><table><thead><tr><th>Unidade atual do aluno</th><th>Quantidade de alunos</th></tr></thead>${groups.map(group=>{
   const state=expanded.get(group.id),isOpen=!!state;
