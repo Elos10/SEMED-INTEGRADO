@@ -7,6 +7,7 @@
     { "source": "/integrations/:path*", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" }] }
   ],
   "rewrites": [
+    { "source": "/integrations/crei-decision-metrics", "destination": "https://mqzaaelyiskwshqjwaxy.supabase.co/functions/v1/crei-decision-metrics" },
     { "source": "/integrations/crei-backend/:path*", "destination": "https://vurgswhwkscxkqkpbwxf.supabase.co/:path*" },
     { "source": "/integrations/portal-backend/:path*", "destination": "https://mqzaaelyiskwshqjwaxy.supabase.co/:path*" },
     { "source": "/integrations/crei-session-exchange", "destination": "https://vurgswhwkscxkqkpbwxf.supabase.co/functions/v1/portal-session-exchange" },

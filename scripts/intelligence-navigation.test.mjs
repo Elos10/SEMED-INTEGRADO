@@ -10,5 +10,5 @@ test('overview includes distinct Communication and CREI while sidebar keeps mana
  assert.match(code,/\["risks","CREI\/SAE","Proteção e acompanhamento"\]/);
  assert.match(code,/data-view="communication"/);assert.match(code,/data-view="risks"/);
  assert.doesNotMatch(code,/\/comunicacao\/\?view=(?:incidentes|protegida)/);
- assert.match(code,/\/crei-sae\/\?view=incidentes/);
+ assert.match(code,/mountCreiDecisionPanel/);
 });
