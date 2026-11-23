@@ -3,7 +3,12 @@
   "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
+  "headers": [
+    { "source": "/integrations/:path*", "headers": [{ "key": "Cache-Control", "value": "private, no-store, max-age=0" }] }
+  ],
   "rewrites": [
+    { "source": "/integrations/crei-backend/:path*", "destination": "https://vurgswhwkscxkqkpbwxf.supabase.co/:path*" },
+    { "source": "/integrations/portal-backend/:path*", "destination": "https://mqzaaelyiskwshqjwaxy.supabase.co/:path*" },
     { "source": "/integrations/crei-session-exchange", "destination": "https://vurgswhwkscxkqkpbwxf.supabase.co/functions/v1/portal-session-exchange" },
     { "source": "/integrations/student-dossier-sources", "destination": "https://mqzaaelyiskwshqjwaxy.supabase.co/functions/v1/student-dossier-sources" },
     { "source": "/avaliacoes", "destination": "https://gest-o-de-avalia-es.vercel.app/" },
