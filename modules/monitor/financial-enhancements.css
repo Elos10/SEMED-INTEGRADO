@@ -6,3 +6,15 @@
 .financial-tab-content{min-height:220px}.financial-tab-content table{min-width:1050px}.financial-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.financial-overview article{display:grid;gap:7px;padding:17px;border:1px solid var(--line);border-radius:12px;background:#f7fafb}.financial-overview span{color:var(--muted);font-size:10px;font-weight:800}.financial-overview strong{color:var(--navy);font-size:26px}.financial-overview small{line-height:1.45}.finance-row-actions{display:flex;gap:10px;white-space:nowrap}.danger-link{color:var(--red)!important}.finance-form{padding-top:4px}
 @media(max-width:1100px){.financial-kpis-six{grid-template-columns:repeat(3,minmax(0,1fr))}.financial-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.financial-kpis-six,.financial-progress-grid,.financial-overview{grid-template-columns:1fr}.financial-admin-actions{justify-content:stretch}.financial-admin-actions .btn{flex:1 1 45%}.financial-statement-expanded>header{align-items:flex-start}.financial-statement-expanded>header>div:last-child{justify-content:flex-start}}
+
+/* Valores monetários completos: três quadros por linha, sem cortes. */
+.financial-statement-expanded .financial-statement-kpis.financial-kpis-six{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.financial-statement-expanded .financial-statement-kpis>div{min-width:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.financial-statement-expanded .financial-statement-kpis strong{font-size:clamp(18px,2vw,24px);line-height:1.25;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere;margin:0;max-width:100%}
+.financial-statement-expanded .financial-statement-kpis span{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.financial-statement-expanded>header>div:first-child{min-width:0;flex:1}
+.financial-statement-expanded>header strong,.financial-statement-expanded>header small{overflow-wrap:anywhere}
+.financial-statement-expanded .financial-progress-grid>*,.financial-statement-expanded .financial-overview>article{min-width:0}
+.financial-statement-expanded .financial-overview small{overflow-wrap:anywhere}
+@media(max-width:800px){.financial-statement-expanded .financial-statement-kpis.financial-kpis-six{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.financial-statement-expanded .financial-statement-kpis.financial-kpis-six{grid-template-columns:minmax(0,1fr)}.financial-statement-expanded>header{flex-direction:column}.financial-statement-expanded .financial-overview{grid-template-columns:minmax(0,1fr)}.financial-statement-expanded .financial-tabs{flex-wrap:wrap}.financial-statement-expanded .financial-tabs button{flex:1 1 auto;padding:10px}}
